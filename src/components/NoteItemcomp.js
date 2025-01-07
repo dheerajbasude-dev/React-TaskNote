@@ -408,7 +408,7 @@ useEffect(() => {
       </div>
       ))
               ) : filteredNotes.length === 0 ? (
-                <h3>Notes not found!</h3>
+                searchQuery ?  <h3>No search found!</h3> : <h3>Notes not found!</h3>
               ) : null}
 
         {filteredNotes.map((note,index)=>{
