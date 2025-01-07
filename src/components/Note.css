@@ -359,6 +359,7 @@ body {
   /* padding-top: 50px; */
   align-items: center;
   pointer-events: none;
+  overflow-y:scroll;
 }
 .overlay > p {
   color: #fff;

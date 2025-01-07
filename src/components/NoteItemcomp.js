@@ -459,7 +459,7 @@ useEffect(() => {
             <label htmlFor="task-title">Title</label>
             <input id="task-title" name="title" value={note.title} type="text" onChange={onChange} minLength={3} required/>
             <label htmlFor="task-desc">Description</label>
-            <textarea id="task-desc"  name="description" value={note.description} rows="3" onChange={onChange} minLength={5} required></textarea><span>Priority</span>
+            <textarea id="task-desc"  name="description" value={note.description} rows="12" onChange={onChange} minLength={5} required></textarea><span>Priority</span>
            
   
             <div className="priority">
