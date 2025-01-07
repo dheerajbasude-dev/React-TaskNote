@@ -344,19 +344,6 @@ useEffect(() => {
   setFilteredNotes(filteredNote);
 }, [notes, searchQuery, selectedPriority, setFilteredNotes]);
 
-// Modal heading toggle the text state
-const [isTextVisible, setIsTextVisible] = useState(false);
-
-useEffect(() => {
-  // Use a timer to toggle the text visibility after a delay
-  const timer = setTimeout(() => {
-    setIsTextVisible(!isTextVisible);
-  }, 2000);
-
-  return () => {
-    clearTimeout(timer); // Clear the timer if the component unmounts before it fires
-  };
-}, [isTextVisible]);
 
   function highlightMatches(text, searchQuery) {
     // Escape special characters in the search query and create a regular expression with 'gi' flags
@@ -451,7 +438,7 @@ useEffect(() => {
         </div>
           
         <div className="overlay">
-          <p>Add task</p>{isTextVisible ? <span className='-w-animation'> Fill at least the title 3 characters, description 5 characters required to continue 😵</span> : <span className='-w-animation'>Dude! you can fill with title, description but you are grant without filling the tag😂</span>}
+          <p>Add task</p>
           <form className="modal">
            
          

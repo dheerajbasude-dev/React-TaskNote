@@ -383,16 +383,11 @@ body {
   pointer-events: none;
   text-align: center;
 }
-.overlay > span.-w-animation {
-  -webkit-animation: shake 0.5s ease-in-out forwards 1;
-          animation: shake 0.5s ease-in-out forwards 1;
-}
 
 .modal {
   background: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
   padding: 30px 30px 15px 30px;
