@@ -118,12 +118,11 @@
   .commit-circle::after {
     content: "";
     width: 1.5px;
-    height: 23px;
+    height: 20px;
     background-color: #007aff;
     position: absolute;
     bottom: -22px;
-    left: 5.5px;
-    margin-bottom: -2.5px;
+    left: 5px;
   }
 
   .commit-circle::before {
