@@ -86,7 +86,6 @@
   .commit-node {
     display: flex;
     align-items: center;
-    margin-bottom: 1px;
     position: relative;
     transition: all 0.3s ease;
     border: 2px solid transparent;
@@ -103,20 +102,38 @@
     position: relative;
     transition: transform 0.3s ease;
     cursor: pointer;
+    margin: 0;
   }
   
   .commit-circle:hover {
     transform: scale(1.2);
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+  }
+  
+  .commit-node:hover .commit-circle {
+    transform: scale(1.2);
+    transition: all 0.3s ease; /* Smooth animation */
   }
   
   .commit-circle::after {
     content: "";
-    width: 2px;
-    height: 20px;
+    width: 1.5px;
+    height: 23px;
     background-color: #007aff;
     position: absolute;
     bottom: -22px;
-    left: 5px;
+    left: 5.5px;
+    margin-bottom: -2.5px;
+  }
+
+  .commit-circle::before {
+    position: relative;
+    bottom: 11px;
+    content: " __ "; /* Arrow pointing to the text */
+    font-size: 14px;
+    color: #007aff; /* Blue color for the arrow */
+    margin-left: 7px; /* Adjust spacing between the circle and arrow */
+
   }
   
   .commit-node:last-child .commit-circle::after {
@@ -126,7 +143,7 @@
   .commit-label {
     display: flex;
     flex-direction: column;
-    margin-left: 5px;
+    margin-left: 12px;
   }
   
   .commit-node:hover .commit-label span,
