@@ -32,12 +32,11 @@ const CommitsGraph = () => {
 
   return (
     <>
-    <h1 style={{textAlign:"center"}}>Commits</h1>
     <div className="page-container">
       {/* Form Section */}
       <form className="form-commit" onSubmit={handleAddCommit}>
+       <h1 className="head-commit">Commits</h1>
         <div className="form-group">
-          <label htmlFor="label">Label:</label>
           <input
             type="text"
             id="label"
@@ -48,7 +47,6 @@ const CommitsGraph = () => {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="author">Author:</label>
           <input
             type="text"
             id="author"

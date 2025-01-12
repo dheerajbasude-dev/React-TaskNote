@@ -14,8 +14,8 @@
   .form-commit {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
+    align-items: center; /* Center content horizontally */
+    gap: 15px; /* Space between form elements */
     background-color: #f4f4f4;
     padding: 20px;
     border-radius: 10px;
@@ -23,6 +23,16 @@
     width: 100%;
     max-width: 400px;
   }
+
+  /* CSS for centering the heading */
+.head-commit {
+  text-align: center; /* Center horizontally */
+  font-size: 24px; /* Adjust font size */
+  font-weight: bold; /* Make it bold */
+  color: #333; /* Dark color for visibility */
+  margin-bottom: 15px; /* Add spacing below the heading */
+}
+
   
   .form-commit .form-group {
     display: flex;
