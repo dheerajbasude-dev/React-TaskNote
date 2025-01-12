@@ -94,8 +94,8 @@
   }
   
   .commit-circle::before {
-    position: absolute;
-    bottom: 4.8px;
+    position: relative;
+    bottom: 11px;
     content: " __ "; /* Arrow pointing to the text */
     font-size: 14px;
     color: #007aff; /* Blue color for the arrow */
