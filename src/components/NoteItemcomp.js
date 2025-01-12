@@ -221,6 +221,12 @@ const Notescomp = ({ searchQuery, selectedPriority }) => {
     setNote({...note, [e.target.name]:e.target.value})
   }
 
+  const handleDescriptionInput = (e) => {
+    const textarea = e.target;
+    textarea.style.height = "auto"; // Reset the height
+    textarea.style.height = `${textarea.scrollHeight}px`; // Adjust height to fit content
+  };
+
   // Getting the tag from specified in the radio buttons as from api request
     const getFlameColor = (tag) => {
       if (tag === 'low') {
@@ -444,9 +450,9 @@ useEffect(() => {
          
           
             <label htmlFor="task-title">Title</label>
-            <input id="task-title" name="title" value={note.title} type="text" onChange={onChange} minLength={3} required/>
+            <input id="task-title" name="title" value={note.title} type="text" onChange={onChange} minLength={3} placeholder="What's mind on your title?" required/>
             <label htmlFor="task-desc">Description</label>
-            <textarea id="task-desc"  name="description" value={note.description} rows="12" onChange={onChange} minLength={5} required></textarea><span>Priority</span>
+            <textarea id="task-desc"  name="description" value={note.description} rows={1} style={{ overflow: "hidden", resize: "none" }} onChange={(e) => {onChange(e); handleDescriptionInput(e)}} minLength={5} placeholder="What's the description?" required></textarea><span>Priority</span>
            
   
             <div className="priority">
