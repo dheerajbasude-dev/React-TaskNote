@@ -1,18 +1,86 @@
-.graph-center{
+/* Global Styles */
+  
+  .page-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  /* Form Styles */
+  .form-commit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .form-commit .form-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .form-commit .form-group label {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #333;
+  }
+  
+  .form-commit .form-group input {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+  }
+  
+  .form-commit button {
+    padding: 10px 20px;
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    align-self: flex-start;
+    transition: background-color 0.3s ease;
+  }
+  
+  .form-commit button:hover {
+    background-color: #005bb5;
+  }
+  
+  /* Scrollable Graph Center */
+  .graph-center {
     display: flex;
     justify-content: center;
-    align-items: center;
-}
-
-.commit-graph {
+    align-items: flex-start;
+    width: 100%;
+    max-width: 400px;
+    height: 400px; /* Set the visible height of the graph */
+    overflow-y: auto; /* Enable vertical scrolling */
+    background-color: rgb(23, 7, 54);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  .commit-graph {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    width: 300px;
-    background-color: rgb(23, 7, 54);
+    width: 100%;
   }
   
   .commit-node {
@@ -29,36 +97,30 @@
   .commit-circle {
     width: 12px;
     height: 12px;
-    background-color: #007aff; /* Blue color for the node */
+    background-color: #007aff;
     border-radius: 50%;
     margin-right: 10px;
     position: relative;
-    transition: transform 0.3s ease; /* Smooth scaling effect */
+    transition: transform 0.3s ease;
     cursor: pointer;
   }
-
+  
   .commit-circle:hover {
     transform: scale(1.2);
-    transition: all 0.3s ease; /* Smooth transition for hover effect */
   }
   
-  .commit-node:hover .commit-circle {
-    transform: scale(1.2);
-    transition: all 0.3s ease; /* Smooth animation */
-  }
-
   .commit-circle::after {
     content: "";
     width: 2px;
     height: 20px;
-    background-color: #007aff; /* Blue color for the connecting line */
+    background-color: #007aff;
     position: absolute;
     bottom: -22px;
     left: 5px;
   }
   
   .commit-node:last-child .commit-circle::after {
-    display: none; /* Remove the connecting line for the last node */
+    display: none;
   }
   
   .commit-label {
@@ -66,39 +128,42 @@
     flex-direction: column;
     margin-left: 5px;
   }
-
-  .commit-node:hover .commit-label span {
-    color: rgb(246, 183, 66);
-  }
-
+  
+  .commit-node:hover .commit-label span,
   .commit-node:hover .commit-label small {
     color: rgb(246, 183, 66);
   }
   
-  
   .commit-label span {
     font-size: 14px;
     font-weight: bold;
-    color: #ffffff; /* Default text color */
+    color: #ffffff;
   }
   
   .commit-label small {
     font-size: 12px;
-    color: #8b8a8a; /* Subtle gray for the author's name */
+    color: #8b8a8a;
   }
   
-  
-  .commit-node:hover {
-    background-color: rgba(0, 122, 255, 0.1); /* Subtle blue hover effect */
-    border-radius: 5px;
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .form-commit,
+    .graph-center {
+      width: 90%;
+    }
   }
   
-  .commit-circle::before {
-    position: relative;
-    bottom: 11px;
-    content: " __ "; /* Arrow pointing to the text */
-    font-size: 14px;
-    color: #007aff; /* Blue color for the arrow */
-    margin-left: 7px; /* Adjust spacing between the circle and arrow */
-
+  @media (max-width: 480px) {
+    .commit-label span {
+      font-size: 12px;
+    }
+  
+    .commit-label small {
+      font-size: 10px;
+    }
+  
+    .form-commit button {
+      width: 100%;
+    }
   }
+  

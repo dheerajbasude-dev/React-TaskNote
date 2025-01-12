@@ -1,33 +1,71 @@
-import React from 'react'
-import './commits.css'
+import React, { useState } from "react";
+import "./commits.css";
 
-
-const commits = [
-    { label: "Issue of...", author: "Coder_Dheeraj", },
-    { label: "Some issue naming issue", author: "Coder_Dheeraj" },
-    { label: "Some more", author: "Coder_Dheeraj" },
-    { label: "Some issues on more...", author: "Coder_Dheeraj" },
-    { label: "last", author: "Coder_Dheeraj", active: true},
-    { label: "fw", author: "Coder_Dheeraj" },
-    { label: "gfg", author: "Coder_Dheeraj",  },
-    { label: "ob", author: "Coder_Dheeraj" },
-    { label: "Update touch", author: "Coder_Dheeraj" },
-    { label: "Update Navcomp.js", author: "Coder_Dheeraj" },
-    { label: "Updated the app", author: "Kishan" },
-    {label: "Hello this is one first", author:"dummy"},
-  ];
-
-commits.reverse();
+const initialCommits = [
+  { label: "Issue of...", author: "Coder_Dheeraj" },
+  { label: "Some issue naming issue", author: "Coder_Dheeraj" },
+  { label: "Some more", author: "Coder_Dheeraj" },
+  { label: "Some issues on more...", author: "Coder_Dheeraj" },
+  { label: "last", author: "Coder_Dheeraj", active: true },
+  { label: "fw", author: "Coder_Dheeraj" },
+  { label: "gfg", author: "Coder_Dheeraj" },
+  { label: "ob", author: "Coder_Dheeraj" },
+  { label: "Update touch", author: "Coder_Dheeraj" },
+  { label: "Update Navcomp.js", author: "Coder_Dheeraj" },
+  { label: "Updated the app", author: "Kishan" },
+  { label: "Hello this is one first", author: "dummy" },
+];
 
 const CommitsGraph = () => {
-    return (
-        <div className="graph-center">
+  const [commits, setCommits] = useState([...initialCommits.reverse()]);
+  const [label, setLabel] = useState("");
+  const [author, setAuthor] = useState("");
+
+  const handleAddCommit = (e) => {
+    e.preventDefault();
+    if (label.trim() && author.trim()) {
+      setCommits([{ label, author }, ...commits]);
+      setLabel("");
+      setAuthor("");
+    }
+  };
+
+  return (
+    <>
+    <h1 style={{textAlign:"center"}}>Commits</h1>
+    <div className="page-container">
+      {/* Form Section */}
+      <form className="form-commit" onSubmit={handleAddCommit}>
+        <div className="form-group">
+          <label htmlFor="label">Label:</label>
+          <input
+            type="text"
+            id="label"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            required
+            placeholder="Enter label"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="author">Author:</label>
+          <input
+            type="text"
+            id="author"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            required
+            placeholder="Enter author"
+          />
+        </div>
+        <button type="submit">Add Commit</button>
+      </form>
+
+      {/* Scrollable Commit Graph Section */}
+      <div className="graph-center">
         <div className="commit-graph">
           {commits.map((commit, index) => (
-            <div
-              className="commit-node"
-              key={index}
-            >
+            <div className="commit-node" key={index}>
               <div className="commit-circle"></div>
               <div className="commit-label">
                 <span>{commit.label}</span>
@@ -36,8 +74,10 @@ const CommitsGraph = () => {
             </div>
           ))}
         </div>
-        </div>
-      );
-}
+      </div>
+    </div>
+    </>
+  );
+};
 
-export default CommitsGraph
+export default CommitsGraph;
