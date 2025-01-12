@@ -6,6 +6,7 @@ import NoteState from './context/notes/NoteState';
 import Authcomp from './components/Authcomp';
 import { ToastContainer } from 'react-toastify';
 import "./index.css";
+import CommitsGraph from './components/CommitsGraph';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +40,20 @@ function App() {
                   </>
                 } 
               />
+
+              <Route 
+                exact 
+                path="/commits" 
+                element={
+                  
+                    <CommitsGraph/>
+                  
+                } 
+              />
+
+
               <Route exact path="/auth" element={<Authcomp />} />
+
             </Routes>
             <ToastContainer position="top-right" style={{ marginTop: "60px" }} />
           </BrowserRouter>

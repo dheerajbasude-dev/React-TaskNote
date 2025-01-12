@@ -1,0 +1,107 @@
+body{
+    background-color: rgb(23, 7, 54);
+}
+
+.graph-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.commit-graph {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    width: 300px;
+  }
+  
+  .commit-node {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1px;
+    position: relative;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .commit-circle {
+    width: 12px;
+    height: 12px;
+    background-color: #007aff; /* Blue color for the node */
+    border-radius: 50%;
+    margin-right: 10px;
+    position: relative;
+    transition: transform 0.3s ease; /* Smooth scaling effect */
+    cursor: pointer;
+  }
+
+  .commit-circle:hover {
+    transform: scale(1.2);
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+  }
+  
+  .commit-node:hover .commit-circle {
+    transform: scale(1.2);
+    transition: all 0.3s ease; /* Smooth animation */
+  }
+
+  .commit-circle::after {
+    content: "";
+    width: 2px;
+    height: 20px;
+    background-color: #007aff; /* Blue color for the connecting line */
+    position: absolute;
+    bottom: -22px;
+    left: 5px;
+  }
+  
+  .commit-node:last-child .commit-circle::after {
+    display: none; /* Remove the connecting line for the last node */
+  }
+  
+  .commit-label {
+    display: flex;
+    flex-direction: column;
+    margin-left: 5px;
+  }
+
+  .commit-node:hover .commit-label span {
+    color: rgb(246, 183, 66);
+  }
+
+  .commit-node:hover .commit-label small {
+    color: rgb(246, 183, 66);
+  }
+  
+  
+  .commit-label span {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff; /* Default text color */
+  }
+  
+  .commit-label small {
+    font-size: 12px;
+    color: #8b8a8a; /* Subtle gray for the author's name */
+  }
+  
+  
+  .commit-node:hover {
+    background-color: rgba(0, 122, 255, 0.1); /* Subtle blue hover effect */
+    border-radius: 5px;
+  }
+  
+  .commit-circle::before {
+    position: absolute;
+    bottom: 0px;
+    content: " __ "; /* Arrow pointing to the text */
+    font-size: 14px;
+    color: #007aff; /* Blue color for the arrow */
+    margin-left: 7px; /* Adjust spacing between the circle and arrow */
+    margin-bottom: 5px;
+  }
