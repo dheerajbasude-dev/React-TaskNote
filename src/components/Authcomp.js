@@ -113,6 +113,7 @@ const Authcomp = () => {
 
     if (json.success) {
       localStorage.setItem("token", json.authtoken);
+      localStorage.setItem("email", lemail);
       notifyLogin();
       navGate("/");
     } else {

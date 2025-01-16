@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./commits.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const initialCommits = [
   { label: "Issue of...", author: "Coder_Dheeraj", date: "2025-01-16" },
@@ -23,6 +23,16 @@ const CommitsGraph = () => {
   const [author, setAuthor] = useState("");
   const [selectedCommit, setSelectedCommit] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+
+  let navigate = useNavigate();
+
+  // Validate email on mount
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email"); // Retrieve email from localStorage
+    if (storedEmail !== "commits@gmail.com") {
+      navigate("/"); // Redirect unauthorized users
+    }
+  }, [navigate]);
 
   const handleAddCommit = (e) => {
     e.preventDefault();
