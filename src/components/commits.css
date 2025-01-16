@@ -81,7 +81,7 @@ body{
     align-items: flex-start;
     width: 100%;
     max-width: 400px;
-    height: 400px; /* Set the visible height of the graph */
+    height: 700px; /* Set the visible height of the graph */
     overflow-y: auto; /* Enable vertical scrolling */
     background-color: rgb(23, 7, 54);
     border-radius: 10px;
@@ -200,6 +200,7 @@ body{
 
 .notes-link{
   text-decoration: none;
+  user-select: none;
 }
 
 .notes-link:hover{
