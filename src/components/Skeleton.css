@@ -54,4 +54,23 @@
     }
   }
 
+  .commits-btn{
+    outline: none;
+    border: none;
+    margin-left: 30px;
+    position: relative;
+    bottom: 2px;
+    background: #D462FF;
+    color:black;
+    font-weight: bold !important;
+    border: none;
+    cursor: pointer;
+    padding: 10px 13px 10px 13px;
+    border-radius: 20px;
+    -webkit-tap-highlight-color: transparent;
+  }
 
+  
+  .commits-btn:hover{
+    background: #bc02ff;
+  }

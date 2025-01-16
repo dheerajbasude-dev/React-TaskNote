@@ -15,7 +15,7 @@ import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
 
 
-const Notescomp = ({ searchQuery, selectedPriority }) => {
+const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Sounds effects
   const AddSound = new Audio(AddTaskSound);
@@ -328,6 +328,11 @@ function taskDeleted(event,note) {
     deleteNote(note._id);
     }
     }
+}
+
+if(searchQuery === "/commits"){
+     navigate("/commits");
+     setSearchQuery("");
 }
 
 

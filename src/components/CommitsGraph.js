@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./commits.css";
+import {Link} from "react-router-dom";
 
 const initialCommits = [
   { label: "Issue of...", author: "Coder_Dheeraj" },
@@ -56,7 +57,9 @@ const CommitsGraph = () => {
             placeholder="Enter author"
           />
         </div>
-        <button type="submit">Add Commit</button>
+        <button type="submit" className="commit-form-btn">Add Commit</button>    
+        <Link to="/" className="notes-link"><span>Go to Notes</span></Link>
+     
       </form>
 
       {/* Scrollable Commit Graph Section */}

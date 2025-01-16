@@ -35,6 +35,7 @@ function App() {
                     />
                     <NoteItemcomp 
                       searchQuery={searchQuery} 
+                      setSearchQuery={setSearchQuery}
                       selectedPriority={selectedPriority} 
                     />
                   </>

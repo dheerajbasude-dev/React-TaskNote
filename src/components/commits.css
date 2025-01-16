@@ -1,4 +1,7 @@
 /* Global Styles */
+body{
+  overflow-y: auto;
+}
   
   .page-container {
     display: flex;
@@ -193,3 +196,11 @@
     }
   }
   
+
+.notes-link{
+  text-decoration: none;
+}
+
+.notes-link:hover{
+  color: #bb00ff;
+}
