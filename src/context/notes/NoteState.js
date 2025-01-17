@@ -28,8 +28,10 @@ const NoteState = (props) => {
     // )
 
     // Setting the local host url that is being used in the fetching the api call
-    const host = "https://task-note-api.vercel.app"
+    const host = "https://task-note-api.vercel.app";
+    const host1 = "https://commits-api.vercel.app"; //for commits
     const notesInitial = []  // All notes are going to here
+    const commitsInitial = [] // All commits are going to here
     /*This is being used by practice*/ 
     // [
       //   {
@@ -99,6 +101,7 @@ const NoteState = (props) => {
 
       // Passing the notes state to the notesInitial
       const [notes, setNotes] = useState(notesInitial);
+      const[commits, setCommits] = useState(commitsInitial); // for commits
       const [filteredNotes, setFilteredNotes] = useState([]); // filtred searching
 
        // Get all notes
@@ -123,8 +126,30 @@ const NoteState = (props) => {
         console.error("Error adding note:", error);
       }
     }
+
+    // Get all commits
+    const getCommits = async () =>{
+      // Todo api call, fetching all commits with a user tokens
+      try {
+      const response = await fetch(`${host1}/api/commits/fetchcommits` , {
+        method: "get",
+        headers: {
+          'Content-Type':'application/json',
+          'auth-token':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg'
+        }
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        setCommits(json);
+      } else {
+        console.error("Failed to add commit:", response.status);
+      }
+    } catch(error) {
+      console.error("Error adding commit:", error);
+    }
+  }
        
-      
 
 
       // Add a note
@@ -167,6 +192,35 @@ const NoteState = (props) => {
 
       // setNotes(notes.concat(note))
       }
+
+
+      //Add a commit
+       const addCommit = async (label, author) =>{
+        // Todo api call, Adding post request for storing the title description and tag
+        try {
+        const response = await fetch(`${host1}/api/commits/addcommit` , {
+          method: "POST",
+          headers: {
+            'Content-Type':'application/json',
+            'auth-token':"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg"
+          },
+          body:JSON.stringify({label, author})
+        });
+
+        if (response.ok) {
+          // Fetch the updated list of notes after adding a new one
+          await getCommits();
+
+          const commit = await response.json()
+          setCommits(commits.concat(commit))
+
+        } else {
+          console.error("Failed to add commit:", response.status);
+        }
+      } catch(error) {
+        console.error("Error adding commit:", error);
+      }}
+
 
     // Update a note's completed status, by requesting put 
     const updateNoteCompletedStatus = async (id, completed) => {
@@ -267,9 +321,34 @@ const NoteState = (props) => {
       }
       }
 
+      // Delete a commit
+      const deleteCommit = async (id) =>{
+        // Todo api call, to request the delete 
+        try {
+        const response = await fetch(`${host1}/api/commits/deletecommit/${id}` , {
+         method: "delete",
+         headers: {
+           'Content-Type':'application/json',
+           'auth-token':"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg"
+         }
+       });
+      
+        const newCommits = commits.filter((commit)=> {return commit._id!==id})
+        setCommits(newCommits);
 
+        if (response.ok) {
+         // Fetch the updated list of notes after deleting
+         await getCommits();
+       } else {
+         console.error("Failed to delete commit:", response.status);
+       }
+     } catch (error) {
+       console.error("Error deleting commit:", error);
+     }
+     }
+     
       return(
-        <NoteContext.Provider value={{notes, addNote, deleteNote, editNote, getNotes, updateNoteCompletedStatus, filteredNotes, setFilteredNotes}}>
+        <NoteContext.Provider value={{notes, addNote, deleteNote, editNote, getNotes, updateNoteCompletedStatus, filteredNotes, setFilteredNotes, commits, getCommits, addCommit, deleteCommit}}>
                 {props.children}
             </NoteContext.Provider>  
         )

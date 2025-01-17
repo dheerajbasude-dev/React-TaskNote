@@ -297,3 +297,74 @@ body{
   font-weight: bold;
   color: #007aff;
 }
+
+
+.loader-btn-add-task-commits button:disabled{
+  width: 100%;
+  cursor: not-allowed;
+  -webkit-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -moz-user-select: none;
+  transition: all 0.2s ease;
+  border: none;
+  flex: 1;
+  opacity: 1;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  background: none !important;
+  height: 72.5px;
+}
+
+
+/* Delete label */
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 150px; /* Fixed width to avoid size changes */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  transform: translate(-50%, -50%); /* Center the context menu around the mouse pointer */
+}
+
+.delete-option {
+  background: #f44336;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.delete-option:hover {
+  background: #d32f2f;
+}
+
+@media screen and (max-width: 600px) {
+  .context-menu {
+    width: 130px; /* Slightly smaller context menu for mobile */
+  }
+
+  .delete-option {
+    padding: 8px; /* Adjust padding for smaller screens */
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .context-menu {
+    width: 120px; /* Adjust width even more for very small screens */
+  }
+
+  .delete-option {
+    padding: 6px; /* Further adjust padding for tiny screens */
+  }
+}
