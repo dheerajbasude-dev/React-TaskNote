@@ -10,9 +10,7 @@ const CommitsGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBtnLoading, setIsBtnLoading] = useState(false);
-  const [showContextMenu, setShowContextMenu] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // Track confirmation state
   let navigate = useNavigate();
 
   // Validate email on mount
@@ -48,46 +46,34 @@ const CommitsGraph = () => {
     setIsBtnLoading(false);
   };
 
-  const handleCommitClick = (commit, index) => {
-    setSelectedCommit({ ...commit, index });
-    setModalVisible(true);
-  };
-
   const truncateLabel = (label) => {
     return label.length > 30 ? label.slice(0, 30) + "..." : label;
   };
 
   const handleRightClick = (e, commit, index) => {
     e.preventDefault();
-    const xPos = e.clientX;
-    const yPos = e.clientY;
-    const menuWidth = 150; // Adjust according to the menu width
-    const menuHeight = 50; // Adjust according to the menu height
   
-    const xPosition = xPos + menuWidth > window.innerWidth ? window.innerWidth - menuWidth - 10 : xPos;
-    const yPosition = yPos + menuHeight > window.innerHeight ? window.innerHeight - menuHeight - 10 : yPos;
-  
-    setContextMenuPosition({ x: xPosition, y: yPosition });
+    // Immediately show the delete confirmation modal on right-click
     setSelectedCommit({ ...commit, index });
-    setShowContextMenu(true);
+    setModalVisible(true); // Open the modal for deleting
+    setIsConfirmingDelete(false); // Reset to the normal modal (not in confirmation mode)
   };
-  
 
   const handleDeleteCommit = async (e) => {
     e.preventDefault();
-    const commitToDelete = selectedCommit; // Ensure the commit to delete is the one selected
-    if (commitToDelete) {
-      await deleteCommit(commitToDelete._id); // Delete commit via context
-      setShowContextMenu(false); // Close context menu after deletion
+    if (isConfirmingDelete) {
+      const commitToDelete = selectedCommit; // Ensure the commit to delete is the one selected
+      if (commitToDelete) {
+        await deleteCommit(commitToDelete._id); // Delete commit via context
+        setModalVisible(false); // Close modal after deletion
+      }
+    } else {
+      setIsConfirmingDelete(true); // Show confirmation buttons
     }
   };
 
-  const closeContextMenu = () => {
-    setShowContextMenu(false); // Close context menu when clicked outside
-  };
-
   return (
-    <div onClick={closeContextMenu}>
+    <div>
       <div className="page-container">
         {/* Form Section */}
         <form className="form-commit" onSubmit={handleAddCommit}>
@@ -139,7 +125,6 @@ const CommitsGraph = () => {
                   <div
                     className="commit-node"
                     key={index}
-                    onClick={() => handleCommitClick(commit, index)}
                     onContextMenu={(e) => handleRightClick(e, commit, index)} // Add right-click handler
                   >
                     <div className="commit-circle"></div>
@@ -162,20 +147,22 @@ const CommitsGraph = () => {
             <p><b>Label :</b> {selectedCommit.label}</p>
             <p><b>Author :</b> {selectedCommit.author}</p>
             <p><b>Date :</b> {selectedCommit.date}</p>
-            <div className="modal-close-btn">
-              <button onClick={() => setModalVisible(false)}>Close</button>
+            
+            {/* Display Delete Confirmation or Normal Buttons */}
+            <div className="modal-buttons">
+              {isConfirmingDelete ? (
+                <>
+                  <button className="delete-btn" onClick={handleDeleteCommit}>Confirm Delete</button>
+                  <button className="close-btn" onClick={() => setModalVisible(false)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <button className="delete-btn" onClick={handleDeleteCommit}>Delete Commit</button>
+                  <button className="close-btn" onClick={() => setModalVisible(false)}>Close</button>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Context Menu Section */}
-      {showContextMenu && (
-        <div
-          className="context-menu"
-          style={{ top: `${contextMenuPosition.y}px`, left: `${contextMenuPosition.x}px` }}
-        >
-          <button className="delete-option" onClick={handleDeleteCommit}>Delete Commit</button>
         </div>
       )}
     </div>

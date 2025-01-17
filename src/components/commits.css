@@ -211,6 +211,7 @@ body{
  */
 
  /* Modal Styles */
+/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -244,12 +245,14 @@ body{
   color: #333;
 }
 
-.modal-close-btn{
+/* Modal button container for Delete and Close buttons */
+.modal-buttons {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.modal-content button {
+.modal-buttons button {
   padding: 10px 20px;
   background-color: #007aff;
   color: white;
@@ -261,10 +264,29 @@ body{
   border-radius: 20px;
 }
 
-.modal-content button:hover {
+.modal-buttons button:hover {
   background-color: #005bb5;
 }
 
+/* Style for delete button (left side) */
+.modal-buttons .delete-btn {
+  background-color: #ff4c4c;
+  color: white;
+}
+
+.modal-buttons .delete-btn:hover {
+  background-color: #d04e4e;
+}
+
+/* Style for close button (right side) */
+.modal-buttons .close-btn {
+  background-color: #007aff;
+  color: white;
+}
+
+.modal-buttons .close-btn:hover {
+  background-color: #005bb5;
+}
 
 /* Add an active class for the selected commit-node */
 .commit-node.active {
@@ -298,6 +320,39 @@ body{
   color: #007aff;
 }
 
+.loader-btn-add-task-commits button:disabled {
+  width: 100%;
+  cursor: not-allowed;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -moz-user-select: none;
+  transition: all 0.2s ease;
+  border: none;
+  flex: 1;
+  opacity: 1;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  background: none !important;
+  height: 72.5px;
+}
+
+/* Responsive Design: Stack the buttons on smaller screens */
+@media (max-width: 600px) {
+  .modal-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-buttons button {
+    width: 100%;
+    font-size: 16px;
+  }
+}
+
 
 .loader-btn-add-task-commits button:disabled{
   width: 100%;
@@ -317,54 +372,4 @@ body{
   position: relative;
   background: none !important;
   height: 72.5px;
-}
-
-
-/* Delete label */
-.context-menu {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  width: 150px; /* Fixed width to avoid size changes */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  transform: translate(-50%, -50%); /* Center the context menu around the mouse pointer */
-}
-
-.delete-option {
-  background: #f44336;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 100%;
-  text-align: center;
-}
-
-.delete-option:hover {
-  background: #d32f2f;
-}
-
-@media screen and (max-width: 600px) {
-  .context-menu {
-    width: 130px; /* Slightly smaller context menu for mobile */
-  }
-
-  .delete-option {
-    padding: 8px; /* Adjust padding for smaller screens */
-  }
-}
-
-@media screen and (max-width: 400px) {
-  .context-menu {
-    width: 120px; /* Adjust width even more for very small screens */
-  }
-
-  .delete-option {
-    padding: 6px; /* Further adjust padding for tiny screens */
-  }
 }
