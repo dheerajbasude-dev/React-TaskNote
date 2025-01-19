@@ -497,7 +497,6 @@ body {
   width: 100%;
   padding: 15px 0;
   border-radius: 5px;
-  cursor: not-allowed;
   -webkit-user-select: none;
       -ms-user-select: none;
           user-select: none;

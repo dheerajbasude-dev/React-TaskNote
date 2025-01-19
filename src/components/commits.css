@@ -331,7 +331,6 @@ body{
   border: none;
   flex: 1;
   opacity: 1;
-  cursor: not-allowed;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -356,7 +355,6 @@ body{
 
 .loader-btn-add-task-commits button:disabled{
   width: 100%;
-  cursor: not-allowed;
   -webkit-user-select: none;
       -ms-user-select: none;
           user-select: none;
@@ -372,4 +370,36 @@ body{
   position: relative;
   background: none !important;
   height: 72.5px;
+}
+
+.loader-btn-add-task-commits-delete button:disabled{
+  width: 100%;
+  -webkit-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -moz-user-select: none;
+  transition: all 0.2s ease;
+  border: none;
+  flex: 1;
+  opacity: 1;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: none !important;
+  height: 37px;
+}
+
+.notification-bar {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgb(0, 255, 153);
+  transition: all 0.3s ease;
 }

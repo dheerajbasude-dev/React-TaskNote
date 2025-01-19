@@ -10,7 +10,10 @@ const CommitsGraph = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBtnLoading, setIsBtnLoading] = useState(false);
+  const [isDeletedLoading, setIsDeletedLoading] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false); // Track confirmation state
+  const [notifyDeleted, setNotifyDeleted] = useState(false);
+
   let navigate = useNavigate();
 
   // Validate email on mount
@@ -63,18 +66,37 @@ const CommitsGraph = () => {
     e.preventDefault();
     if (isConfirmingDelete) {
       const commitToDelete = selectedCommit; // Ensure the commit to delete is the one selected
+      setIsDeletedLoading(true);
       if (commitToDelete) {
         await deleteCommit(commitToDelete._id); // Delete commit via context
+        setIsDeletedLoading(false);
         setModalVisible(false); // Close modal after deletion
+        setNotifyDeleted(true);
       }
     } else {
       setIsConfirmingDelete(true); // Show confirmation buttons
     }
   };
 
+  if(notifyDeleted){
+    setTimeout(() => {
+      setNotifyDeleted(false);
+    }, 2000);
+  }
+
   return (
     <div>
       <div className="page-container">
+
+       {/* Notification Bar */}
+       {notifyDeleted &&
+        <div className="notification-bar">
+          <span>✅Commit has been deleted sucessfully</span>
+        </div>
+      }
+   
+
+
         {/* Form Section */}
         <form className="form-commit" onSubmit={handleAddCommit}>
           <h1 className="head-commit">Commits</h1>
@@ -150,11 +172,22 @@ const CommitsGraph = () => {
 
             
             {/* Display Delete Confirmation or Normal Buttons */}
-            <div className="modal-buttons">
+            <div className="modal-buttons" style={isDeletedLoading ? { justifyContent: "center" } : undefined}>
+  
               {isConfirmingDelete ? (
                 <>
+                  {isDeletedLoading ? (
+                    <div className="loader-btn-add-task-commits-delete">
+                    <button disabled={true} style={{ background: "#dfe1e9" }}>
+                      <DotPulse color="#ff4c4c" />
+                    </button>
+                  </div> 
+                    ) : (
+                  <>
                   <button className="delete-btn" onClick={handleDeleteCommit}>Confirm Delete</button>
                   <button className="close-btn" onClick={() => setModalVisible(false)}>Cancel</button>
+                  </>
+                    )}
                 </>
               ) : (
                 <>
