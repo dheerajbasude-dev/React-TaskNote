@@ -108,6 +108,7 @@ const CommitsGraph = () => {
               onChange={(e) => setCommit({ ...commit, label: e.target.value })}
               required
               placeholder="Enter label"
+              minLength={3}
             />
           </div>
           <div className="form-group">
@@ -118,6 +119,7 @@ const CommitsGraph = () => {
               onChange={(e) => setCommit({ ...commit, author: e.target.value })}
               required
               placeholder="Enter author"
+              minLength={2}
             />
           </div>
           {isBtnLoading ? (
