@@ -1,8 +1,3 @@
-/* Global Styles */
-body{
-  overflow-y: auto;
-}
-  
   .page-container {
     display: flex;
     flex-direction: row;
