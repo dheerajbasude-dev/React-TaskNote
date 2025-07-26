@@ -8,6 +8,7 @@ import UnCompletedTaskSound from './Sounds/UnCompletedTask.mp3';
 import TaskDeleted1Sound from './Sounds/TaskDeleted1.mp3';
 import TaskDeleted2Sound from './Sounds/TaskDeleted2.mp3';
 import AddTaskSound from './Sounds/AddTask.mp3'
+import EditTaskSound from './Sounds/Edited.mp3';
 import Skeleton from 'react-loading-skeleton'
 import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
@@ -23,6 +24,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const unCompleteSound = new Audio(UnCompletedTaskSound);
   const DeletedSound1 = new Audio(TaskDeleted1Sound);
   const DeletedSound2 = new Audio(TaskDeleted2Sound);
+  const editSound = new Audio(EditTaskSound);
 
   // Scroll to top adding
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -189,6 +191,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           setIsEditing(false);
           setIsbtnLoading(false);
           handleCancelTask(); // Close the modal after the operation is complete
+          editSound.play();
           document.querySelector('.notification').classList.add('-is-shown');
           setTimeout(() => {
           document.querySelector('.notification').classList.remove('-is-shown');
@@ -388,7 +391,7 @@ useEffect(() => {
   return (
     <>
     <div>
-      <section className="app" ref={taskNoteContainerRef} style={{ overflowY: isLoading ? "hidden" : "scroll"}}>
+      <section className="app" ref={taskNoteContainerRef}>
         <input id="ipt-toggle-modal" type="checkbox" checked={showModal} onChange={openModal}/>
         <label className="btn-toggle-modal" htmlFor="ipt-toggle-modal"> <span>+</span></label>
         <div className="notification"><i className="fa-solid fa-circle-check"></i> Task edited successfully</div>
