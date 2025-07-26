@@ -451,7 +451,7 @@ useEffect(() => {
         })}
         </div>
           
-        <div className="overlay">
+        <div className="overlay" style={{ overflowY: showModal ? "auto" : "hidden" }}>
           <p>Add task</p>
           <form className="modal">
            

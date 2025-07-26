@@ -525,7 +525,6 @@ button:disabled {
 }
 
 .tasks {
-  min-height: 600px;
   display: flex;
   flex-direction: column-reverse;
   word-wrap: break-word;
