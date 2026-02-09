@@ -107,7 +107,7 @@ const CommitsGraph = () => {
               value={commit.label}
               onChange={(e) => setCommit({ ...commit, label: e.target.value })}
               required
-              placeholder="Enter label"
+              placeholder="Enter your productive"
               minLength={3}
             />
           </div>
@@ -168,7 +168,7 @@ const CommitsGraph = () => {
         <div className="modal-overlay" onClick={() => setModalVisible(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2 style={{ textAlign: "center" }}>Commit Details</h2>
-            <p>{isConfirmingDelete ? <>Label : <b>{selectedCommit.label}</b></> : <><b>Label :</b> {selectedCommit.label}</>}</p>
+            <p>{isConfirmingDelete ? <>Productive : <b>{selectedCommit.label}</b></> : <><b>Label :</b> {selectedCommit.label}</>}</p>
             <p>{isConfirmingDelete ? <>Author : <b>{selectedCommit.author}</b></> : <><b>Author :</b> {selectedCommit.author}</>}</p>
             <p>{isConfirmingDelete ? <>Date :  <b>{selectedCommit.date}</b></> : <><b>Date :</b> {selectedCommit.date}</>}</p>
 
