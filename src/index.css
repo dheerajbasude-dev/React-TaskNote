@@ -1,43 +1,116 @@
-body {
+:root {
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  
+  /* Luxury Glassmorphism Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-card: rgba(255, 255, 255, 0.78);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.45);
+  --glass-bg-hover: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-border-subtle: rgba(255, 255, 255, 0.45);
+  --glass-border-accent: rgba(212, 98, 255, 0.4);
+  
+  --glass-shadow: 0 10px 30px -5px rgba(100, 116, 139, 0.08), 0 0 1px 1px rgba(255, 255, 255, 0.7) inset;
+  --glass-shadow-hover: 0 16px 36px -4px rgba(187, 0, 255, 0.14), 0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
+  --glass-shadow-glow: 0 12px 35px rgba(187, 0, 255, 0.22), 0 0 20px rgba(212, 98, 255, 0.15);
+  
+  --glass-blur: blur(18px);
+  --glass-blur-heavy: blur(28px);
+  
+  /* Curated Color Gradients */
+  --gradient-primary: linear-gradient(135deg, #bb00ff 0%, #D462FF 50%, #9000ff 100%);
+  --gradient-accent: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --gradient-emerald: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --gradient-rose: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  --gradient-amber: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  
+  /* Text & Accents */
+  --text-primary: #1e1b4b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --primary-color: #bb00ff;
+  --primary-light: #D462FF;
+  --primary-glow: rgba(187, 0, 255, 0.25);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  height: 100%;
+  font-family: var(--font-main);
+  color: var(--text-primary);
+  background: 
+    radial-gradient(at 0% 0%, rgba(224, 195, 252, 0.5) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(142, 197, 252, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 80%, rgba(255, 209, 220, 0.4) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(195, 207, 226, 0.45) 0px, transparent 50%),
+    #f8faff;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom Glass Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(187, 0, 255, 0.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(187, 0, 255, 0.5);
+}
+
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .arrow-ui {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    width: 30px;
-    height: 30px;
-    background-color: #c800ff;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .arrow-up {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-225deg);
-    width: 10px;
-    height: 10px;
-    border-left: 2px solid #fff;
-    border-bottom: 2px solid #fff;
-  }
-  
-  .arrow-ui:hover {
-    background-color: #8900b3;
-  }
-  
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: 42px;
+  height: 42px;
+  background: var(--gradient-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(187, 0, 255, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
 
+.arrow-ui:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(187, 0, 255, 0.5);
+}
+
+.arrow-up {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -40%) rotate(-225deg);
+  width: 10px;
+  height: 10px;
+  border-left: 2.5px solid #fff;
+  border-bottom: 2.5px solid #fff;
+}
