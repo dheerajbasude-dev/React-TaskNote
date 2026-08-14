@@ -745,57 +745,34 @@ button:disabled {
   margin-left: 10px;
   justify-content: flex-end;
   margin-top: 10px;
-  gap: 10px;
 }
 
-.task-timestamps-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.task-timestamp {
-  background: #f2f3f8;
-  padding: 5px 9px;
-  border-radius: 6px;
-  z-index: 2;
-  font-size: 0.76rem;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
+.task-status {
+  margin-right: 15px;
+  transform: translateX(20px);
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-weight: 700;
+  font-size: 0.85rem;
   -webkit-user-select: none;
       -ms-user-select: none;
           user-select: none;
   -moz-user-select: none;
 }
 
-.task-timestamp ion-icon {
-  font-size: 0.85rem;
-}
-
-.task-timestamp.task-updated-time {
-  background: rgba(187, 0, 255, 0.08);
-  color: #9d00d7;
-  border: 1px solid rgba(187, 0, 255, 0.15);
-}
-
-.spotlight-timestamps-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.spotlight-timestamp.updated {
-  background: rgba(187, 0, 255, 0.08);
-  color: #9d00d7;
-  border: 1px solid rgba(187, 0, 255, 0.15);
-  padding: 3px 8px;
+.task-timestamp {
+  background: #f2f3f8;
+  padding: 6px 10px;
   border-radius: 6px;
+  z-index: 2;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+  color: #666;
+  -webkit-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  -moz-user-select: none;
 }
 
 .task-index-badge {

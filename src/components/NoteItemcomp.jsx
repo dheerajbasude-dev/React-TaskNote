@@ -561,16 +561,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
                   <div className="task-footer">
                     <span className="task-status">Task completed</span>
-                    <div className="task-timestamps-group">
-                      <span className="task-timestamp task-created-time" title={`Created on: ${noteItem.date}`}>
-                        {noteItem.date}
-                      </span>
-                      {noteItem.updatedDate && (
-                        <span className="task-timestamp task-updated-time" title={`Last updated: ${noteItem.updatedDate}`}>
-                          <ion-icon name="sync-outline"></ion-icon> Updated: {noteItem.updatedDate}
-                        </span>
-                      )}
-                    </div>
+                    <span className="task-timestamp">{noteItem.date}</span>
                   </div>
 
                   <code className="task-index-badge">
@@ -721,16 +712,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </div>
 
                 <div className="spotlight-meta-row">
-                  <div className="spotlight-timestamps-box">
-                    <span className="spotlight-timestamp" title={`Created on: ${spotlightNote.date}`}>
-                      <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
-                    </span>
-                    {spotlightNote.updatedDate && (
-                      <span className="spotlight-timestamp updated" title={`Last updated: ${spotlightNote.updatedDate}`}>
-                        <ion-icon name="sync-outline"></ion-icon> Updated: {spotlightNote.updatedDate}
-                      </span>
-                    )}
-                  </div>
+                  <span className="spotlight-timestamp">
+                    <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
+                  </span>
                   <span className={`spotlight-status-pill ${spotlightNote.completed ? 'completed' : 'pending'}`}>
                     {spotlightNote.completed ? '✓ Completed' : '⚡ In Progress'}
                   </span>
