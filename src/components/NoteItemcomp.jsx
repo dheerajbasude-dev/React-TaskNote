@@ -566,7 +566,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </span>
                       {Boolean(noteItem.updatedDate && (noteItem.isEdited || noteItem.updatedDate !== noteItem.date)) && (
                         <span className="task-timestamp task-timestamp-updated" title="Edited date">
-                          <ion-icon name="create-outline"></ion-icon>
+                          <ion-icon name="create"></ion-icon>
                           {noteItem.updatedDate}
                         </span>
                       )}
@@ -704,7 +704,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   </span>
                 </div>
                 <button className="spotlight-close-btn" onClick={closeSpotlight} title="Close (Esc)">
-                  <ion-icon name="close-outline"></ion-icon>
+                  <ion-icon name="close"></ion-icon>
                 </button>
               </div>
 
@@ -723,11 +723,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 <div className="spotlight-meta-row">
                   <div className="spotlight-timestamps-group">
                     <span className="spotlight-timestamp" title="Created date">
-                      <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
+                      <ion-icon name="calendar"></ion-icon> {spotlightNote.date}
                     </span>
                     {Boolean(spotlightNote.updatedDate && (spotlightNote.isEdited || spotlightNote.updatedDate !== spotlightNote.date)) && (
                       <span className="spotlight-timestamp spotlight-timestamp-updated" title="Edited date">
-                        <ion-icon name="create-outline"></ion-icon> {spotlightNote.updatedDate}
+                        <ion-icon name="create"></ion-icon> {spotlightNote.updatedDate}
                       </span>
                     )}
                   </div>
@@ -740,7 +740,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 <div className="spotlight-timer-card">
                   <div className="spotlight-timer-header">
                     <div className="spotlight-timer-title">
-                      <ion-icon name="timer-outline"></ion-icon> Focus Timer
+                      <ion-icon name="timer"></ion-icon> Focus Timer
                     </div>
                     <div className="spotlight-timer-presets">
                       <button
@@ -787,7 +787,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         onClick={() => setTimerDuration(timerPreset)}
                         title="Reset Timer"
                       >
-                        <ion-icon name="refresh-outline"></ion-icon>
+                        <ion-icon name="refresh"></ion-icon>
                       </button>
                     </div>
                   </div>
@@ -799,7 +799,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     className={`spotlight-btn toggle-complete ${spotlightNote.completed ? 'completed' : ''}`}
                     onClick={() => toggleNoteCompletion(spotlightNote)}
                   >
-                    <ion-icon name={spotlightNote.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}></ion-icon>
+                    <ion-icon name="checkmark-circle"></ion-icon>
                     {spotlightNote.completed ? 'Completed' : 'Mark as Done'}
                   </button>
 
@@ -810,7 +810,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       updateNote(spotlightNote);
                     }}
                   >
-                    <ion-icon name="create-outline"></ion-icon>
+                    <ion-icon name="create"></ion-icon>
                     Edit Task
                   </button>
 
@@ -818,7 +818,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     className="spotlight-btn delete"
                     onClick={(e) => taskDeleted(e, spotlightNote)}
                   >
-                    <ion-icon name="trash-outline"></ion-icon>
+                    <ion-icon name="trash"></ion-icon>
                     Delete
                   </button>
                 </div>
@@ -832,7 +832,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   disabled={filteredNotes.length <= 1}
                   title="Previous Task (←)"
                 >
-                  <ion-icon name="arrow-back-outline"></ion-icon>
+                  <ion-icon name="arrow-back"></ion-icon>
                   <span>Previous</span>
                 </button>
 
@@ -848,7 +848,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   title="Next Task (→)"
                 >
                   <span>Next</span>
-                  <ion-icon name="arrow-forward-outline"></ion-icon>
+                  <ion-icon name="arrow-forward"></ion-icon>
                 </button>
               </div>
             </div>
