@@ -760,19 +760,46 @@ button:disabled {
   -moz-user-select: none;
 }
 
+.task-timestamps {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .task-timestamp {
   background: #f2f3f8;
-  padding: 6px 10px;
+  padding: 5px 9px;
   border-radius: 6px;
   z-index: 2;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   color: #666;
   -webkit-user-select: none;
       -ms-user-select: none;
           user-select: none;
   -moz-user-select: none;
+}
+
+.task-timestamp.task-timestamp-updated {
+  background: rgba(187, 0, 255, 0.08);
+  color: #9d00d6;
+  border: 1px solid rgba(187, 0, 255, 0.15);
+}
+
+.spotlight-timestamps-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.spotlight-timestamp-updated {
+  color: #bb00ff !important;
+  font-weight: 700;
 }
 
 .task-index-badge {

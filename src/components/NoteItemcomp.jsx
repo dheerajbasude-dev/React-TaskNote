@@ -561,7 +561,16 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
                   <div className="task-footer">
                     <span className="task-status">Task completed</span>
-                    <span className="task-timestamp">{noteItem.date}</span>
+                    <div className="task-timestamps">
+                      <span className="task-timestamp" title="Added date">
+                        {noteItem.date}
+                      </span>
+                      {noteItem.updatedDate && noteItem.updatedDate !== noteItem.date && (
+                        <span className="task-timestamp task-timestamp-updated" title="Last updated date">
+                          Updated: {noteItem.updatedDate}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <code className="task-index-badge">
@@ -712,9 +721,16 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </div>
 
                 <div className="spotlight-meta-row">
-                  <span className="spotlight-timestamp">
-                    <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
-                  </span>
+                  <div className="spotlight-timestamps-group">
+                    <span className="spotlight-timestamp" title="Added date">
+                      <ion-icon name="calendar-outline"></ion-icon> Added: {spotlightNote.date}
+                    </span>
+                    {spotlightNote.updatedDate && spotlightNote.updatedDate !== spotlightNote.date && (
+                      <span className="spotlight-timestamp spotlight-timestamp-updated" title="Last updated date">
+                        <ion-icon name="create-outline"></ion-icon> Updated: {spotlightNote.updatedDate}
+                      </span>
+                    )}
+                  </div>
                   <span className={`spotlight-status-pill ${spotlightNote.completed ? 'completed' : 'pending'}`}>
                     {spotlightNote.completed ? '✓ Completed' : '⚡ In Progress'}
                   </span>
