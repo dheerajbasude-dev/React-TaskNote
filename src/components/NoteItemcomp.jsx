@@ -582,94 +582,96 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           </div>
 
           {/* Add / Edit Task Modal */}
-          <div className="overlay" style={{ overflowY: showModal ? 'auto' : 'hidden' }}>
-            <p>Add task</p>
-            <form className="modal" onSubmit={handleAddTask}>
-              <label htmlFor="task-title">Title</label>
-              <input
-                id="task-title"
-                name="title"
-                value={note.title}
-                type="text"
-                onChange={onChange}
-                minLength={3}
-                placeholder="What's on your mind?"
-                required
-              />
-              <label htmlFor="task-desc">Description</label>
-              <textarea
-                id="task-desc"
-                name="description"
-                value={note.description}
-                rows={1}
-                style={{ overflow: 'hidden', resize: 'none' }}
-                onChange={(e) => {
-                  onChange(e);
-                  handleDescriptionInput(e);
-                }}
-                minLength={5}
-                placeholder="What's the description?"
-                required
-              ></textarea>
-              <span>Priority</span>
+          {showModal && (
+            <div className="overlay" onClick={(e) => { if (e.target === e.currentTarget) handleCancelTask(); }}>
+              <p>{isEditing ? 'Edit task' : 'Add task'}</p>
+              <form className="modal" onSubmit={handleAddTask} onClick={(e) => e.stopPropagation()}>
+                <label htmlFor="task-title">Title</label>
+                <input
+                  id="task-title"
+                  name="title"
+                  value={note.title}
+                  type="text"
+                  onChange={onChange}
+                  minLength={3}
+                  placeholder="What's on your mind?"
+                  required
+                />
+                <label htmlFor="task-desc">Description</label>
+                <textarea
+                  id="task-desc"
+                  name="description"
+                  value={note.description}
+                  rows={2}
+                  style={{ resize: 'none' }}
+                  onChange={(e) => {
+                    onChange(e);
+                    handleDescriptionInput(e);
+                  }}
+                  minLength={5}
+                  placeholder="What's the description?"
+                  required
+                ></textarea>
+                <span>Priority</span>
 
-              <div className="priority">
-                <input
-                  id="high"
-                  type="radio"
-                  name="priority"
-                  value="high"
-                  checked={note.tag === 'high'}
-                  onChange={() => setNote({ ...note, tag: 'high' })}
-                />
-                <label htmlFor="high">High</label>
-                <input
-                  id="medium"
-                  type="radio"
-                  name="priority"
-                  value="medium"
-                  checked={note.tag === 'medium'}
-                  onChange={() => setNote({ ...note, tag: 'medium' })}
-                />
-                <label htmlFor="medium">Medium</label>
-                <input
-                  id="low"
-                  type="radio"
-                  name="priority"
-                  value="low"
-                  checked={note.tag === 'low'}
-                  onChange={() => setNote({ ...note, tag: 'low' })}
-                />
-                <label htmlFor="low">Low</label>
-              </div>
+                <div className="priority">
+                  <input
+                    id="high"
+                    type="radio"
+                    name="priority"
+                    value="high"
+                    checked={note.tag === 'high'}
+                    onChange={() => setNote({ ...note, tag: 'high' })}
+                  />
+                  <label htmlFor="high">High</label>
+                  <input
+                    id="medium"
+                    type="radio"
+                    name="priority"
+                    value="medium"
+                    checked={note.tag === 'medium'}
+                    onChange={() => setNote({ ...note, tag: 'medium' })}
+                  />
+                  <label htmlFor="medium">Medium</label>
+                  <input
+                    id="low"
+                    type="radio"
+                    name="priority"
+                    value="low"
+                    checked={note.tag === 'low'}
+                    onChange={() => setNote({ ...note, tag: 'low' })}
+                  />
+                  <label htmlFor="low">Low</label>
+                </div>
 
-              <div className="modal-btns">
-                {isbtnLoading ? (
-                  <div className="loader-btn-add-task">
-                    <button disabled={true} style={{ background: '#dfe1e9' }}>
-                      <DotPulse size={40} color="#bb00ff" />
+                <div className="modal-btns">
+                  {isbtnLoading ? (
+                    <div className="loader-btn-add-task">
+                      <button disabled={true} style={{ background: '#dfe1e9' }}>
+                        <DotPulse size={40} color="#bb00ff" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      disabled={note.title.length < 3 || note.description.length < 5}
+                      className="btn-add-task"
+                      type="submit"
+                    >
+                      {isEditing ? 'Save note' : 'Add note'}
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    disabled={note.title.length < 3 || note.description.length < 5}
-                    className="btn-add-task"
-                    type="submit"
-                  >
-                    Add note
-                  </button>
-                )}
+                  )}
 
-                {isbtnLoading ? (
-                  <div className="btn-cancel-task"></div>
-                ) : (
-                  <div className="btn-cancel-task" onClick={handleCancelTask}>
-                    Cancel
-                  </div>
-                )}
-              </div>
-            </form>
-          </div>
+                  {isbtnLoading ? (
+                    <div className="btn-cancel-task"></div>
+                  ) : (
+                    <div className="btn-cancel-task" onClick={handleCancelTask}>
+                      Cancel
+                    </div>
+                  )}
+                </div>
+              </form>
+            </div>
+          )}
         </section>
 
         {/* Scroll to Top Button */}
