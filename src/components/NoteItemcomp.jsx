@@ -513,11 +513,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 >
                   <div className="task-header">
                     <div className="left-side">
-                      {isFirstTask && (
-                        <span className="spotlight-badge" title="Current Focus Task">
-                          <ion-icon name="flash"></ion-icon> Spotlight
-                        </span>
-                      )}
                       <ion-icon
                         name="flame"
                         id="flame-color"
@@ -699,7 +694,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     Task {currentSpotlightIndex + 1} of {filteredNotes.length}
                   </span>
                 </div>
-                <button className="spotlight-close-btn" onClick={closeSpotlight} title="Close Spotlight (Esc)">
+                <button className="spotlight-close-btn" onClick={closeSpotlight} title="Close (Esc)">
                   <ion-icon name="close-outline"></ion-icon>
                 </button>
               </div>
