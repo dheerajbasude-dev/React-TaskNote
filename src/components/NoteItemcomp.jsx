@@ -498,9 +498,10 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             {filteredNotes.map((noteItem, index) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
+              const isFirstTask = index === filteredNotes.length - 1;
               return (
                 <div
-                  className={`task ${noteItem.completed ? '-is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
+                  className={`task ${noteItem.completed ? '-is-completed' : ''} ${isFirstTask ? 'is-spotlight-first' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
                   key={noteItem._id}
                   draggable={true}
@@ -512,29 +513,21 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 >
                   <div className="task-header">
                     <div className="left-side">
-                      <span className="drag-handle" title="Drag to reorder task">
-                        <ion-icon name="grid-outline"></ion-icon>
-                      </span>
+                      {isFirstTask && (
+                        <span className="spotlight-badge" title="Current Focus Task">
+                          <ion-icon name="flash"></ion-icon> Spotlight
+                        </span>
+                      )}
                       <ion-icon
                         name="flame"
                         id="flame-color"
                         style={{ color: getFlameColor(noteItem.tag) }}
                       ></ion-icon>
-                      <span className="task-title" onClick={() => openSpotlight(noteItem)} title="Click to open in Spotlight">
+                      <span className="task-title">
                         {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                       </span>
                     </div>
                     <div className="right-side">
-                      <div
-                        className="btn-spotlight-task"
-                        title="Spotlight Focus Mode"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openSpotlight(noteItem);
-                        }}
-                      >
-                        <ion-icon name="scan-outline"></ion-icon>
-                      </div>
                       <div
                         className="btn-edit-task"
                         title="Edit task"
@@ -565,7 +558,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     </div>
                   </div>
 
-                  <div className="task-body" onClick={() => openSpotlight(noteItem)} title="Click to focus on this task">
+                  <div className="task-body">
                     <span className="task-description">
                       {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
                     </span>

@@ -536,22 +536,61 @@ button:disabled {
 }
 
 .task {
-  padding: 14px 18px 0px 14px;
+  padding: 15px 20px 0px 15px;
   margin-bottom: 10px;
   width: 520px;
   background: #ffffff;
-  border-radius: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
   position: relative;
-  cursor: pointer;
+  cursor: grab;
+}
+
+.task:active {
+  cursor: grabbing;
 }
 
 .task:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(187, 0, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(187, 0, 255, 0.12);
   border-color: rgba(187, 0, 255, 0.2);
+}
+
+/* Spotlight Highlight for the First / Top Focus Task */
+.task.is-spotlight-first {
+  border: 1.5px solid #D462FF;
+  box-shadow: 0 10px 30px rgba(187, 0, 255, 0.18), 0 0 18px rgba(212, 98, 255, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #faf6ff 100%);
+  transform: scale(1.01);
+  margin-bottom: 14px;
+}
+
+.task.is-spotlight-first:hover {
+  transform: scale(1.02) translateY(-2px);
+  box-shadow: 0 14px 35px rgba(187, 0, 255, 0.25), 0 0 24px rgba(212, 98, 255, 0.2);
+}
+
+.spotlight-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #D462FF 0%, #bb00ff 100%);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  margin-right: 6px;
+  box-shadow: 0 2px 8px rgba(187, 0, 255, 0.35);
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.spotlight-badge ion-icon {
+  font-size: 0.75rem;
 }
 
 .task.is-dragging {
@@ -565,27 +604,6 @@ button:disabled {
   border-top: 3px solid #bb00ff !important;
   transform: translateY(4px);
   box-shadow: 0 6px 20px rgba(187, 0, 255, 0.25);
-}
-
-.drag-handle {
-  cursor: grab;
-  color: #c4c7d4;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 8px;
-  font-size: 1.15rem;
-  transition: all 0.2s ease;
-  vertical-align: middle;
-}
-
-.drag-handle:hover {
-  color: #bb00ff;
-  transform: scale(1.2);
-}
-
-.drag-handle:active {
-  cursor: grabbing;
 }
 
 .task.-is-completed {
@@ -638,19 +656,19 @@ button:disabled {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .left-side {
-  width: calc(100% - 130px);
+  width: calc(100% - 100px);
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
 }
 .left-side > ion-icon#flame-color {
-  margin-right: 6px;
-  font-size: 1.1rem;
+  margin-right: 8px;
+  font-size: 1.15rem;
 }
 
 .task-title {
@@ -658,11 +676,6 @@ button:disabled {
   font-weight: 700;
   color: #1a1a2e;
   display: inline;
-  transition: color 0.2s ease;
-}
-
-.task:hover .task-title {
-  color: #bb00ff;
 }
 
 .task-title-skeleton{
@@ -679,66 +692,56 @@ button:disabled {
 }
 
 .right-side {
+  width: 90px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
   transform: translateY(-2px);
   margin-top: 2px;
 }
 
-.btn-spotlight-task,
 .btn-edit-task,
 .btn-complete-task,
 .btn-remove-task {
   transition: all 0.2s ease;
   position: relative;
-  width: 28px;
-  height: 24px;
+  width: 26px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 6px;
-}
-
-.btn-spotlight-task {
-  background: rgba(187, 0, 255, 0.08);
-  color: #bb00ff;
-}
-.btn-spotlight-task:hover {
-  background: #bb00ff;
-  color: #ffffff;
-  transform: scale(1.15);
-  box-shadow: 0 0 10px rgba(187, 0, 255, 0.4);
+  border-radius: 5px;
 }
 
 .btn-edit-task {
-  background: rgba(98, 125, 254, 0.08);
+  background: rgba(98, 125, 254, 0);
   color: #627DFE;
 }
 .btn-edit-task:hover {
-  background: #627DFE;
-  color: #ffffff;
+  background: rgba(98, 125, 254, 0.12);
+  color: #627DFE;
   transform: scale(1.15);
 }
 
 .btn-complete-task {
-  background: rgba(0, 196, 121, 0.08);
+  background: rgba(0, 196, 121, 0);
   color: #00c479;
 }
 .btn-complete-task:hover {
-  background: #00c479;
-  color: #ffffff;
+  background: rgba(0, 196, 121, 0.12);
+  color: #00c479;
   transform: scale(1.15);
 }
 
 .btn-remove-task {
-  background: rgba(244, 83, 102, 0.08);
+  background: rgba(244, 83, 102, 0);
   color: #F45366;
 }
 .btn-remove-task:hover {
-  background: #F45366;
-  color: #ffffff;
+  background: rgba(244, 83, 102, 0.12);
+  color: #F45366;
   transform: scale(1.15);
 }
 
