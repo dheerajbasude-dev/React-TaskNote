@@ -1,84 +1,76 @@
-/* ==========================================================================
-   SHIMMERING GLASS SKELETON LOADERS
-   ========================================================================== */
-
 @keyframes react-loading-skeleton {
-  100% {
-    transform: translateX(100%);
+    100% {
+      transform: translateX(100%);
+    }
   }
-}
-
-.react-loading-skeleton {
-  --base-color: rgba(255, 255, 255, 0.55);
-  --highlight-color: rgba(255, 255, 255, 0.95);
-  --animation-duration: 1.6s;
-  --animation-direction: normal;
-  --pseudo-element-display: block;
-
-  background-color: var(--base-color);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  width: 100%;
-  border-radius: 12px;
-  display: inline-flex;
-  line-height: 1;
-  position: relative;
-  user-select: none;
-  overflow: hidden;
-  z-index: 1;
-}
-
-.react-loading-skeleton::after {
-  content: ' ';
-  display: var(--pseudo-element-display);
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-image: linear-gradient(
-    90deg,
-    var(--base-color),
-    var(--highlight-color),
-    var(--base-color)
-  );
-  transform: translateX(-100%);
-  animation-name: react-loading-skeleton;
-  animation-direction: var(--animation-direction);
-  animation-duration: var(--animation-duration);
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-@media (prefers-reduced-motion) {
+  
   .react-loading-skeleton {
-    --pseudo-element-display: none;
+    --base-color: #ebebeb;
+    --highlight-color: #f5f5f5;
+    --animation-duration: 1.5s;
+    --animation-direction: normal;
+    --pseudo-element-display: block; /* Enable animation */
+  
+    background-color: var(--base-color);
+  
+    width: 100%;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    line-height: 1;
+  
+    position: relative;
+    user-select: none;
+    overflow: hidden;
+    z-index: 1; /* Necessary for overflow: hidden to work correctly in Safari */
   }
-}
+  
+  .react-loading-skeleton::after {
+    content: ' ';
+    display: var(--pseudo-element-display);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(
+      90deg,
+      var(--base-color),
+      var(--highlight-color),
+      var(--base-color)
+    );
+    transform: translateX(-100%);
+  
+    animation-name: react-loading-skeleton;
+    animation-direction: var(--animation-direction);
+    animation-duration: var(--animation-duration);
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  
+  @media (prefers-reduced-motion) {
+    .react-loading-skeleton {
+      --pseudo-element-display: none; /* Disable animation */
+    }
+  }
 
-.commits-btn {
-  outline: none;
-  border: none;
-  margin-left: 20px;
-  background: var(--gradient-primary, linear-gradient(135deg, #bb00ff 0%, #D462FF 100%));
-  color: #ffffff;
-  font-family: var(--font-main);
-  font-weight: 700 !important;
-  cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 20px;
-  box-shadow: 0 4px 14px rgba(187, 0, 255, 0.35);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  -webkit-tap-highlight-color: transparent;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+  .commits-btn{
+    outline: none;
+    border: none;
+    margin-left: 30px;
+    position: relative;
+    bottom: 2px;
+    background: #D462FF;
+    color:black;
+    font-weight: bold !important;
+    border: none;
+    cursor: pointer;
+    padding: 10px 13px 10px 13px;
+    border-radius: 20px;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-.commits-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(187, 0, 255, 0.5);
-  filter: brightness(1.08);
-}
+  
+  .commits-btn:hover{
+    background: #bc02ff;
+  }
