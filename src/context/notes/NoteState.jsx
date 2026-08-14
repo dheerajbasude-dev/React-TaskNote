@@ -180,65 +180,49 @@ const NoteState = (props) => {
 
   
       
-      // Helper to generate formatted timestamp matching backend
-      const getFormattedCurrentDate = () => {
-        const currentDate = new Date();
-        const options = {
-          timeZone: 'Asia/Kolkata',
-          weekday: 'short',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        };
-        let formattedDate = currentDate.toLocaleString('en-US', options);
-        formattedDate = formattedDate.replace(/,/g, '');
-        const parts = formattedDate.split(' ');
-        const [dayOfWeek, datePart, timePart, amPm] = parts;
-        const [month, day, year] = datePart.split('/');
-        return `${dayOfWeek} ${day}-${month}-${year} ${timePart}${amPm}`;
-      };
-
       // Edit a note
-      const editNote = async (id, title, description, tag) => {
+      const editNote = async (id, title, description, tag) =>{
+        // api call, to edit put request in the api
         try {
-          const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
-            method: "put",
-            headers: {
-              'Content-Type': 'application/json',
-              'auth-token': localStorage.getItem('token')
-            },
-            body: JSON.stringify({ title, description, tag })
-          });
+        const response = await fetch(`${host}/api/notes/updatenote/${id}` , {
+          method: "put",
+          headers: {
+            'Content-Type':'application/json',
+            'auth-token':localStorage.getItem('token')
+          },
+          body:JSON.stringify({title, description, tag})
+        });
+        /*This is being used by practice*/ 
+        // const json =  await response.json();
+        // console.log(json)
 
-          if (response.ok) {
-            const json = await response.json();
-            const updatedDate = (json.note && json.note.updatedDate) || getFormattedCurrentDate();
-
-            setNotes((prevNotes) =>
-              prevNotes.map((item) =>
-                item._id === id
-                  ? {
-                      ...item,
-                      title,
-                      description,
-                      tag,
-                      updatedDate: updatedDate,
-                    }
-                  : item
-              )
-            );
-
-            await getNotes();
-          } else {
-            console.error("Failed to edit note:", response.status);
-          }
-        } catch (error) {
-          console.error("Error editing note:", error);
+        if (response.ok) {
+          // Fetch the updated list of notes after editing
+          await getNotes();
+          
+          let newNotes = JSON.parse(JSON.stringify(notes))
+        // Logic to edit the note in client
+        for (let index = 0; index <  newNotes.length; index++) {
+          const element =  newNotes[index];   
+          if (element._id === id){
+            newNotes[index].title = title;
+            newNotes[index].description = description;
+            newNotes[index].tag = tag;
+            break;
+          } 
         }
-      };
+        // console.log("updating the note" + id)
+        setNotes(newNotes);
+
+        } else {
+          console.error("Failed to edit note:", response.status);
+        }
+      } catch (error) {
+        console.error("Error editing note:", error)
+      }
+
+
+      }
       
       // Delete a note
       const deleteNote = async (id) =>{
