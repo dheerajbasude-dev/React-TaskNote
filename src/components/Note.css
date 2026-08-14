@@ -744,7 +744,7 @@ button:disabled {
   align-items: center;
   margin-left: 10px;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .task-status {
@@ -770,24 +770,32 @@ button:disabled {
 
 .task-timestamp {
   background: #f2f3f8;
-  padding: 5px 9px;
+  padding: 4px 8px;
   border-radius: 6px;
   z-index: 2;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  color: #666;
+  gap: 4px;
+  color: #555;
   -webkit-user-select: none;
       -ms-user-select: none;
           user-select: none;
   -moz-user-select: none;
+  transition: all 0.2s ease;
 }
 
 .task-timestamp.task-timestamp-updated {
   background: rgba(187, 0, 255, 0.08);
   color: #9d00d6;
-  border: 1px solid rgba(187, 0, 255, 0.15);
+  border: 1px solid rgba(187, 0, 255, 0.18);
+  font-weight: 700;
+}
+
+.task-timestamp.task-timestamp-updated ion-icon {
+  font-size: 0.85rem;
+  color: #bb00ff;
 }
 
 .spotlight-timestamps-group {
