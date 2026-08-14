@@ -564,7 +564,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       <span className="task-timestamp" title="Created date">
                         {noteItem.date}
                       </span>
-                      {noteItem.updatedDate && noteItem.updatedDate !== noteItem.date && (
+                      {noteItem.updatedDate && (
                         <span className="task-timestamp task-timestamp-updated" title="Edited date">
                           <ion-icon name="create-outline"></ion-icon>
                           {noteItem.updatedDate}
@@ -725,7 +725,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     <span className="spotlight-timestamp" title="Created date">
                       <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
                     </span>
-                    {spotlightNote.updatedDate && spotlightNote.updatedDate !== spotlightNote.date && (
+                    {spotlightNote.updatedDate && (
                       <span className="spotlight-timestamp spotlight-timestamp-updated" title="Edited date">
                         <ion-icon name="create-outline"></ion-icon> {spotlightNote.updatedDate}
                       </span>
