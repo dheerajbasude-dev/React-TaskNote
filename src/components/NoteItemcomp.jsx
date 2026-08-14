@@ -566,7 +566,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </span>
                       {Boolean(noteItem.updatedDate && (noteItem.isEdited || noteItem.updatedDate !== noteItem.date)) && (
                         <span className="task-timestamp task-timestamp-updated" title="Edited date">
-                          <ion-icon name="create"></ion-icon>
                           {noteItem.updatedDate}
                         </span>
                       )}
