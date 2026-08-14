@@ -10,11 +10,16 @@ import CommitsGraph from './components/CommitsGraph';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState('All');
+  const [selectedPriority, setSelectedPriority] = useState(
+    () => localStorage.getItem('tasknote_selected_priority') || 'All'
+  );
 
   const handleSearchChange = (newValue, newPriority) => {
     setSearchQuery(newValue);
-    setSelectedPriority(newPriority);
+    if (newPriority !== undefined) {
+      setSelectedPriority(newPriority);
+      localStorage.setItem('tasknote_selected_priority', newPriority);
+    }
   };
 
   return (

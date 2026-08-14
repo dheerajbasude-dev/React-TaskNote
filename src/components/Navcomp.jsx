@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import './Skeleton.css';
 
-const Navcomp = ({ searchQuery, onSearchChange }) => {
+const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const [selectedPriority, setSelectedPriority] = useState('All');
   const [suggestions, setSuggestions] = useState(['/commits']);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -31,7 +30,7 @@ const Navcomp = ({ searchQuery, onSearchChange }) => {
 
   const handlePriorityChange = (e) => {
     const newValue = e.target.value;
-    setSelectedPriority(newValue);
+    localStorage.setItem('tasknote_selected_priority', newValue);
     onSearchChange(searchQuery, newValue);
     setIsMenuVisible(false);
   };
