@@ -1,403 +1,341 @@
-body{
-  overflow-y: auto;
-}  
-  
-  .page-container {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 20px;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  
-  /* Form Styles */
-  .form-commit {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center content horizontally */
-    gap: 15px; /* Space between form elements */
-    background-color: #f4f4f4;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 400px;
-  }
+/* ========================================================================== */
+/* COMMITS TIMELINE & DASHBOARD - ULTRA-PREMIUM REDESIGN                      */
+/* ========================================================================== */
 
-  /* CSS for centering the heading */
+.page-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 24px;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 1. Commit Form Card                                                        */
+/* -------------------------------------------------------------------------- */
+.form-commit {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background-color: #ffffff;
+  padding: 28px 24px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  max-width: 380px;
+  transition: all var(--transition-normal);
+}
+
 .head-commit {
-  text-align: center; /* Center horizontally */
-  font-size: 24px; /* Adjust font size */
-  font-weight: bold; /* Make it bold */
-  color: #333; /* Dark color for visibility */
-  margin-bottom: 15px; /* Add spacing below the heading */
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+  margin: 0 0 6px 0;
+  text-align: center;
 }
 
-  
-  .form-commit .form-group {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .form-commit .form-group label {
-    font-size: 14px;
-    margin-bottom: 5px;
-    color: #333;
-  }
-  
-  .form-commit .form-group input {
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    width: 100%;
-  }
-  
-  .form-commit button {
-    padding: 10px 20px;
-    background-color: #007aff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    align-self: flex-start;
-    transition: background-color 0.3s ease;
-    border-radius: 20px;
-  }
-  
-  .form-commit button:hover {
-    background-color: #005bb5;
-  }
-  
-  /* Scrollable Graph Center */
-  .graph-center {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    max-width: 400px;
-    height: 700px; /* Set the visible height of the graph */
-    background-color: rgb(23, 7, 54);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  .commit-graph {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    width: 100%;
-  }
-  
-  .commit-node {
-    display: flex;
-    align-items: center;
-    position: relative;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    cursor: pointer;
-    user-select: none;
-  }
-  
-  .commit-circle {
-    width: 12px;
-    height: 12px;
-    background-color: #007aff;
-    border-radius: 50%;
-    margin-right: 10px;
-    position: relative;
-    transition: transform 0.3s ease;
-    cursor: pointer;
-    margin: 0;
-  }
-  
-  .commit-circle:hover {
-    transform: scale(1.2);
-    transition: all 0.3s ease; /* Smooth transition for hover effect */
-  }
-  
-  .commit-node:hover .commit-circle {
-    transform: scale(1.2);
-    transition: all 0.3s ease; /* Smooth animation */
-  }
-  
-  .commit-circle::after {
-    content: "";
-    width: 1.5px;
-    height: 20px;
-    background-color: #007aff;
-    position: absolute;
-    bottom: -22px;
-    left: 5px;
-  }
+.form-commit .form-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
 
-  .commit-circle::before {
-    position: relative;
-    bottom: 11px;
-    content: " __ "; /* Arrow pointing to the text */
-    font-size: 14px;
-    color: #007aff; /* Blue color for the arrow */
-    margin-left: 7px; /* Adjust spacing between the circle and arrow */
+.form-commit .form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
 
-  }
-  
-  .commit-node:last-child .commit-circle::after {
-    display: none;
-  }
-  
-  .commit-label {
-    display: flex;
-    flex-direction: column;
-    margin-left: 12px;
-  }
-  
-  .commit-node:hover .commit-label span,
-  .commit-node:hover .commit-label small {
-    color: rgb(246, 183, 66);
-  }
-  
-  .commit-label span {
-    font-size: 14px;
-    font-weight: bold;
-    color: #ffffff;
-  }
-  
-  .commit-label small {
-    font-size: 12px;
-    color: #8b8a8a;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .form-commit,
-    .graph-center {
-      width: 90%;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .commit-label span {
-      font-size: 12px;
-    }
-  
-    .commit-label small {
-      font-size: 10px;
-    }
-  
-    .form-commit button {
-      width: 100%;
-    }
-  }
-  
+.form-commit .form-group input {
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  width: 100%;
+  outline: none;
+  transition: all var(--transition-fast);
+}
 
-.notes-link{
+.form-commit .form-group input:focus {
+  background: #ffffff;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.commit-form-btn {
+  padding: 11px 20px;
+  background: var(--brand-gradient);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.commit-form-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5);
+}
+
+.notes-link {
   text-decoration: none;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+  margin-top: 4px;
+  transition: color var(--transition-fast);
+}
+
+.notes-link:hover {
+  color: var(--brand-primary-hover);
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 2. Interactive Commit Timeline Graph                                       */
+/* -------------------------------------------------------------------------- */
+.graph-center {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 440px;
+  height: 650px;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 100%);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.4);
+}
+
+.commit-graph {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 22px;
+}
+
+.commit-node {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  cursor: pointer;
   user-select: none;
+  transition: all var(--transition-fast);
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
 }
 
-.notes-link:hover{
-  color: #bb00ff;
+.commit-node:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* 
- */
+.commit-circle {
+  width: 14px;
+  height: 14px;
+  background-color: var(--brand-primary);
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.6);
+  transition: transform var(--transition-fast);
+  position: relative;
+}
 
- /* Modal Styles */
-/* Modal Styles */
+.commit-node:hover .commit-circle {
+  transform: scale(1.3);
+  background-color: #c026d3;
+  box-shadow: 0 0 15px rgba(192, 38, 211, 0.8);
+}
+
+/* Connecting Line Between Commits */
+.commit-circle::after {
+  content: "";
+  width: 2px;
+  height: 28px;
+  background: linear-gradient(180deg, var(--brand-primary) 0%, rgba(139, 92, 246, 0.2) 100%);
+  position: absolute;
+  top: 14px;
+  left: 6px;
+}
+
+.commit-node:last-child .commit-circle::after {
+  display: none;
+}
+
+.commit-label {
+  display: flex;
+  flex-direction: column;
+  margin-left: 14px;
+  gap: 2px;
+}
+
+.commit-label span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.commit-node:hover .commit-label span {
+  color: #e879f9;
+}
+
+.commit-label small {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3. Commit Detail & Delete Modal                                            */
+/* -------------------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: modalFadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 400px;
+  background: #ffffff;
+  padding: 26px 28px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  max-width: 420px;
   width: 90%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  position: relative;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.3);
+  animation: modalScaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-content h2 {
-  margin-bottom: 15px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+  margin-top: 0;
+  margin-bottom: 18px;
 }
 
 .modal-content p {
-  font-size: 14px;
-  margin: 0 0 10px 10px;
-  color: #333;
+  font-size: 0.92rem;
+  margin: 0 0 10px 0;
+  color: var(--text-body);
 }
 
-/* Modal button container for Delete and Close buttons */
+.modal-content p b {
+  color: var(--text-main);
+}
+
 .modal-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
 }
 
 .modal-buttons button {
-  padding: 10px 20px;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-  border-radius: 20px;
+  border: none;
+  transition: all var(--transition-fast);
 }
 
-.modal-buttons button:hover {
-  background-color: #005bb5;
-}
-
-/* Style for delete button (left side) */
 .modal-buttons .delete-btn {
-  background-color: #ff4c4c;
-  color: white;
+  background-color: var(--status-danger);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .modal-buttons .delete-btn:hover {
-  background-color: #d04e4e;
+  background-color: #dc2626;
+  transform: translateY(-1px);
 }
 
-/* Style for close button (right side) */
 .modal-buttons .close-btn {
-  background-color: #007aff;
-  color: white;
+  background-color: var(--bg-subtle);
+  color: var(--text-body);
+  border: 1px solid var(--border-color);
 }
 
 .modal-buttons .close-btn:hover {
-  background-color: #005bb5;
+  background-color: var(--bg-subtle-hover);
+  color: var(--text-main);
 }
 
-/* Add an active class for the selected commit-node */
-.commit-node.active {
-  background-color: #f0f0f0;
-  border-color: #007aff;
-}
-
-/* Commit Circle Highlight for Selected Node */
-.commit-node.active .commit-circle {
-  background-color: #007aff;
-  border: 2px solid #005bb5;
-  transform: scale(1.2);
-}
-
-.commit-node.active .commit-label span {
-  color: #007aff;
-}
-
-/* Scrollable Graph Center */
-.commit-graph .commit-node.selected {
-  border: 2px solid #007aff;
-}
-
-.commit-graph .commit-node.selected .commit-circle {
-  background-color: #007aff;
-}
-
-/* Graph Section: When the Commit is Clicked */
-.commit-node.selected .commit-label span {
-  font-weight: bold;
-  color: #007aff;
-}
-
-.loader-btn-add-task-commits button:disabled {
-  width: 100%;
-  cursor: not-allowed;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -moz-user-select: none;
-  transition: all 0.2s ease;
-  border: none;
-  flex: 1;
-  opacity: 1;
+/* Floating Notification Toast */
+.notification-bar {
+  position: fixed;
+  top: 74px;
+  right: 24px;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  background: none !important;
-  height: 72.5px;
+  gap: 8px;
+  background-color: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--status-success);
+  z-index: 1000;
+  animation: popoverFadeIn 0.25s ease-out;
 }
 
-/* Responsive Design: Stack the buttons on smaller screens */
-@media (max-width: 600px) {
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .page-container {
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 14px;
+  }
+
+  .form-commit,
+  .graph-center {
+    max-width: 100%;
+    width: 100%;
+  }
+
   .modal-buttons {
     flex-direction: column;
-    gap: 10px;
   }
 
   .modal-buttons button {
     width: 100%;
-    font-size: 16px;
   }
-}
-
-
-.loader-btn-add-task-commits button:disabled{
-  width: 100%;
-  -webkit-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  -moz-user-select: none;
-  transition: all 0.2s ease;
-  border: none;
-  flex: 1;
-  opacity: 1;
-  cursor: not-allowed;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  background: none !important;
-  height: 72.5px;
-}
-
-.loader-btn-add-task-commits-delete button:disabled{
-  width: 100%;
-  -webkit-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  -moz-user-select: none;
-  transition: all 0.2s ease;
-  border: none;
-  flex: 1;
-  opacity: 1;
-  cursor: not-allowed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  background: none !important;
-  height: 37px;
-}
-
-.notification-bar {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: rgb(0, 255, 153);
-  transition: all 0.3s ease;
 }
