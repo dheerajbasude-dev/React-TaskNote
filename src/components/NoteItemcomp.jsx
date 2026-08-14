@@ -14,13 +14,17 @@ import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
 const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
-  // Sounds effects
-  const AddSound = useRef(new Audio(AddTaskSound)).current;
-  const completeSound = useRef(new Audio(TaskCompletedSound)).current;
-  const unCompleteSound = useRef(new Audio(UnCompletedTaskSound)).current;
-  const DeletedSound1 = useRef(new Audio(TaskDeleted1Sound)).current;
-  const DeletedSound2 = useRef(new Audio(TaskDeleted2Sound)).current;
-  const editSound = useRef(new Audio(EditTaskSound)).current;
+  // Lazy sound effect helper (prevents ERR_CACHE_OPERATION_NOT_SUPPORTED on page load)
+  const playSound = useCallback((soundFile) => {
+    try {
+      const audio = new Audio(soundFile);
+      audio.play().catch(() => {
+        // Silently catch autoplay browser restrictions
+      });
+    } catch (e) {
+      console.warn('Audio playback error:', e);
+    }
+  }, []);
 
   // Scroll to top
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -112,12 +116,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Sound helper for delete
   const playRandomDeleteSound = () => {
-    const randomIndex = Math.floor(Math.random() * 2);
-    if (randomIndex === 0) {
-      DeletedSound1.play();
-    } else {
-      DeletedSound2.play();
-    }
+    playSound(Math.random() < 0.5 ? TaskDeleted1Sound : TaskDeleted2Sound);
   };
 
   // Filter notes based on search query, priority & custom drag order
@@ -174,7 +173,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           }
           if (prev <= 1) {
             setIsTimerRunning(false);
-            try { AddSound.play(); } catch (e) {}
+            playSound(AddTaskSound);
             return 0;
           }
           return prev - 1;
@@ -182,7 +181,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timerPreset, AddSound]);
+  }, [isTimerRunning, timerPreset, playSound]);
 
   const setTimerDuration = (minutes) => {
     setIsTimerRunning(false);
@@ -333,7 +332,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           setIsEditing(false);
           setIsbtnLoading(false);
           handleCancelTask();
-          editSound.play();
+          playSound(EditTaskSound);
           const notificationEl = document.querySelector('.notification');
           if (notificationEl) {
             notificationEl.classList.add('-is-shown');
@@ -344,7 +343,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       addNote(note.title, note.description, note.tag)
         .then(() => {
           setNote({ title: '', description: '', tag: 'medium' });
-          AddSound.play();
+          playSound(AddTaskSound);
           setIsbtnLoading(false);
           handleCancelTask();
         });
@@ -373,9 +372,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     const completed = !noteItem.completed;
     noteItem.completed = completed;
     if (!completed) {
-      unCompleteSound.play();
+      playSound(UnCompletedTaskSound);
     } else {
-      completeSound.play();
+      playSound(TaskCompletedSound);
     }
     await updateNoteCompletedStatus(noteItem._id, completed);
   };
