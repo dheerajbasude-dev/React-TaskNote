@@ -87,50 +87,32 @@ const NoteState = (props) => {
 
 
       // Add a note
-      const addNote = async (title, description, tag) =>{
-        // Todo api call, Adding post request for storing the title description and tag
+      const addNote = async (title, description, tag) => {
         try {
-        const response = await fetch(`${host}/api/notes/addnote` , {
-          method: "POST",
-          headers: {
-            'Content-Type':'application/json',
-            'auth-token':localStorage.getItem('token')
-          },
-          body:JSON.stringify({title, description, tag})
-        });
+          const response = await fetch(`${host}/api/notes/addnote`, {
+            method: "POST",
+            headers: {
+              'Content-Type': 'application/json',
+              'auth-token': localStorage.getItem('token')
+            },
+            body: JSON.stringify({ title, description, tag })
+          });
 
-        if (response.ok) {
-          // Fetch the updated list of notes after adding a new one
-          await getNotes();
-
-          const note = await response.json()
-          setNotes(notes.concat(note))
-
-        } else {
-          console.error("Failed to add note:", response.status);
+          if (response.ok) {
+            const savedNote = await response.json();
+            setNotes((prevNotes) => prevNotes.concat(savedNote));
+            return savedNote;
+          } else {
+            console.error("Failed to add note:", response.status);
+          }
+        } catch(error) {
+          console.error("Error adding note:", error);
         }
-      } catch(error) {
-        console.error("Error adding note:", error);
-      }
-      /*This is being used by practice*/ 
-      // console.log("Adding a new note")
-      // const note = {
-      //   "_id": "64d4d82411f3e6e3c7c4e154",
-      //   "user": "64d498048c18c635f95714ee",
-      //   "title": title,
-      //   "description": description,
-      //   "tag": tag,
-      //   "date": "2023-08-10T12:29:24.784Z",
-      //   "__v": 0
-      // };
-
-      // setNotes(notes.concat(note))
-      }
+      };
 
 
       //Add a commit
        const addCommit = async (label, author) =>{
-        // Todo api call, Adding post request for storing the title description and tag
         try {
         const response = await fetch(`${host1}/api/commits/addcommit` , {
           method: "POST",
@@ -142,118 +124,105 @@ const NoteState = (props) => {
         });
 
         if (response.ok) {
-          // Fetch the updated list of notes after adding a new one
           await getCommits();
-
-          const commit = await response.json()
-          setCommits(commits.concat(commit))
-
+          const commit = await response.json();
+          setCommits(commits.concat(commit));
         } else {
           console.error("Failed to add commit:", response.status);
         }
       } catch(error) {
         console.error("Error adding commit:", error);
-      }}
+      }};
 
 
     // Update a note's completed status, by requesting put 
     const updateNoteCompletedStatus = async (id, completed) => {
-    try {
+      try {
         const response = await fetch(`${host}/api/notes/completenote/${id}`, {
-        method: "PUT",
-        headers: {
-        'Content-Type': 'application/json',
-        'auth-token': localStorage.getItem('token')
-      },
-      body: JSON.stringify({ completed })
-    });
-
-    if (response.ok) {
-      // Handle the successful completion of the request
-    } else {
-      console.error("Failed to update note completion status:", response.status);
-    }
-  } catch (error) {
-    console.error("Error updating note completion status:", error);
-  }
-};
-
-  
-      
-      // Edit a note
-      const editNote = async (id, title, description, tag) =>{
-        // api call, to edit put request in the api
-        try {
-        const response = await fetch(`${host}/api/notes/updatenote/${id}` , {
-          method: "put",
+          method: "PUT",
           headers: {
-            'Content-Type':'application/json',
-            'auth-token':localStorage.getItem('token')
+            'Content-Type': 'application/json',
+            'auth-token': localStorage.getItem('token')
           },
-          body:JSON.stringify({title, description, tag})
+          body: JSON.stringify({ completed })
         });
-        /*This is being used by practice*/ 
-        // const json =  await response.json();
-        // console.log(json)
 
         if (response.ok) {
-          // Fetch the updated list of notes after editing
-          await getNotes();
-          
-          let newNotes = JSON.parse(JSON.stringify(notes))
-        // Logic to edit the note in client
-        for (let index = 0; index <  newNotes.length; index++) {
-          const element =  newNotes[index];   
-          if (element._id === id){
-            newNotes[index].title = title;
-            newNotes[index].description = description;
-            newNotes[index].tag = tag;
-            break;
-          } 
-        }
-        // console.log("updating the note" + id)
-        setNotes(newNotes);
-
+          const data = await response.json();
+          if (data && data.note) {
+            setNotes((prevNotes) =>
+              prevNotes.map((note) =>
+                note._id === id ? { ...note, ...data.note, completed } : note
+              )
+            );
+          }
         } else {
-          console.error("Failed to edit note:", response.status);
+          console.error("Failed to update note completion status:", response.status);
         }
       } catch (error) {
-        console.error("Error editing note:", error)
+        console.error("Error updating note completion status:", error);
       }
+    };
 
+      
+      // Edit a note
+      const editNote = async (id, title, description, tag) => {
+        try {
+          const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
+            method: "PUT",
+            headers: {
+              'Content-Type': 'application/json',
+              'auth-token': localStorage.getItem('token')
+            },
+            body: JSON.stringify({ title, description, tag })
+          });
 
-      }
+          if (response.ok) {
+            const json = await response.json();
+            const updated = json.note || {};
+            setNotes((prevNotes) =>
+              prevNotes.map((item) =>
+                item._id === id
+                  ? {
+                      ...item,
+                      ...updated,
+                      title,
+                      description,
+                      tag,
+                      updatedDate: updated.updatedDate || item.updatedDate,
+                      isEdited: true,
+                    }
+                  : item
+              )
+            );
+            return updated;
+          } else {
+            console.error("Failed to edit note:", response.status);
+          }
+        } catch (error) {
+          console.error("Error editing note:", error);
+        }
+      };
       
       // Delete a note
-      const deleteNote = async (id) =>{
-         // Todo api call, to request the delete 
-         try {
-         const response = await fetch(`${host}/api/notes/deletenote/${id}` , {
-          method: "delete",
-          headers: {
-            'Content-Type':'application/json',
-            'auth-token':localStorage.getItem('token')
+      const deleteNote = async (id) => {
+        try {
+          const response = await fetch(`${host}/api/notes/deletenote/${id}`, {
+            method: "DELETE",
+            headers: {
+              'Content-Type': 'application/json',
+              'auth-token': localStorage.getItem('token')
+            }
+          });
+          if (response.ok) {
+            setNotes((prevNotes) => prevNotes.filter((note) => note._id !== id));
+          } else {
+            console.error("Failed to delete note:", response.status);
           }
-        });
-        /*This is being used by practice*/ 
-        // const json =  response.json();
-        // console.log(json)
-
-         /*This is being used by practice*/ 
-        //  console.log("Deleting the note" + id)
-         const newNotes = notes.filter((note)=> {return note._id!==id})
-         setNotes(newNotes);
-
-         if (response.ok) {
-          // Fetch the updated list of notes after deleting
-          await getNotes();
-        } else {
-          console.error("Failed to delete note:", response.status);
+        } catch (error) {
+          console.error("Error deleting note:", error);
         }
-      } catch (error) {
-        console.error("Error deleting note:", error);
-      }
-      }
+      };
 
       // Delete a commit
       const deleteCommit = async (id) =>{
