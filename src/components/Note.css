@@ -787,15 +787,15 @@ button:disabled {
 }
 
 .task-timestamp.task-timestamp-updated {
-  background: rgba(187, 0, 255, 0.08);
-  color: #9d00d6;
-  border: 1px solid rgba(187, 0, 255, 0.18);
-  font-weight: 700;
+  background: #f2f3f8;
+  color: #555;
+  font-weight: 600;
+  border: none;
 }
 
 .task-timestamp.task-timestamp-updated ion-icon {
   font-size: 0.85rem;
-  color: #bb00ff;
+  color: #555;
 }
 
 .spotlight-timestamps-group {
@@ -806,8 +806,8 @@ button:disabled {
 }
 
 .spotlight-timestamp-updated {
-  color: #bb00ff !important;
-  font-weight: 700;
+  color: #555 !important;
+  font-weight: 600;
 }
 
 .task-index-badge {

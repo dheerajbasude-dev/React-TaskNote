@@ -561,15 +561,15 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   <div className="task-footer">
                     <span className="task-status">Task completed</span>
                     <div className="task-timestamps">
-                      <span className="task-timestamp" title="Created date">
-                        {noteItem.date}
-                      </span>
                       {noteItem.updatedDate && (
                         <span className="task-timestamp task-timestamp-updated" title="Edited date">
                           <ion-icon name="create-outline"></ion-icon>
                           {noteItem.updatedDate}
                         </span>
                       )}
+                      <span className="task-timestamp" title="Created date">
+                        {noteItem.date}
+                      </span>
                     </div>
                   </div>
 
@@ -722,14 +722,14 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
                 <div className="spotlight-meta-row">
                   <div className="spotlight-timestamps-group">
-                    <span className="spotlight-timestamp" title="Created date">
-                      <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
-                    </span>
                     {spotlightNote.updatedDate && (
                       <span className="spotlight-timestamp spotlight-timestamp-updated" title="Edited date">
                         <ion-icon name="create-outline"></ion-icon> {spotlightNote.updatedDate}
                       </span>
                     )}
+                    <span className="spotlight-timestamp" title="Created date">
+                      <ion-icon name="calendar-outline"></ion-icon> {spotlightNote.date}
+                    </span>
                   </div>
                   <span className={`spotlight-status-pill ${spotlightNote.completed ? 'completed' : 'pending'}`}>
                     {spotlightNote.completed ? '✓ Completed' : '⚡ In Progress'}
