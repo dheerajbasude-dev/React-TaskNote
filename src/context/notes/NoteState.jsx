@@ -27,6 +27,27 @@ const NoteState = (props) => {
 
     // )
 
+    // Date formatting helper
+    const formatTaskDate = (d = new Date()) => {
+      try {
+        const dateObj = typeof d === 'string' || typeof d === 'number' ? new Date(d) : d;
+        if (isNaN(dateObj.getTime())) return typeof d === 'string' ? d : '';
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayName = days[dateObj.getDay()];
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        let hours = dateObj.getHours();
+        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const formattedHours = String(hours).padStart(2, '0');
+        return `${dayName} ${day}-${month}-${year} ${formattedHours}:${minutes}${ampm}`;
+      } catch (e) {
+        return '';
+      }
+    };
+
     // Setting the local host url that is being used in the fetching the api call
     const host = import.meta.env.VITE_API_HOST;
     const host1 = import.meta.env.VITE_COMMITS_HOST; //for commits
@@ -52,7 +73,25 @@ const NoteState = (props) => {
 
         if (response.ok) {
           const json = await response.json();
-          setNotes(json);
+          let updateMap = {};
+          try {
+            const stored = localStorage.getItem('tasknote_updated_map');
+            if (stored) updateMap = JSON.parse(stored);
+          } catch (e) {}
+
+          const processed = json.map((n) => {
+            if (updateMap[n._id]) {
+              return { ...n, updatedDate: updateMap[n._id] };
+            }
+            if (n.updatedAt && n.updatedAt !== n.date) {
+              return { ...n, updatedDate: formatTaskDate(n.updatedAt) };
+            }
+            if (n.updatedDate) {
+              return { ...n, updatedDate: n.updatedDate };
+            }
+            return n;
+          });
+          setNotes(processed);
         } else {
           console.error("Failed to add note:", response.status);
         }
@@ -197,22 +236,31 @@ const NoteState = (props) => {
         // console.log(json)
 
         if (response.ok) {
+          const updatedTimeStr = formatTaskDate(new Date());
+          let updateMap = {};
+          try {
+            const stored = localStorage.getItem('tasknote_updated_map');
+            if (stored) updateMap = JSON.parse(stored);
+          } catch (e) {}
+          updateMap[id] = updatedTimeStr;
+          localStorage.setItem('tasknote_updated_map', JSON.stringify(updateMap));
+
           // Fetch the updated list of notes after editing
           await getNotes();
           
-          let newNotes = JSON.parse(JSON.stringify(notes))
-        // Logic to edit the note in client
-        for (let index = 0; index <  newNotes.length; index++) {
-          const element =  newNotes[index];   
-          if (element._id === id){
-            newNotes[index].title = title;
-            newNotes[index].description = description;
-            newNotes[index].tag = tag;
-            break;
-          } 
-        }
-        // console.log("updating the note" + id)
-        setNotes(newNotes);
+          let newNotes = JSON.parse(JSON.stringify(notes));
+          // Logic to edit the note in client
+          for (let index = 0; index < newNotes.length; index++) {
+            const element = newNotes[index];   
+            if (element._id === id){
+              newNotes[index].title = title;
+              newNotes[index].description = description;
+              newNotes[index].tag = tag;
+              newNotes[index].updatedDate = updatedTimeStr;
+              break;
+            } 
+          }
+          setNotes(newNotes);
 
         } else {
           console.error("Failed to edit note:", response.status);
