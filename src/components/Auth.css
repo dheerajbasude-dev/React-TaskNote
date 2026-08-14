@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');
+
 :root {
     --primary-color: #4EA685;
     --secondary-color: #57B894;
@@ -11,8 +13,6 @@
     --twitter-color: #1DA1F2;
     --insta-color: #E1306C;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600&display=swap');
 
 .containerAuth {
     position: relative;

@@ -28,8 +28,8 @@ const NoteState = (props) => {
     // )
 
     // Setting the local host url that is being used in the fetching the api call
-    const host = "https://task-note-api.vercel.app";
-    const host1 = "https://commits-api.vercel.app"; //for commits
+    const host = import.meta.env.VITE_API_HOST;
+    const host1 = import.meta.env.VITE_COMMITS_HOST; //for commits
     const notesInitial = []  // All notes are going to here
     const commitsInitial = [] // All commits are going to here
     /*This is being used by practice*/ 
@@ -135,7 +135,7 @@ const NoteState = (props) => {
         method: "get",
         headers: {
           'Content-Type':'application/json',
-          'auth-token':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg'
+          'auth-token': import.meta.env.VITE_COMMITS_AUTH_TOKEN
         }
       });
 
@@ -202,7 +202,7 @@ const NoteState = (props) => {
           method: "POST",
           headers: {
             'Content-Type':'application/json',
-            'auth-token':"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg"
+            'auth-token': import.meta.env.VITE_COMMITS_AUTH_TOKEN
           },
           body:JSON.stringify({label, author})
         });
@@ -329,7 +329,7 @@ const NoteState = (props) => {
          method: "delete",
          headers: {
            'Content-Type':'application/json',
-           'auth-token':"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjc4YTA1NTg3NmExOTU0YzBmNWNhMDA3In0sImlhdCI6MTczNzEwNDk5OX0.Ybp-Re5WTL-FMZrkP6-aiaeLeTDKBH8B6vMaS-QPIHg"
+           'auth-token': import.meta.env.VITE_COMMITS_AUTH_TOKEN
          }
        });
       
