@@ -843,8 +843,11 @@ button:disabled {
 .task-timestamp.task-timestamp-updated {
   color: #9d00d6;
   font-weight: 700;
-  position: absolute;
-  right: 3%;
+}
+
+.task-timestamp-updated {
+  position: relative;
+  left: 3%;
 }
 
 .task-timestamp.task-timestamp-updated ion-icon {
