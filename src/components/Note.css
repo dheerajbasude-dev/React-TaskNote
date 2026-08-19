@@ -387,44 +387,48 @@
 
 /* True High-End Glassmorphic Spotlight & Glowing Aura on First Task */
 .sleek-task-row.is-spotlight-focus {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 248, 255, 0.94) 50%, rgba(240, 242, 255, 0.96) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(99, 102, 241, 0.45);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.99) 0%, rgba(248, 246, 255, 0.95) 50%, rgba(243, 240, 255, 0.98) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(99, 102, 241, 0.5);
   border-left: 4px solid var(--row-accent, #6366f1);
-  animation: spotlightLuxuryGlow 3.5s ease-in-out infinite alternate;
+  animation: spotlightSuperGlow 3s ease-in-out infinite alternate;
 }
 
-@keyframes spotlightLuxuryGlow {
+@keyframes spotlightSuperGlow {
   0% {
     box-shadow: 
-      0 0 0 1px rgba(99, 102, 241, 0.25),
-      0 4px 16px -2px rgba(99, 102, 241, 0.2),
-      0 12px 28px -4px rgba(168, 85, 247, 0.18);
-    border-color: rgba(99, 102, 241, 0.45);
+      0 0 0 1px rgba(99, 102, 241, 0.3),
+      0 0 16px rgba(99, 102, 241, 0.22),
+      0 8px 24px -2px rgba(99, 102, 241, 0.18),
+      0 14px 34px -4px rgba(168, 85, 247, 0.16);
+    border-color: rgba(99, 102, 241, 0.5);
   }
   50% {
     box-shadow: 
-      0 0 0 2px rgba(168, 85, 247, 0.4),
-      0 6px 22px -2px rgba(99, 102, 241, 0.32),
-      0 16px 36px -4px rgba(168, 85, 247, 0.3);
-    border-color: rgba(168, 85, 247, 0.65);
+      0 0 0 2.5px rgba(168, 85, 247, 0.45),
+      0 0 26px rgba(168, 85, 247, 0.35),
+      0 10px 30px -2px rgba(99, 102, 241, 0.28),
+      0 18px 44px -4px rgba(168, 85, 247, 0.32);
+    border-color: rgba(168, 85, 247, 0.75);
   }
   100% {
     box-shadow: 
-      0 0 0 1px rgba(99, 102, 241, 0.25),
-      0 4px 16px -2px rgba(99, 102, 241, 0.2),
-      0 12px 28px -4px rgba(168, 85, 247, 0.18);
-    border-color: rgba(99, 102, 241, 0.45);
+      0 0 0 1px rgba(99, 102, 241, 0.3),
+      0 0 16px rgba(99, 102, 241, 0.22),
+      0 8px 24px -2px rgba(99, 102, 241, 0.18),
+      0 14px 34px -4px rgba(168, 85, 247, 0.16);
+    border-color: rgba(99, 102, 241, 0.5);
   }
 }
 
 .sleek-task-row.is-spotlight-focus:hover {
   transform: translateY(-2px);
   box-shadow: 
-    0 0 0 2px rgba(99, 102, 241, 0.45),
-    0 8px 26px -2px rgba(99, 102, 241, 0.36),
-    0 20px 42px -4px rgba(168, 85, 247, 0.35);
+    0 0 0 2px rgba(99, 102, 241, 0.5),
+    0 0 30px rgba(99, 102, 241, 0.38),
+    0 10px 32px -2px rgba(99, 102, 241, 0.38),
+    0 22px 48px -4px rgba(168, 85, 247, 0.4);
 }
 
 /* Focused 1st Task Title & Description Glowing Effects */
@@ -432,49 +436,62 @@
   color: #1e1b4b;
   font-weight: 800;
   letter-spacing: -0.01em;
-  animation: titleGlow 3.5s ease-in-out infinite alternate;
+  animation: titleGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes titleGlow {
   0% {
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
   }
   50% {
-    text-shadow: 0 0 15px rgba(99, 102, 241, 0.42), 0 0 28px rgba(168, 85, 247, 0.32);
+    text-shadow: 0 0 16px rgba(99, 102, 241, 0.55), 0 0 30px rgba(168, 85, 247, 0.45);
   }
   100% {
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.3), 0 0 20px rgba(168, 85, 247, 0.2);
   }
 }
 
 .sleek-task-row.is-spotlight-focus .sleek-plain-text {
   color: #334155;
   font-weight: 500;
-  animation: descGlow 3.5s ease-in-out infinite alternate;
+  animation: descGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes descGlow {
   0% {
-    text-shadow: 0 0 8px rgba(99, 102, 241, 0.12);
+    text-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
   }
   50% {
-    text-shadow: 0 0 12px rgba(99, 102, 241, 0.24), 0 0 20px rgba(168, 85, 247, 0.16);
+    text-shadow: 0 0 14px rgba(99, 102, 241, 0.3), 0 0 24px rgba(168, 85, 247, 0.22);
   }
   100% {
-    text-shadow: 0 0 8px rgba(99, 102, 241, 0.12);
+    text-shadow: 0 0 8px rgba(99, 102, 241, 0.15);
   }
 }
 
 .sleek-task-row.is-spotlight-focus .compact-docs-box {
-  animation: descGlow 3.5s ease-in-out infinite alternate;
+  animation: descGlow 3s ease-in-out infinite alternate;
 }
 
 .sleek-task-row.is-spotlight-focus .sleek-subtask-pill {
-  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.18);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.22);
 }
 
 .sleek-task-row.is-spotlight-focus .sleek-resource-pill {
-  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.22);
+  box-shadow: 0 2px 12px rgba(13, 148, 136, 0.25);
+}
+
+/* Search Matching Text Highlight Badge */
+.search-highlight-badge,
+mark.search-highlight-badge {
+  background: #fef08a !important;
+  color: #854d0e !important;
+  font-weight: 800 !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 8px rgba(250, 204, 21, 0.6) !important;
+  border: 1px solid #facc15 !important;
+  display: inline !important;
 }
 
 .sleek-task-row.is-completed {

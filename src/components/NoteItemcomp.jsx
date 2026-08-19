@@ -625,15 +625,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   // Search matches highlighting
   const highlightMatches = (text, query) => {
     if (!query || typeof text !== 'string') return text;
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cleanQuery = query.trim();
+    if (!cleanQuery) return text;
+    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
+    if (parts.length === 1) return text;
     return parts.map((part, index) => {
-      if (regex.test(part)) {
+      if (part.toLowerCase() === cleanQuery.toLowerCase()) {
         return (
-          <span key={index} className="search-highlight-badge">
+          <mark key={index} className="search-highlight-badge">
             {part}
-          </span>
+          </mark>
         );
       }
       return part;
