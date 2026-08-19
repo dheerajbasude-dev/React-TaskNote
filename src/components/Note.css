@@ -427,6 +427,56 @@
     0 20px 42px -4px rgba(168, 85, 247, 0.35);
 }
 
+/* Focused 1st Task Title & Description Glowing Effects */
+.sleek-task-row.is-spotlight-focus .sleek-task-title {
+  color: #1e1b4b;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  animation: titleGlow 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  0% {
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(99, 102, 241, 0.42), 0 0 28px rgba(168, 85, 247, 0.32);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(99, 102, 241, 0.25), 0 0 20px rgba(168, 85, 247, 0.15);
+  }
+}
+
+.sleek-task-row.is-spotlight-focus .sleek-plain-text {
+  color: #334155;
+  font-weight: 500;
+  animation: descGlow 3.5s ease-in-out infinite alternate;
+}
+
+@keyframes descGlow {
+  0% {
+    text-shadow: 0 0 8px rgba(99, 102, 241, 0.12);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(99, 102, 241, 0.24), 0 0 20px rgba(168, 85, 247, 0.16);
+  }
+  100% {
+    text-shadow: 0 0 8px rgba(99, 102, 241, 0.12);
+  }
+}
+
+.sleek-task-row.is-spotlight-focus .compact-docs-box {
+  animation: descGlow 3.5s ease-in-out infinite alternate;
+}
+
+.sleek-task-row.is-spotlight-focus .sleek-subtask-pill {
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.18);
+}
+
+.sleek-task-row.is-spotlight-focus .sleek-resource-pill {
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.22);
+}
+
 .sleek-task-row.is-completed {
   background: #fafafa;
   opacity: 0.88;
