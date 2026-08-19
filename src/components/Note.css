@@ -600,9 +600,12 @@ mark.search-highlight-badge {
 }
 
 .sleek-task-index {
-  font-size: 0.74rem;
+  font-size: 0.62rem;
   font-weight: 800;
   color: var(--text-muted);
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 3px;
   font-family: inherit;
   flex-shrink: 0;
   user-select: none;

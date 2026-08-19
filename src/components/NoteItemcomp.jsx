@@ -711,14 +711,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  {/* Top Header Line: Index -> Title -> Priority -> Category / Status Pill -> Date & Actions */}
+                  {/* Top Header Line: Title -> Priority -> Category / Status Pill -> Index -> Date & Actions */}
                   <div className="sleek-row-header">
                     <div className="sleek-row-header-left">
-                      {/* Index Number */}
-                      <span className="sleek-task-index">
-                        {index + 1}.
-                      </span>
-
                       {/* 1. Title */}
                       <span
                         className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
@@ -759,6 +754,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                           {noteItem.completed ? 'Done' : analysis.label}
                         </span>
                       </button>
+
+                      {/* 4. Index Number (Placed after Subtasks/Category) */}
+                      <span className="sleek-task-index">
+                        #{index + 1}
+                      </span>
                     </div>
 
                     <div className="sleek-row-header-right">
