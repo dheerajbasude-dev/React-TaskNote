@@ -712,23 +712,21 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  {/* Left: Complete Toggle Circle */}
-                  <button
-                    type="button"
-                    className={`sleek-check-circle ${noteItem.completed ? 'checked' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleNoteCompletion(noteItem);
-                    }}
-                    title={noteItem.completed ? 'Mark pending' : 'Mark done'}
-                  >
-                    <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
-                  </button>
+                  {/* Top Header Line: Checkbox + Tags + Title + Date & Actions */}
+                  <div className="sleek-row-header">
+                    <div className="sleek-row-header-left">
+                      <button
+                        type="button"
+                        className={`sleek-check-circle ${noteItem.completed ? 'checked' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleNoteCompletion(noteItem);
+                        }}
+                        title={noteItem.completed ? 'Mark pending' : 'Mark done'}
+                      >
+                        <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
+                      </button>
 
-                  {/* Center: Main Task Content */}
-                  <div className="sleek-task-content">
-                    {/* Header line: Tags & Title */}
-                    <div className="sleek-title-line">
                       <span
                         className="sleek-priority-tag"
                         style={{
@@ -755,107 +753,106 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </span>
                     </div>
 
-                    {/* Content Section: Dynamic rendering */}
-                    <div className="sleek-body-area">
-                      {/* TYPE 1: SUBTASKS TRACKER */}
-                      {analysis.type === 'subtasks' && analysis.data && (
-                        <div className="sleek-subtasks-group">
-                          <div className="sleek-mini-progress">
-                            <div className="sleek-progress-bar-wrap">
-                              <div
-                                className="sleek-progress-bar-fill"
-                                style={{
-                                  width: `${analysis.data.percentage}%`,
-                                  background: analysis.data.percentage === 100 ? '#10b981' : '#6366f1',
-                                }}
-                              ></div>
-                            </div>
-                            <span className="sleek-progress-num">
-                              {analysis.data.completedCount}/{analysis.data.totalCount} ({analysis.data.percentage}%)
-                            </span>
-                          </div>
+                    <div className="sleek-row-header-right">
+                      <span className="sleek-date-meta">{noteItem.date}</span>
 
-                          <div className="sleek-chips-wrap">
-                            {analysis.data.items.map((subItem, sIdx) => {
-                              const statusType = getSubtaskStatusType(subItem.status);
-                              return (
-                                <button
-                                  key={subItem.id || sIdx}
-                                  type="button"
-                                  className={`sleek-subtask-pill status-${statusType}`}
-                                  onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
-                                  title={`Click to cycle status (${subItem.status})`}
-                                >
-                                  <span className="pill-dot"></span>
-                                  <span className="pill-topic">
-                                    {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
-                                  </span>
-                                  <span className="pill-status">
-                                    {searchQuery ? highlightMatches(subItem.status, searchQuery) : subItem.status}
-                                  </span>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                      <div className="sleek-action-icons">
+                        <button
+                          type="button"
+                          className="sleek-icon-btn edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateNote(noteItem);
+                          }}
+                          title="Edit"
+                        >
+                          <ion-icon name="create-outline"></ion-icon>
+                        </button>
 
-                      {/* TYPE 2: LINKS & SITES */}
-                      {analysis.type === 'resources' && analysis.data && (
-                        <div className="sleek-resources-wrap">
-                          {analysis.data.items.map((res, rIdx) => (
-                            <button
-                              key={res.id || rIdx}
-                              type="button"
-                              className="sleek-resource-pill"
-                              onClick={(e) => handleOpenResource(e, res.url)}
-                              title={`Open ${res.title}`}
-                            >
-                              <ion-icon name="open-outline"></ion-icon>
-                              <span>{searchQuery ? highlightMatches(res.title, searchQuery) : res.title}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* TYPE 3: DOCS & CODE */}
-                      {analysis.type === 'docs' && renderDocsContent(noteItem.description, searchQuery)}
-
-                      {/* TYPE 4: PLAIN NOTE */}
-                      {analysis.type === 'note' && (
-                        <p className="sleek-plain-text">
-                          {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
-                        </p>
-                      )}
+                        <button
+                          type="button"
+                          className="sleek-icon-btn delete"
+                          onClick={(e) => taskDeleted(e, noteItem)}
+                          title="Delete"
+                        >
+                          <ion-icon name="trash-outline"></ion-icon>
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Right: Meta & Fast Actions */}
-                  <div className="sleek-right-actions">
-                    <span className="sleek-date-meta">{noteItem.date}</span>
+                  {/* Body Content Section: Cleanly aligned beneath title */}
+                  <div className="sleek-row-body">
+                    {/* TYPE 1: SUBTASKS TRACKER */}
+                    {analysis.type === 'subtasks' && analysis.data && (
+                      <div className="sleek-subtasks-group">
+                        <div className="sleek-mini-progress">
+                          <div className="sleek-progress-bar-wrap">
+                            <div
+                              className="sleek-progress-bar-fill"
+                              style={{
+                                width: `${analysis.data.percentage}%`,
+                                background: analysis.data.percentage === 100 ? '#10b981' : '#6366f1',
+                              }}
+                            ></div>
+                          </div>
+                          <span className="sleek-progress-num">
+                            {analysis.data.completedCount}/{analysis.data.totalCount} ({analysis.data.percentage}%)
+                          </span>
+                        </div>
 
-                    <div className="sleek-action-icons">
-                      <button
-                        type="button"
-                        className="sleek-icon-btn edit"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          updateNote(noteItem);
-                        }}
-                        title="Edit"
-                      >
-                        <ion-icon name="create-outline"></ion-icon>
-                      </button>
+                        <div className="sleek-chips-wrap">
+                          {analysis.data.items.map((subItem, sIdx) => {
+                            const statusType = getSubtaskStatusType(subItem.status);
+                            return (
+                              <button
+                                key={subItem.id || sIdx}
+                                type="button"
+                                className={`sleek-subtask-pill status-${statusType}`}
+                                onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
+                                title={`Click to cycle status (${subItem.status})`}
+                              >
+                                <span className="pill-dot"></span>
+                                <span className="pill-topic">
+                                  {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
+                                </span>
+                                <span className="pill-status">
+                                  {searchQuery ? highlightMatches(subItem.status, searchQuery) : subItem.status}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
-                      <button
-                        type="button"
-                        className="sleek-icon-btn delete"
-                        onClick={(e) => taskDeleted(e, noteItem)}
-                        title="Delete"
-                      >
-                        <ion-icon name="trash-outline"></ion-icon>
-                      </button>
-                    </div>
+                    {/* TYPE 2: LINKS & SITES */}
+                    {analysis.type === 'resources' && analysis.data && (
+                      <div className="sleek-resources-wrap">
+                        {analysis.data.items.map((res, rIdx) => (
+                          <button
+                            key={res.id || rIdx}
+                            type="button"
+                            className="sleek-resource-pill"
+                            onClick={(e) => handleOpenResource(e, res.url)}
+                            title={`Open ${res.title}`}
+                          >
+                            <ion-icon name="open-outline"></ion-icon>
+                            <span>{searchQuery ? highlightMatches(res.title, searchQuery) : res.title}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* TYPE 3: DOCS & CODE */}
+                    {analysis.type === 'docs' && renderDocsContent(noteItem.description, searchQuery)}
+
+                    {/* TYPE 4: PLAIN NOTE */}
+                    {analysis.type === 'note' && (
+                      <p className="sleek-plain-text">
+                        {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
+                      </p>
+                    )}
                   </div>
                 </article>
               );
@@ -864,16 +861,15 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
         )}
       </main>
 
-      {/* Sticky Floating Center Add Task Button */}
+      {/* Sticky Floating Center Add Task Button (Only + Icon) */}
       <button
         type="button"
         className="sleek-floating-add-btn"
         onClick={openModal}
         title="Add Task (Press '+' or 'N')"
+        aria-label="Add Task"
       >
         <ion-icon name="add"></ion-icon>
-        <span>Add Task</span>
-        <span className="floating-kbd-shortcut">N</span>
       </button>
 
       {/* Scroll to Top */}

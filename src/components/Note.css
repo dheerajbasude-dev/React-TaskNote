@@ -323,54 +323,41 @@
   border-radius: var(--radius-full);
 }
 
-/* Sticky Floating Center Add Task Button */
+/* Sticky Floating Center Add Task Button (Circular with only + icon) */
 .sleek-floating-add-btn {
   position: fixed;
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 10px 22px;
-  border-radius: var(--radius-full);
-  font-family: inherit;
-  font-size: 0.88rem;
-  font-weight: 700;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
   cursor: pointer;
-  box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.45), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px -2px rgba(99, 102, 241, 0.5), 0 2px 6px rgba(0, 0, 0, 0.12);
   z-index: 90;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(8px);
-}
-
-.sleek-floating-add-btn ion-icon {
-  font-size: 1.25rem;
-}
-
-.sleek-floating-add-btn .floating-kbd-shortcut {
-  font-size: 0.68rem;
-  font-weight: 800;
-  background: rgba(255, 255, 255, 0.25);
-  padding: 1px 6px;
-  border-radius: 4px;
-  margin-left: 2px;
+  padding: 0;
 }
 
 .sleek-floating-add-btn:hover {
-  transform: translateX(-50%) translateY(-3px) scale(1.03);
-  box-shadow: 0 12px 30px -4px rgba(99, 102, 241, 0.6), 0 4px 10px rgba(0, 0, 0, 0.12);
+  transform: translateX(-50%) translateY(-3px) scale(1.08);
+  box-shadow: 0 12px 30px -2px rgba(99, 102, 241, 0.65), 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .sleek-floating-add-btn:active {
-  transform: translateX(-50%) translateY(0) scale(0.98);
+  transform: translateX(-50%) translateY(0) scale(0.95);
 }
 
 /* --------------------------------------------------------------------------
-   3. SLEEK COMPACT TASK ROWS
+   3. SLEEK COMPACT TASK ROWS (STRUCTURED ALIGNMENT)
    -------------------------------------------------------------------------- */
 .sleek-tasks-feed {
   display: flex;
@@ -384,10 +371,10 @@
   border-radius: var(--radius-sm);
   border: 1px solid rgba(226, 232, 240, 0.9);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  padding: 9px 12px;
+  padding: 10px 14px;
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   cursor: grab;
   transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
   border-left: 3px solid var(--row-accent, #6366f1);
@@ -412,6 +399,31 @@
   border: 2px dashed #6366f1;
 }
 
+/* Row Header: Checkbox + Tags + Title on Left, Date & Actions on Right */
+.sleek-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.sleek-row-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.sleek-row-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Complete Circle */
 .sleek-check-circle {
   width: 20px;
@@ -426,7 +438,6 @@
   font-size: 0.85rem;
   cursor: pointer;
   flex-shrink: 0;
-  margin-top: 1px;
   transition: all 0.12s ease;
   padding: 0;
 }
@@ -440,22 +451,6 @@
   background: #10b981;
   border-color: #10b981;
   color: #ffffff;
-}
-
-/* Main Content Area */
-.sleek-task-content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.sleek-title-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
 }
 
 .sleek-priority-tag {
@@ -493,7 +488,48 @@
   color: var(--text-muted);
 }
 
-.sleek-body-area {
+.sleek-date-meta {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.sleek-action-icons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sleek-icon-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: all 0.12s ease;
+}
+
+.sleek-icon-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-primary);
+}
+
+.sleek-icon-btn.edit:hover {
+  color: #2563eb;
+}
+
+.sleek-icon-btn.delete:hover {
+  color: #ef4444;
+}
+
+/* Row Body Section (Indented cleanly below title) */
+.sleek-row-body {
+  margin-left: 26px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -589,16 +625,6 @@
   background: #f59e0b;
 }
 
-.sleek-expand-chip {
-  background: none;
-  border: none;
-  color: #6366f1;
-  font-size: 0.7rem;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0 4px;
-}
-
 /* Links & Sites */
 .sleek-resources-wrap {
   display: flex;
@@ -648,66 +674,12 @@
   font-size: 0.9rem;
 }
 
-.compact-more-lines {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
 .sleek-plain-text {
   font-size: 0.82rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.4;
   word-break: break-word;
-}
-
-/* Right Meta & Actions */
-.sleek-right-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.sleek-date-meta {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-}
-
-.sleek-action-icons {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.sleek-icon-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.95rem;
-  transition: all 0.12s ease;
-}
-
-.sleek-icon-btn:hover {
-  background: #f1f5f9;
-  color: var(--text-primary);
-}
-
-.sleek-icon-btn.edit:hover {
-  color: #2563eb;
-}
-
-.sleek-icon-btn.delete:hover {
-  color: #ef4444;
 }
 
 /* Empty State */
@@ -1117,16 +1089,17 @@
   .sleek-mobile-toggle {
     display: block;
   }
-  .sleek-task-row {
+  .sleek-row-header {
     flex-wrap: wrap;
+    gap: 6px;
   }
-  .sleek-right-actions {
+  .sleek-row-header-right {
     width: 100%;
-    flex-direction: row;
     justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(241, 245, 249, 0.9);
     padding-top: 4px;
-    margin-top: 2px;
+    border-top: 1px solid rgba(241, 245, 249, 0.9);
+  }
+  .sleek-row-body {
+    margin-left: 0;
   }
 }
