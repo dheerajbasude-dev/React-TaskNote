@@ -667,16 +667,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               {filteredNotes.length}
             </span>
           </div>
-
-          <button
-            type="button"
-            className="sleek-create-btn"
-            onClick={openModal}
-            title="Create Task (or press '+')"
-          >
-            <ion-icon name="add"></ion-icon>
-            <span>New Task</span>
-          </button>
         </div>
 
         {/* Unified Sleek Task Feed */}
@@ -873,6 +863,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           </div>
         )}
       </main>
+
+      {/* Sticky Floating Center Add Task Button */}
+      <button
+        type="button"
+        className="sleek-floating-add-btn"
+        onClick={openModal}
+        title="Add Task (Press '+' or 'N')"
+      >
+        <ion-icon name="add"></ion-icon>
+        <span>Add Task</span>
+        <span className="floating-kbd-shortcut">N</span>
+      </button>
 
       {/* Scroll to Top */}
       {showScrollButton && (
