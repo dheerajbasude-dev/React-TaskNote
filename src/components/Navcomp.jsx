@@ -15,7 +15,7 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
 
   const navigate = useNavigate();
 
-  // Calculate quick productivity metrics
+  // Productivity metrics
   const totalNotes = notes ? notes.length : 0;
   const completedNotes = notes ? notes.filter((n) => n.completed).length : 0;
   const completionPercentage = totalNotes > 0 ? Math.round((completedNotes / totalNotes) * 100) : 0;
@@ -83,7 +83,7 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
   const priorityOptions = [
     { label: 'All', value: 'All', color: '#6366f1' },
     { label: 'High', value: 'High', color: '#ef4444' },
-    { label: 'Medium', value: 'Medium', color: '#3b82f6' },
+    { label: 'Med', value: 'Medium', color: '#3b82f6' },
     { label: 'Low', value: 'Low', color: '#10b981' },
   ];
 
@@ -92,75 +92,64 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
   if (!hasToken) return null;
 
   return (
-    <header className="modern-header">
-      <div className="header-inner">
-        {/* Brand Logo & Title */}
-        <div className="header-brand-group">
-          <Link to="/" className="brand-link">
-            <div className="brand-icon-wrapper">
+    <header className="compact-header">
+      <div className="compact-header-inner">
+        {/* Brand Group */}
+        <div className="compact-brand-group">
+          <Link to="/" className="compact-brand-link">
+            <div className="compact-brand-icon">
               <ion-icon name="checkbox"></ion-icon>
             </div>
-            <div className="brand-text-wrapper">
-              <span className="brand-title">TaskNote</span>
-              <span className="brand-badge">PRO</span>
-            </div>
+            <span className="compact-brand-title">TaskNote</span>
           </Link>
 
-          {/* Productivity Stats Pill on Desktop */}
+          {/* Compact Productivity Pill */}
           {totalNotes > 0 && (
-            <div className="productivity-stat-pill" title={`${completedNotes} of ${totalNotes} tasks completed (${completionPercentage}%)`}>
-              <div className="productivity-stat-text">
-                <span className="stat-highlight">{completedNotes}/{totalNotes}</span>
-                <span className="stat-label">Done</span>
+            <div className="compact-stat-pill" title={`${completedNotes} of ${totalNotes} done`}>
+              <span className="stat-pill-num">{completedNotes}/{totalNotes}</span>
+              <div className="stat-pill-mini-track">
+                <div className="stat-pill-mini-bar" style={{ width: `${completionPercentage}%` }}></div>
               </div>
-              <div className="productivity-progress-track">
-                <div
-                  className="productivity-progress-bar"
-                  style={{ width: `${completionPercentage}%` }}
-                ></div>
-              </div>
-              <span className="stat-percentage">{completionPercentage}%</span>
+              <span className="stat-pill-pct">{completionPercentage}%</span>
             </div>
           )}
         </div>
 
         {/* Center Search Input */}
-        <div className="header-search-container">
-          <div className="search-input-wrapper">
-            <ion-icon name="search-outline" class="search-icon"></ion-icon>
-            <input
-              ref={searchInputRef}
-              type="text"
-              className="modern-search-input"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              onFocus={() => {
-                if (searchQuery.trim()) setShowSuggestions(true);
-              }}
-              placeholder="Search notes, subtasks, or /commits..."
-            />
-            {searchQuery ? (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={clearSearch}
-                title="Clear search"
-              >
-                <ion-icon name="close-circle"></ion-icon>
-              </button>
-            ) : (
-              <span className="search-shortcut-hint" title="Press '/' to search">/</span>
-            )}
-          </div>
+        <div className="compact-search-box">
+          <ion-icon name="search-outline" class="compact-search-icon"></ion-icon>
+          <input
+            ref={searchInputRef}
+            type="text"
+            className="compact-search-input"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onFocus={() => {
+              if (searchQuery.trim()) setShowSuggestions(true);
+            }}
+            placeholder="Search notes, subtasks... (/)"
+          />
+          {searchQuery ? (
+            <button
+              type="button"
+              className="compact-search-clear"
+              onClick={clearSearch}
+              title="Clear search"
+            >
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          ) : (
+            <span className="compact-search-kbd">/</span>
+          )}
 
           {/* Suggestions Dropdown */}
           {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="modern-suggestions-dropdown">
+            <div className="compact-suggestions-popover">
               {filteredSuggestions.map((suggestion, index) => (
                 <div
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="modern-suggestion-item"
+                  className="compact-suggestion-item"
                 >
                   <ion-icon name="sparkles-outline"></ion-icon>
                   <span>{suggestion}</span>
@@ -170,110 +159,81 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
           )}
         </div>
 
-        {/* Priority Filter Pills Desktop */}
-        <div className="header-filters-group">
-          <div className="priority-pill-selector">
+        {/* Priority Filter Pills */}
+        <div className="compact-actions-group">
+          <div className="compact-priority-segmented">
             {priorityOptions.map((opt) => (
               <button
                 key={opt.value}
                 type="button"
-                className={`priority-filter-btn ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
+                className={`compact-priority-btn ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
                 onClick={() => handlePrioritySelect(opt.value)}
               >
                 {opt.value !== 'All' && (
-                  <span className="priority-dot" style={{ backgroundColor: opt.color }}></span>
+                  <span className="compact-dot" style={{ backgroundColor: opt.color }}></span>
                 )}
                 <span>{opt.label}</span>
               </button>
             ))}
           </div>
 
-          {/* Logout & Action Buttons */}
-          <div className="header-user-actions">
-            <button
-              type="button"
-              className="modern-logout-btn"
-              onClick={handleLogout}
-              title="Logout from TaskNote"
-            >
-              <ion-icon name="log-out-outline"></ion-icon>
-              <span>Logout</span>
-            </button>
-          </div>
+          {/* Logout */}
+          <button
+            type="button"
+            className="compact-logout-btn"
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <ion-icon name="log-out-outline"></ion-icon>
+          </button>
         </div>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Toggle */}
         <button
           type="button"
-          className={`mobile-menu-toggle ${isMenuVisible ? 'is-open' : ''}`}
+          className={`compact-mobile-btn ${isMenuVisible ? 'open' : ''}`}
           onClick={toggleMenu}
-          aria-label="Toggle navigation menu"
+          aria-label="Toggle Menu"
         >
-          <span className="hamburger-bar"></span>
-          <span className="hamburger-bar"></span>
-          <span className="hamburger-bar"></span>
+          <ion-icon name={isMenuVisible ? 'close-outline' : 'menu-outline'}></ion-icon>
         </button>
       </div>
 
-      {/* Mobile Drawer Navigation */}
-      <div className={`mobile-drawer ${isMenuVisible ? 'is-visible' : ''}`}>
-        <div className="mobile-drawer-inner">
-          {/* Mobile Search */}
-          <div className="mobile-search-wrapper">
-            <ion-icon name="search-outline"></ion-icon>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="Search tasks..."
-            />
-            {searchQuery && (
-              <button type="button" onClick={clearSearch}>
-                <ion-icon name="close-circle"></ion-icon>
-              </button>
+      {/* Mobile Drawer */}
+      {isMenuVisible && (
+        <div className="compact-mobile-drawer">
+          <div className="compact-mobile-drawer-inner">
+            <div className="compact-mobile-priorities">
+              <span className="mobile-label">Priority:</span>
+              <div className="mobile-pills-row">
+                {priorityOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`mobile-pill-btn ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
+                    onClick={() => handlePrioritySelect(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {totalNotes > 0 && (
+              <div className="mobile-stat-row">
+                <span>Progress: <strong>{completedNotes}/{totalNotes} tasks</strong> ({completionPercentage}%)</span>
+              </div>
             )}
-          </div>
 
-          {/* Mobile Priority Pills */}
-          <div className="mobile-priority-section">
-            <span className="mobile-section-label">Filter Priority:</span>
-            <div className="mobile-priority-grid">
-              {priorityOptions.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={`mobile-priority-chip ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
-                  onClick={() => handlePrioritySelect(opt.value)}
-                >
-                  {opt.value !== 'All' && (
-                    <span className="priority-dot" style={{ backgroundColor: opt.color }}></span>
-                  )}
-                  <span>{opt.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Productivity Stat */}
-          {totalNotes > 0 && (
-            <div className="mobile-stat-banner">
-              <ion-icon name="trending-up-outline"></ion-icon>
-              <span>Productivity: <strong>{completedNotes}/{totalNotes} tasks</strong> ({completionPercentage}%)</span>
-            </div>
-          )}
-
-          {/* Mobile Logout */}
-          <div className="mobile-drawer-footer">
-            <button type="button" className="mobile-logout-btn" onClick={handleLogout}>
+            <button type="button" className="mobile-logout-full" onClick={handleLogout}>
               <ion-icon name="log-out-outline"></ion-icon>
               <span>Logout</span>
             </button>
           </div>
         </div>
-      </div>
+      )}
     </header>
   );
 };
 
 export default Navcomp;
-
