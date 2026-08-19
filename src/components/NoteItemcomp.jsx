@@ -737,14 +737,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         </span>
                       </button>
 
-                      {/* Spotlight Focus Badge on first item */}
-                      {isFirst && (
-                        <span className="sleek-focus-badge" title="Top Priority Focus">
-                          <ion-icon name="sparkles"></ion-icon>
-                          <span>Focus</span>
-                        </span>
-                      )}
-
                       <span
                         className="sleek-priority-tag"
                         style={{
