@@ -681,13 +681,31 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="sleek-empty-card">
-            <ion-icon name="sparkles-outline"></ion-icon>
+            <div className="sleek-empty-icon-wrap">
+              <ion-icon name={searchQuery ? "search-outline" : "sparkles-outline"}></ion-icon>
+            </div>
             <h3>{searchQuery ? 'No matching tasks' : 'No tasks here yet'}</h3>
             <p>{searchQuery ? `No tasks match "${searchQuery}".` : 'Add your first task or link collection.'}</p>
-            <button type="button" onClick={openModal}>
-              <ion-icon name="add"></ion-icon>
-              <span>Create Task</span>
-            </button>
+            <div className="sleek-empty-actions">
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="empty-clear-btn"
+                  onClick={() => setSearchQuery && setSearchQuery('')}
+                >
+                  <ion-icon name="close-circle-outline"></ion-icon>
+                  <span>Clear Search</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className="empty-add-btn"
+                onClick={openModal}
+              >
+                <ion-icon name="add"></ion-icon>
+                <span>Create Task</span>
+              </button>
+            </div>
           </div>
         ) : (
           <div className="sleek-tasks-feed">

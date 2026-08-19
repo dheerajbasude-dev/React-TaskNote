@@ -846,45 +846,107 @@ mark.search-highlight-badge {
 /* Empty State */
 .sleek-empty-card {
   text-align: center;
-  padding: 40px 16px;
+  padding: 44px 20px;
   background: #ffffff;
   border-radius: var(--radius-md);
-  border: 1px dashed #cbd5e1;
+  border: 1.5px dashed rgba(203, 213, 225, 0.85);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.sleek-empty-card ion-icon {
-  font-size: 1.8rem;
+.sleek-empty-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.sleek-empty-icon-wrap ion-icon {
+  font-size: 1.5rem;
   color: #6366f1;
 }
 
 .sleek-empty-card h3 {
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .sleek-empty-card p {
-  font-size: 0.8rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
-  margin: 0 0 8px 0;
+  margin: 0 0 10px 0;
+  max-width: 320px;
 }
 
-.sleek-empty-card button {
+.sleek-empty-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.empty-add-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: #6366f1;
+  gap: 6px;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: #ffffff;
   border: none;
-  padding: 6px 14px;
+  padding: 8px 18px;
   border-radius: var(--radius-full);
+  font-family: inherit;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.84rem;
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.empty-add-btn ion-icon {
+  font-size: 1.1rem;
+}
+
+.empty-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.45);
+}
+
+.empty-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  border: 1px solid #cbd5e1;
+  padding: 7px 16px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.empty-clear-btn ion-icon {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.empty-clear-btn:hover {
+  background: #e2e8f0;
+  color: var(--text-primary);
+  border-color: #94a3b8;
 }
 
 /* Scroll Top */
