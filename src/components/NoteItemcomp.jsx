@@ -22,7 +22,14 @@ export const analyzeContent = (title, desc) => {
   const trimmed = safeDesc.trim();
 
   if (!trimmed) {
-    return { type: 'note', label: 'Note', icon: 'document-text-outline', color: '#64748b', data: null, rawText: '' };
+    return {
+      type: 'note',
+      label: 'Note',
+      icon: 'document-text-outline',
+      color: '#64748b',
+      data: null,
+      rawText: '',
+    };
   }
 
   // 1. Subtasks Tracker Check
@@ -44,6 +51,7 @@ export const analyzeContent = (title, desc) => {
       });
       continue;
     }
+
     const colonIdx = part.indexOf(':');
     if (colonIdx > 0 && colonIdx < part.length - 1) {
       const topic = part.slice(0, colonIdx).trim();
@@ -51,24 +59,34 @@ export const analyzeContent = (title, desc) => {
       const sLow = statusRaw.toLowerCase();
       const isLikelyStatus = statusKeywords.some((k) => sLow.includes(k)) || /^\d+--/.test(sLow);
       if (isLikelyStatus && topic.length < 60) {
-        genuineSubtasks.push({ id: `subtask-${i}`, topic, status: statusRaw });
+        genuineSubtasks.push({
+          id: `subtask-${i}`,
+          topic,
+          status: statusRaw,
+        });
       }
     }
   }
 
-  if (genuineSubtasks.length >= 2 || (genuineSubtasks.length === 1 && linesOrParts.length === 1)) {
+  if (genuineSubtasks.length >= 2 || (genuineSubtasks.length === 1 && linesOrParts.length === 1 && (genuineSubtasks[0].status.includes('pending') || genuineSubtasks[0].status.includes('completed')))) {
     const totalCount = genuineSubtasks.length;
     const completedCount = genuineSubtasks.filter((item) => {
       const s = item.status.toLowerCase();
       return s.includes('completed') || s.includes('done') || s === 'finished';
     }).length;
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
     return {
       type: 'subtasks',
       label: 'Subtasks',
       icon: 'list-circle-outline',
       color: '#6366f1',
-      data: { items: genuineSubtasks, totalCount, completedCount, percentage },
+      data: {
+        items: genuineSubtasks,
+        totalCount,
+        completedCount,
+        percentage,
+      },
       rawText: safeDesc,
     };
   }
@@ -90,31 +108,47 @@ export const analyzeContent = (title, desc) => {
         const customUrl = m[2] ? m[2].trim() : null;
         let url = customUrl;
         if (!url) {
-          if (name.startsWith('http')) url = name;
-          else if (name.includes('.') && !name.includes(' ')) url = `https://${name}`;
-          else url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+          if (name.startsWith('http')) {
+            url = name;
+          } else if (name.includes('.') && !name.includes(' ')) {
+            url = `https://${name}`;
+          } else {
+            url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+          }
         }
-        resources.push({ id: `res-${idx}`, title: name, url });
+        resources.push({
+          id: `res-${idx}`,
+          title: name,
+          url,
+        });
       });
     } else if (urlMatches) {
       urlMatches.forEach((url, idx) => {
-        const domain = url.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
-        resources.push({ id: `res-${idx}`, title: domain || url, url });
+        let domain = url.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
+        resources.push({
+          id: `res-${idx}`,
+          title: domain || url,
+          url,
+        });
       });
     }
+
     if (resources.length > 0) {
       return {
         type: 'resources',
-        label: 'Links',
+        label: 'Links & Sites',
         icon: 'link-outline',
-        color: '#0891b2',
-        data: { items: resources, totalCount: resources.length },
+        color: '#06b6d4',
+        data: {
+          items: resources,
+          totalCount: resources.length,
+        },
         rawText: safeDesc,
       };
     }
   }
 
-  // 3. Documentation / Code
+  // 3. Documentation / Code Explanation
   const isCode =
     trimmed.includes('```') ||
     trimmed.includes('const ') ||
@@ -135,74 +169,90 @@ export const analyzeContent = (title, desc) => {
       type: 'docs',
       label: isCode ? 'Code' : 'Docs',
       icon: isCode ? 'code-slash-outline' : 'reader-outline',
-      color: '#7c3aed',
-      data: { isCode, lineCount: trimmed.split('\n').length },
+      color: '#8b5cf6',
+      data: {
+        isCode,
+        lineCount: trimmed.split('\n').length,
+      },
       rawText: safeDesc,
     };
   }
 
-  return { type: 'note', label: 'Note', icon: 'document-text-outline', color: '#64748b', data: null, rawText: safeDesc };
+  return {
+    type: 'note',
+    label: 'Note',
+    icon: 'document-text-outline',
+    color: '#64748b',
+    data: null,
+    rawText: safeDesc,
+  };
 };
 
 export const getSubtaskStatusType = (statusStr) => {
   if (!statusStr) return 'pending';
   const s = statusStr.toLowerCase();
-  if (s.includes('completed') || s.includes('done') || s === 'finished' || s === 'complete') return 'completed';
-  if (s.includes('progress') || s.includes('doing') || s.includes('active') || s.includes('--')) return 'in-progress';
+  if (s.includes('completed') || s.includes('done') || s === 'finished' || s === 'complete') {
+    return 'completed';
+  }
+  if (s.includes('progress') || s.includes('doing') || s.includes('active') || s.includes('--') || s.includes('[')) {
+    return 'in-progress';
+  }
   return 'pending';
 };
 
 export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
   const analysis = analyzeContent('', currentDesc);
-  if (analysis.type !== 'subtasks' || !analysis.data || !analysis.data.items[targetIndex]) return currentDesc;
+  if (analysis.type !== 'subtasks' || !analysis.data || !analysis.data.items[targetIndex]) {
+    return currentDesc;
+  }
 
   const item = analysis.data.items[targetIndex];
   const currentStatusType = getSubtaskStatusType(item.status);
 
   let newStatus = '';
-  if (currentStatusType === 'pending') newStatus = 'in-progress';
-  else if (currentStatusType === 'in-progress') newStatus = 'completed';
-  else newStatus = 'pending';
+  if (currentStatusType === 'pending') {
+    newStatus = 'in-progress';
+  } else if (currentStatusType === 'in-progress') {
+    if (item.status.includes('--')) {
+      newStatus = item.status.replace(/pending/gi, 'completed');
+    } else {
+      newStatus = 'completed';
+    }
+  } else {
+    if (item.status.includes('--')) {
+      newStatus = item.status.replace(/completed/gi, 'pending');
+    } else {
+      newStatus = 'pending';
+    }
+  }
 
   analysis.data.items[targetIndex].status = newStatus;
   return analysis.data.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
 };
 
 // ============================================================================
-// RELATIVE DATE FORMATTER
-// ============================================================================
-
-const formatRelativeDate = (dateStr) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  const now = new Date();
-  const diffMs = now - date;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return '1d ago';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-  return `${Math.floor(diffDays / 365)}y ago`;
-};
-
-// ============================================================================
-// MAIN COMPONENT
+// MAIN COMPACT COMPONENT (SINGLE DEFINITIVE LAYOUT)
 // ============================================================================
 
 const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const playSound = useCallback((soundFile) => {
-    try { new Audio(soundFile).play().catch(() => {}); } catch (e) {}
+    try {
+      const audio = new Audio(soundFile);
+      audio.play().catch(() => {});
+    } catch (e) {
+      console.warn('Audio playback error:', e);
+    }
   }, []);
 
   const [showScrollButton, setShowScrollButton] = useState(false);
   const taskNoteContainerRef = useRef(null);
 
+  // Context API
   const context = useContext(noteContext);
   const { notes, setNotes, getNotes, addNote, editNote, deleteNote, updateNoteCompletedStatus, filteredNotes, setFilteredNotes } = context;
   const navigate = useNavigate();
 
+  // Modal, editing and loading states
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -210,26 +260,34 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [editingNote, setEditingNote] = useState(null);
   const [isbtnLoading, setIsbtnLoading] = useState(false);
 
-  // Modal tabs & builder
+  // Modal subtask builder state
   const [activeModalTab, setActiveModalTab] = useState('plaintext');
   const [builderSubtasks, setBuilderSubtasks] = useState([]);
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
 
-  // Drag & Drop
+  // Drag & Drop State
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
   // Scroll handling
   useEffect(() => {
-    const handleScroll = () => setShowScrollButton(window.scrollY > 200);
+    const handleScroll = () => {
+      if (window.scrollY > 200) {
+        setShowScrollButton(true);
+      } else {
+        setShowScrollButton(false);
+      }
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  // Fetch initial notes
+  // Fetch initial notes on mount
   useEffect(() => {
     const fetchNotes = async () => {
       if (localStorage.getItem('token')) {
@@ -268,6 +326,10 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setNewSubtaskStatus('pending');
   };
 
+  const playRandomDeleteSound = () => {
+    playSound(Math.random() < 0.5 ? TaskDeleted1Sound : TaskDeleted2Sound);
+  };
+
   const syncBuilderToDescription = (subtasksList) => {
     if (subtasksList.length === 0) {
       setNote((prev) => ({ ...prev, description: '' }));
@@ -280,7 +342,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const handleAddSubtaskToBuilder = (e) => {
     if (e) e.preventDefault();
     if (!newSubtaskTopic.trim()) return;
-    const newItem = { id: `builder-${Date.now()}-${Math.random()}`, topic: newSubtaskTopic.trim(), status: newSubtaskStatus || 'pending' };
+
+    const newItem = {
+      id: `builder-${Date.now()}-${Math.random()}`,
+      topic: newSubtaskTopic.trim(),
+      status: newSubtaskStatus || 'pending',
+    };
+
     const updated = [...builderSubtasks, newItem];
     setBuilderSubtasks(updated);
     setNewSubtaskTopic('');
@@ -295,8 +363,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   const handleCycleBuilderStatus = (index) => {
     const updated = [...builderSubtasks];
-    const cur = getSubtaskStatusType(updated[index].status);
-    updated[index].status = cur === 'pending' ? 'in-progress' : cur === 'in-progress' ? 'completed' : 'pending';
+    const currentStatus = getSubtaskStatusType(updated[index].status);
+    let nextStatus = 'pending';
+    if (currentStatus === 'pending') nextStatus = 'in-progress';
+    else if (currentStatus === 'in-progress') nextStatus = 'completed';
+    else nextStatus = 'pending';
+
+    updated[index].status = nextStatus;
     setBuilderSubtasks(updated);
     syncBuilderToDescription(updated);
   };
@@ -311,14 +384,14 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       setActiveModalTab('plaintext');
     } else if (presetType === 'interview') {
       const items = [
-        { id: 'p-1', topic: 'Interview', status: 'pending' },
-        { id: 'p-2', topic: 'Interview-prep', status: 'pending' },
-        { id: 'p-3', topic: 'Java', status: 'pending' },
-        { id: 'p-4', topic: 'SpringBoot', status: 'completed' },
-        { id: 'p-5', topic: 'Microservice-topics', status: 'pending' },
-        { id: 'p-6', topic: 'DSA', status: 'pending' },
-        { id: 'p-7', topic: 'System-design', status: 'pending' },
-        { id: 'p-8', topic: 'Coding', status: 'pending' },
+        { id: `p-1`, topic: 'Interview', status: 'pending' },
+        { id: `p-2`, topic: 'Interview-prep', status: 'pending' },
+        { id: `p-3`, topic: 'Java', status: 'pending' },
+        { id: `p-4`, topic: 'SpringBoot', status: 'completed' },
+        { id: `p-5`, topic: 'Microservice-topics', status: 'pending' },
+        { id: `p-6`, topic: 'DSA', status: 'pending' },
+        { id: `p-7`, topic: 'System-design', status: 'pending' },
+        { id: `p-8`, topic: 'Coding', status: 'pending' },
       ];
       setBuilderSubtasks(items);
       syncBuilderToDescription(items);
@@ -332,11 +405,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       setActiveModalTab('plaintext');
     } else if (presetType === 'sprint') {
       const items = [
-        { id: 'p-1', topic: 'UI/UX Design', status: 'completed' },
-        { id: 'p-2', topic: 'Backend API', status: 'in-progress' },
-        { id: 'p-3', topic: 'Frontend Integration', status: 'pending' },
-        { id: 'p-4', topic: 'Testing & QA', status: 'pending' },
-        { id: 'p-5', topic: 'Deployment', status: 'pending' },
+        { id: `p-1`, topic: 'UI/UX Design', status: 'completed' },
+        { id: `p-2`, topic: 'Backend API', status: 'in-progress' },
+        { id: `p-3`, topic: 'Frontend Integration', status: 'pending' },
+        { id: `p-4`, topic: 'Testing & QA', status: 'pending' },
+        { id: `p-5`, topic: 'Deployment', status: 'pending' },
       ];
       setBuilderSubtasks(items);
       syncBuilderToDescription(items);
@@ -344,7 +417,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   };
 
-  // Filter & sort notes
+  // Filter notes based on search query & priority
   useEffect(() => {
     const customOrderStr = localStorage.getItem('tasknote_custom_order');
     let orderMap = {};
@@ -352,7 +425,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       try {
         const orderArr = JSON.parse(customOrderStr);
         orderArr.forEach((id, idx) => { orderMap[id] = idx; });
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error parsing custom order:', e);
+      }
     }
 
     let filtered = notes.filter((item) => {
@@ -371,23 +446,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
         return orderA - orderB;
       });
     }
+
     setFilteredNotes(filtered);
   }, [notes, searchQuery, selectedPriority, setFilteredNotes]);
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (evt) => {
-      if (evt.key === 'Escape' && showModal) handleCancelTask();
+      if (evt.key === 'Escape' && showModal) {
+        handleCancelTask();
+      }
+
       if ((evt.key === '+' || evt.key === 'n' || evt.key === 'N') && !showModal && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         evt.preventDefault();
         openModal();
       }
     };
+
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [showModal, handleCancelTask]);
 
-  // Drag & Drop
+  // Drag and Drop
   const handleDragStart = (e, index) => {
     setDraggingIndex(index);
     e.dataTransfer.effectAllowed = 'move';
@@ -397,7 +477,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const handleDragOver = (e, index) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (dragOverIndex !== index) setDragOverIndex(index);
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
   };
 
   const handleDrop = (e, targetIndex) => {
@@ -407,12 +489,16 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       setDragOverIndex(null);
       return;
     }
+
     const updatedList = Array.from(filteredNotes);
     const [draggedItem] = updatedList.splice(draggingIndex, 1);
     updatedList.splice(targetIndex, 0, draggedItem);
+
     setFilteredNotes(updatedList);
+
     const orderIds = updatedList.map((item) => item._id);
     localStorage.setItem('tasknote_custom_order', JSON.stringify(orderIds));
+
     if (typeof setNotes === 'function') {
       const notesCopy = Array.from(notes);
       notesCopy.sort((a, b) => {
@@ -424,67 +510,69 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       });
       setNotes(notesCopy);
     }
+
     setDraggingIndex(null);
     setDragOverIndex(null);
   };
 
-  const handleDragEnd = () => { setDraggingIndex(null); setDragOverIndex(null); };
+  const handleDragEnd = () => {
+    setDraggingIndex(null);
+    setDragOverIndex(null);
+  };
 
-  // Add / Edit submit
+  // Add / Edit task submission
   const handleAddTask = async (e) => {
     e.preventDefault();
     setIsbtnLoading(true);
+
     let finalDescription = note.description.trim();
     if (activeModalTab === 'structured' && builderSubtasks.length > 0) {
       finalDescription = builderSubtasks.map((item) => `${item.topic}: ${item.status}`).join(' , ');
     }
+
     if (isEditing && editingNote) {
-      editNote(editingNote._id, note.title, finalDescription, note.tag).then(() => {
-        setNote({ title: '', description: '', tag: 'medium' });
-        setIsEditing(false);
-        setIsbtnLoading(false);
-        handleCancelTask();
-      });
+      editNote(editingNote._id, note.title, finalDescription, note.tag)
+        .then(() => {
+          setNote({ title: '', description: '', tag: 'medium' });
+          setIsEditing(false);
+          setIsbtnLoading(false);
+          handleCancelTask();
+        });
     } else {
-      addNote(note.title, finalDescription, note.tag).then(() => {
-        setNote({ title: '', description: '', tag: 'medium' });
-        playSound(AddTaskSound);
-        setIsbtnLoading(false);
-        handleCancelTask();
-      });
+      addNote(note.title, finalDescription, note.tag)
+        .then(() => {
+          setNote({ title: '', description: '', tag: 'medium' });
+          playSound(AddTaskSound);
+          setIsbtnLoading(false);
+          handleCancelTask();
+        });
     }
   };
 
-  const onChange = (e) => setNote({ ...note, [e.target.name]: e.target.value });
+  const onChange = (e) => {
+    setNote({ ...note, [e.target.name]: e.target.value });
+  };
 
   const getPriorityColor = (tag) => {
-    if (tag === 'low') return '#059669';
-    if (tag === 'medium') return '#7c3aed';
-    if (tag === 'high') return '#e11d48';
-    return '#7c3aed';
+    if (tag === 'low') return '#10b981';
+    if (tag === 'medium') return '#6366f1';
+    if (tag === 'high') return '#f43f5e';
+    return '#6366f1';
   };
 
-  const getPriorityLabel = (tag) => {
-    if (tag === 'high') return 'HIGH';
-    if (tag === 'medium') return 'MED';
-    if (tag === 'low') return 'LOW';
-    return 'MED';
-  };
-
-  const getPriorityClass = (tag) => {
-    if (tag === 'high') return 'prio-high';
-    if (tag === 'medium') return 'prio-med';
-    if (tag === 'low') return 'prio-low';
-    return 'prio-med';
-  };
-
+  // Toggle completion of the entire note
   const toggleNoteCompletion = async (noteItem) => {
     const completed = !noteItem.completed;
     noteItem.completed = completed;
-    playSound(completed ? TaskCompletedSound : UnCompletedTaskSound);
+    if (!completed) {
+      playSound(UnCompletedTaskSound);
+    } else {
+      playSound(TaskCompletedSound);
+    }
     await updateNoteCompletedStatus(noteItem._id, completed);
   };
 
+  // SILENT Subtask toggle directly on the card
   const handleCardSubtaskClick = async (e, noteItem, subtaskIndex) => {
     e.stopPropagation();
     const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIndex);
@@ -493,16 +581,25 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   };
 
+  // Open resource link safely
   const handleOpenResource = (e, url) => {
     e.stopPropagation();
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
+  // Edit Note Trigger
   const updateNote = (currentNote) => {
     setIsEditing(true);
     setShowModal(true);
     setEditingNote(currentNote);
-    setNote({ title: currentNote.title, description: currentNote.description, tag: currentNote.tag || 'medium' });
+    setNote({
+      title: currentNote.title,
+      description: currentNote.description,
+      tag: currentNote.tag || 'medium',
+    });
+
     const analysis = analyzeContent(currentNote.title, currentNote.description);
     if (analysis.type === 'subtasks' && analysis.data) {
       setBuilderSubtasks(analysis.data.items);
@@ -513,33 +610,42 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   };
 
+  // Delete Task Trigger
   const taskDeleted = (event, noteItem) => {
     event.stopPropagation();
-    if (window.confirm(`Delete "${noteItem.title}"?`)) {
-      playSound(Math.random() < 0.5 ? TaskDeleted1Sound : TaskDeleted2Sound);
+    const confirmBox = window.confirm(`Delete "${noteItem.title}"?`);
+    if (confirmBox === true) {
+      playRandomDeleteSound();
       deleteNote(noteItem._id);
     }
   };
 
-  // Highlight search matches
+  // Search matches highlighting
   const highlightMatches = (text, query) => {
     if (!query || typeof text !== 'string') return text;
     const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`(${escapedQuery})`, 'gi');
     const parts = text.split(regex);
-    return parts.map((part, index) =>
-      regex.test(part) ? <span key={index} className="search-highlight">{part}</span> : part
-    );
+    return parts.map((part, index) => {
+      if (regex.test(part)) {
+        return (
+          <span key={index} className="search-highlight-badge">
+            {part}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
-  // Render docs text
+  // Render docs text compactly
   const renderDocsContent = (text, query) => {
     if (!text) return null;
     const lines = text.split('\n').filter(Boolean);
     return (
-      <div className="docs-block">
+      <div className="compact-docs-box">
         {lines.map((line, idx) => (
-          <div key={idx} className="doc-line">
+          <div key={idx} className="compact-doc-line">
             <span className="doc-bullet">•</span>
             <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
           </div>
@@ -548,158 +654,145 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     );
   };
 
-  // Subtask chip class
-  const getChipClass = (statusType) => {
-    if (statusType === 'completed') return 'subtask-chip chip-done';
-    if (statusType === 'in-progress') return 'subtask-chip chip-prog';
-    return 'subtask-chip chip-pend';
-  };
-
-  // Builder status display
-  const getBuilderStatusClass = (statusType) => {
-    if (statusType === 'completed') return 'builder-status-btn bstatus-done';
-    if (statusType === 'in-progress') return 'builder-status-btn bstatus-prog';
-    return 'builder-status-btn bstatus-pend';
-  };
-
-  const getBuilderStatusLabel = (statusType) => {
-    if (statusType === 'completed') return '✓ Done';
-    if (statusType === 'in-progress') return '⚡ Active';
-    return '⏳ Pending';
-  };
-
   return (
-    <div className="page-wrapper">
-      <main className="page-container" ref={taskNoteContainerRef}>
-
-        {/* Page Header */}
-        <div className="page-header">
-          <h1 className="page-title">
-            {selectedPriority === 'All' ? 'My Tasks' : `${selectedPriority} Priority`}
-          </h1>
-          {!isLoading && (
-            <span className="page-count">
-              {filteredNotes.length} {filteredNotes.length === 1 ? 'task' : 'tasks'}
+    <div className="sleek-page-wrapper">
+      <main className="sleek-app-container" ref={taskNoteContainerRef}>
+        {/* Sleek Dashboard Control Bar */}
+        <div className="sleek-dashboard-bar">
+          <div className="sleek-title-area">
+            <h1 className="sleek-view-title">
+              {selectedPriority === 'All' ? 'Tasks' : `${selectedPriority} Priority`}
+            </h1>
+            <span className="sleek-badge-count">
+              {filteredNotes.length}
             </span>
-          )}
+          </div>
         </div>
 
-        {/* Task Feed */}
+        {/* Unified Sleek Task Feed */}
         {isLoading ? (
-          <div className="task-feed">
-            {Array.from({ length: 5 }, (_, i) => (
-              <div className="skeleton-card" key={`sk-${i}`}>
-                <Skeleton circle height={20} width={20} />
-                <div>
-                  <Skeleton height={14} width="55%" />
-                  <Skeleton height={11} width="30%" style={{ marginTop: 6 }} />
+          <div className="sleek-tasks-feed">
+            {Array.from({ length: 5 }, (_, index) => (
+              <div className="sleek-task-row skeleton-row" key={`skeleton-${index}`}>
+                <Skeleton circle height={18} width={18} />
+                <div style={{ flex: 1 }}>
+                  <Skeleton height={14} width="50%" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredNotes.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <ion-icon name="sparkles-outline"></ion-icon>
-            </div>
-            <h2 className="empty-title">
-              {searchQuery ? 'No matching tasks' : 'No tasks yet'}
-            </h2>
-            <p className="empty-subtitle">
-              {searchQuery
-                ? `No tasks match "${searchQuery}". Try a different search.`
-                : 'Create your first task, link collection, or note below.'}
-            </p>
-            <button type="button" className="empty-cta" onClick={openModal}>
+          <div className="sleek-empty-card">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <h3>{searchQuery ? 'No matching tasks' : 'No tasks here yet'}</h3>
+            <p>{searchQuery ? `No tasks match "${searchQuery}".` : 'Add your first task or link collection.'}</p>
+            <button type="button" onClick={openModal}>
               <ion-icon name="add"></ion-icon>
               <span>Create Task</span>
             </button>
           </div>
         ) : (
-          <div className="task-feed">
+          <div className="sleek-tasks-feed">
             {filteredNotes.map((noteItem, index) => {
-              const isDragging = draggingIndex === index;
-              const isOver = dragOverIndex === index;
+              const isItemDragging = draggingIndex === index;
+              const isItemOver = dragOverIndex === index;
               const analysis = analyzeContent(noteItem.title, noteItem.description);
 
               return (
                 <article
-                  key={noteItem._id}
-                  className={`task-card ${noteItem.completed ? 'card-completed' : ''} ${isDragging ? 'card-dragging' : ''} ${isOver ? 'card-drag-over' : ''}`}
+                  className={`sleek-task-row ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
+                  key={noteItem._id}
                   draggable={true}
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
-                  style={{ '--card-accent': getPriorityColor(noteItem.tag) }}
+                  style={{
+                    '--row-accent': getPriorityColor(noteItem.tag),
+                  }}
                 >
-                  {/* Col 1 — Checkbox */}
-                  <div className="task-checkbox-wrap">
-                    <button
-                      type="button"
-                      className={`task-check ${noteItem.completed ? 'is-done' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); toggleNoteCompletion(noteItem); }}
-                      title={noteItem.completed ? 'Mark pending' : 'Mark complete'}
-                    >
-                      <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
-                    </button>
-                  </div>
+                  {/* Left: Complete Toggle Circle */}
+                  <button
+                    type="button"
+                    className={`sleek-check-circle ${noteItem.completed ? 'checked' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleNoteCompletion(noteItem);
+                    }}
+                    title={noteItem.completed ? 'Mark pending' : 'Mark done'}
+                  >
+                    <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
+                  </button>
 
-                  {/* Col 2 — Body */}
-                  <div className="task-body">
-                    {/* Title */}
-                    <span className={`task-title ${noteItem.completed ? 'is-struck' : ''}`}>
-                      {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
-                    </span>
-
-                    {/* Meta tags (priority + category) — below title */}
-                    <div className="task-meta-row">
-                      <span className={`task-priority-tag ${getPriorityClass(noteItem.tag)}`}>
-                        {getPriorityLabel(noteItem.tag)}
-                      </span>
+                  {/* Center: Main Task Content */}
+                  <div className="sleek-task-content">
+                    {/* Header line: Tags & Title */}
+                    <div className="sleek-title-line">
                       <span
-                        className="task-cat-tag"
-                        style={{ color: analysis.color, background: `${analysis.color}14`, borderColor: `${analysis.color}30` }}
+                        className="sleek-priority-tag"
+                        style={{
+                          color: getPriorityColor(noteItem.tag),
+                          backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
+                        }}
+                      >
+                        {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
+                      </span>
+
+                      <span
+                        className="sleek-cat-tag"
+                        style={{
+                          color: analysis.color,
+                          backgroundColor: `${analysis.color}10`,
+                        }}
                       >
                         <ion-icon name={analysis.icon}></ion-icon>
-                        {analysis.label}
+                        <span>{analysis.label}</span>
+                      </span>
+
+                      <span className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}>
+                        {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                       </span>
                     </div>
 
-                    {/* Content: dynamic type rendering */}
-                    <div className="task-content-area">
-
-                      {/* SUBTASKS */}
+                    {/* Content Section: Dynamic rendering */}
+                    <div className="sleek-body-area">
+                      {/* TYPE 1: SUBTASKS TRACKER */}
                       {analysis.type === 'subtasks' && analysis.data && (
-                        <div className="subtasks-block">
-                          <div className="subtasks-progress">
-                            <div className="progress-track">
+                        <div className="sleek-subtasks-group">
+                          <div className="sleek-mini-progress">
+                            <div className="sleek-progress-bar-wrap">
                               <div
-                                className="progress-fill"
+                                className="sleek-progress-bar-fill"
                                 style={{
                                   width: `${analysis.data.percentage}%`,
                                   background: analysis.data.percentage === 100 ? '#10b981' : '#6366f1',
                                 }}
-                              />
+                              ></div>
                             </div>
-                            <span className="progress-label">
-                              {analysis.data.completedCount}/{analysis.data.totalCount} done
+                            <span className="sleek-progress-num">
+                              {analysis.data.completedCount}/{analysis.data.totalCount} ({analysis.data.percentage}%)
                             </span>
                           </div>
-                          <div className="subtasks-chips">
+
+                          <div className="sleek-chips-wrap">
                             {analysis.data.items.map((subItem, sIdx) => {
                               const statusType = getSubtaskStatusType(subItem.status);
                               return (
                                 <button
                                   key={subItem.id || sIdx}
                                   type="button"
-                                  className={getChipClass(statusType)}
+                                  className={`sleek-subtask-pill status-${statusType}`}
                                   onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
-                                  title={`Click to cycle: ${subItem.status}`}
+                                  title={`Click to cycle status (${subItem.status})`}
                                 >
-                                  <span className="chip-dot"></span>
-                                  <span>{searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}</span>
+                                  <span className="pill-dot"></span>
+                                  <span className="pill-topic">
+                                    {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
+                                  </span>
+                                  <span className="pill-status">
+                                    {searchQuery ? highlightMatches(subItem.status, searchQuery) : subItem.status}
+                                  </span>
                                 </button>
                               );
                             })}
@@ -707,53 +800,58 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         </div>
                       )}
 
-                      {/* LINKS */}
+                      {/* TYPE 2: LINKS & SITES */}
                       {analysis.type === 'resources' && analysis.data && (
-                        <div className="resources-block">
+                        <div className="sleek-resources-wrap">
                           {analysis.data.items.map((res, rIdx) => (
                             <button
                               key={res.id || rIdx}
                               type="button"
-                              className="resource-pill"
+                              className="sleek-resource-pill"
                               onClick={(e) => handleOpenResource(e, res.url)}
                               title={`Open ${res.title}`}
                             >
                               <ion-icon name="open-outline"></ion-icon>
-                              {searchQuery ? highlightMatches(res.title, searchQuery) : res.title}
+                              <span>{searchQuery ? highlightMatches(res.title, searchQuery) : res.title}</span>
                             </button>
                           ))}
                         </div>
                       )}
 
-                      {/* DOCS */}
+                      {/* TYPE 3: DOCS & CODE */}
                       {analysis.type === 'docs' && renderDocsContent(noteItem.description, searchQuery)}
 
-                      {/* PLAIN NOTE */}
-                      {analysis.type === 'note' && noteItem.description && (
-                        <p className="task-note-text">
+                      {/* TYPE 4: PLAIN NOTE */}
+                      {analysis.type === 'note' && (
+                        <p className="sleek-plain-text">
                           {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  {/* Col 3 — Actions */}
-                  <div className="task-actions">
-                    <span className="task-date">{formatRelativeDate(noteItem.date)}</span>
-                    <div className="task-btns">
+                  {/* Right: Meta & Fast Actions */}
+                  <div className="sleek-right-actions">
+                    <span className="sleek-date-meta">{noteItem.date}</span>
+
+                    <div className="sleek-action-icons">
                       <button
                         type="button"
-                        className="task-btn btn-edit"
-                        onClick={(e) => { e.stopPropagation(); updateNote(noteItem); }}
-                        title="Edit task"
+                        className="sleek-icon-btn edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateNote(noteItem);
+                        }}
+                        title="Edit"
                       >
                         <ion-icon name="create-outline"></ion-icon>
                       </button>
+
                       <button
                         type="button"
-                        className="task-btn btn-delete"
+                        className="sleek-icon-btn delete"
                         onClick={(e) => taskDeleted(e, noteItem)}
-                        title="Delete task"
+                        title="Delete"
                       >
                         <ion-icon name="trash-outline"></ion-icon>
                       </button>
@@ -766,184 +864,182 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
         )}
       </main>
 
-      {/* Floating Add Button */}
+      {/* Sticky Floating Center Add Task Button */}
       <button
         type="button"
-        className="fab-add"
+        className="sleek-floating-add-btn"
         onClick={openModal}
-        title="Add Task (N or +)"
+        title="Add Task (Press '+' or 'N')"
       >
         <ion-icon name="add"></ion-icon>
         <span>Add Task</span>
-        <span className="fab-kbd">N</span>
+        <span className="floating-kbd-shortcut">N</span>
       </button>
 
-      {/* Scroll to top */}
+      {/* Scroll to Top */}
       {showScrollButton && (
-        <button type="button" className="scroll-top-btn" onClick={scrollToTop} title="Scroll to top">
-          <ArrowCircleUpSharpIcon fontSize="small" />
+        <button type="button" className="sleek-scroll-top" onClick={scrollToTop} title="Scroll Top">
+          <ArrowCircleUpSharpIcon />
         </button>
       )}
 
-      {/* ================================================================= */}
-      {/* MODAL                                                              */}
-      {/* ================================================================= */}
+      {/* =================================================================== */}
+      {/* SLEEK ADD / EDIT MODAL                                              */}
+      {/* =================================================================== */}
       {showModal && (
-        <div className="modal-overlay" onClick={handleCancelTask}>
-          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
-
-            {/* Header */}
-            <div className="modal-head">
-              <div className="modal-head-left">
-                <div className="modal-head-icon">
-                  <ion-icon name={isEditing ? 'create-outline' : 'sparkles-outline'}></ion-icon>
-                </div>
-                <span className="modal-head-title">{isEditing ? 'Edit Task' : 'New Task'}</span>
+        <div className="sleek-modal-overlay" onClick={handleCancelTask}>
+          <div className="sleek-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="sleek-modal-header">
+              <div className="modal-title-box">
+                <ion-icon name={isEditing ? 'create-outline' : 'sparkles-outline'}></ion-icon>
+                <h3>{isEditing ? 'Edit Task' : 'New Task'}</h3>
               </div>
-              <button type="button" className="modal-close" onClick={handleCancelTask}>
+              <button type="button" className="modal-close-ico" onClick={handleCancelTask}>
                 <ion-icon name="close"></ion-icon>
               </button>
             </div>
 
-            {/* Body */}
-            <form className="modal-body" onSubmit={handleAddTask}>
-
-              {/* Title */}
-              <div>
-                <label className="field-label" htmlFor="task-title">Title</label>
+            <form className="sleek-modal-form" onSubmit={handleAddTask}>
+              {/* Title & Priority Row */}
+              <div className="modal-row-title">
                 <input
                   id="task-title"
                   name="title"
                   type="text"
-                  className="field-title-input"
+                  className="sleek-input-title"
                   value={note.title}
                   onChange={onChange}
                   minLength={3}
-                  placeholder="e.g. WEBSITE: English practice, Sprint v2..."
+                  placeholder="Task title (e.g. WEBSITE: English practice, Sprint Beta)..."
                   required
                   autoFocus
                 />
-              </div>
 
-              {/* Priority */}
-              <div>
-                <label className="field-label">Priority</label>
-                <div className="priority-row">
-                  {[
-                    { id: 'high', label: '🔴 High' },
-                    { id: 'medium', label: '🟣 Med' },
-                    { id: 'low', label: '🟢 Low' },
-                  ].map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className={`prio-btn prio-${p.id === 'medium' ? 'med' : p.id} ${note.tag === p.id ? 'active' : ''}`}
-                      onClick={() => setNote({ ...note, tag: p.id })}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mode tabs */}
-              <div>
-                <label className="field-label">Content Type</label>
-                <div className="modal-tabs">
+                <div className="sleek-modal-priority">
                   <button
                     type="button"
-                    className={`modal-tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveModalTab('plaintext');
-                      if (builderSubtasks.length > 0) syncBuilderToDescription(builderSubtasks);
-                    }}
+                    className={`priority-pill high ${note.tag === 'high' ? 'active' : ''}`}
+                    onClick={() => setNote({ ...note, tag: 'high' })}
                   >
-                    📝 Text / Links / Docs
+                    High
                   </button>
                   <button
                     type="button"
-                    className={`modal-tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveModalTab('structured');
-                      if (builderSubtasks.length === 0 && note.description.trim()) {
-                        const a = analyzeContent('', note.description);
-                        if (a.type === 'subtasks' && a.data) setBuilderSubtasks(a.data.items);
+                    className={`priority-pill med ${note.tag === 'medium' ? 'active' : ''}`}
+                    onClick={() => setNote({ ...note, tag: 'medium' })}
+                  >
+                    Med
+                  </button>
+                  <button
+                    type="button"
+                    className={`priority-pill low ${note.tag === 'low' ? 'active' : ''}`}
+                    onClick={() => setNote({ ...note, tag: 'low' })}
+                  >
+                    Low
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode Tabs */}
+              <div className="sleek-modal-tabs">
+                <button
+                  type="button"
+                  className={`tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveModalTab('plaintext');
+                    if (builderSubtasks.length > 0) {
+                      syncBuilderToDescription(builderSubtasks);
+                    }
+                  }}
+                >
+                  📝 Text / Links / Docs
+                </button>
+                <button
+                  type="button"
+                  className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveModalTab('structured');
+                    if (builderSubtasks.length === 0 && note.description.trim()) {
+                      const analysis = analyzeContent('', note.description);
+                      if (analysis.type === 'subtasks' && analysis.data) {
+                        setBuilderSubtasks(analysis.data.items);
                       }
-                    }}
-                  >
-                    📋 Subtask Builder ({builderSubtasks.length})
-                  </button>
-                </div>
+                    }
+                  }}
+                >
+                  📋 Subtask Builder ({builderSubtasks.length})
+                </button>
               </div>
 
-              {/* TAB 1: Plain text */}
+              {/* TAB 1: UNIVERSAL TEXT */}
               {activeModalTab === 'plaintext' && (
-                <div>
-                  <div className="presets-bar" style={{ marginBottom: 8 }}>
-                    <span className="presets-label">⚡ Presets:</span>
-                    {[
-                      { key: 'websites', label: '🔗 Websites' },
-                      { key: 'interview', label: '💼 Interview' },
-                      { key: 'docs', label: '📄 Docs' },
-                      { key: 'sprint', label: '🚀 Sprint' },
-                    ].map((p) => (
-                      <button key={p.key} type="button" className="preset-btn" onClick={() => handleApplyPresetTemplate(p.key)}>
-                        {p.label}
-                      </button>
-                    ))}
+                <div className="modal-tab-body">
+                  <div className="sleek-presets-bar">
+                    <span>⚡ Presets:</span>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('websites')}>🔗 Websites List</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>💼 Interview Prep</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('docs')}>📄 Docs / Notes</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>🚀 Dev Sprint</button>
                   </div>
+
                   <textarea
                     id="task-desc"
                     name="description"
-                    className="field-textarea"
+                    className="sleek-textarea"
                     value={note.description}
                     rows={4}
                     onChange={onChange}
                     minLength={3}
-                    placeholder="Enter text, { [Free4Talk] , [Speak & improve] }, bullet lists, code snippets..."
+                    placeholder="Enter plain text, bracketed sites { [Free4Talk] , [Speak & improve] }, docs, or subtasks..."
                     required
-                  />
+                  ></textarea>
                 </div>
               )}
 
-              {/* TAB 2: Subtask Builder */}
+              {/* TAB 2: STRUCTURED BUILDER */}
               {activeModalTab === 'structured' && (
-                <div>
-                  <div className="builder-row" style={{ marginBottom: 8 }}>
+                <div className="modal-tab-body">
+                  <div className="builder-input-row">
                     <input
                       type="text"
-                      className="builder-topic-input"
-                      placeholder="Subtask topic — press Enter to add..."
+                      placeholder="Add subtask topic & press Enter..."
                       value={newSubtaskTopic}
                       onChange={(e) => setNewSubtaskTopic(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSubtaskToBuilder(); } }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddSubtaskToBuilder();
+                        }
+                      }}
                     />
                     <select
-                      className="builder-status-select"
                       value={newSubtaskStatus}
                       onChange={(e) => setNewSubtaskStatus(e.target.value)}
                     >
                       <option value="pending">⏳ Pending</option>
                       <option value="in-progress">⚡ In Progress</option>
-                      <option value="completed">✅ Done</option>
+                      <option value="completed">✅ Completed</option>
                     </select>
-                    <button type="button" className="builder-add-btn" onClick={handleAddSubtaskToBuilder} disabled={!newSubtaskTopic.trim()}>
+                    <button
+                      type="button"
+                      onClick={handleAddSubtaskToBuilder}
+                      disabled={!newSubtaskTopic.trim()}
+                    >
                       Add
                     </button>
                   </div>
 
-                  <div className="builder-list">
+                  <div className="builder-list-scroll">
                     {builderSubtasks.length === 0 ? (
-                      <div className="builder-empty-msg">No subtasks yet — type above or pick a preset!</div>
+                      <div className="builder-empty">Type a subtask topic above or use the Presets!</div>
                     ) : (
                       builderSubtasks.map((item, idx) => {
                         const statusType = getSubtaskStatusType(item.status);
                         return (
-                          <div key={item.id || idx} className="builder-item">
-                            <span className="builder-idx">{idx + 1}.</span>
+                          <div className="builder-item-row" key={item.id || idx}>
+                            <span className="idx-num">{idx + 1}.</span>
                             <input
                               type="text"
-                              className="builder-item-input"
                               value={item.topic}
                               onChange={(e) => {
                                 const updated = [...builderSubtasks];
@@ -954,12 +1050,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                             />
                             <button
                               type="button"
-                              className={getBuilderStatusClass(statusType)}
+                              className={`status-btn status-${statusType}`}
                               onClick={() => handleCycleBuilderStatus(idx)}
                             >
-                              {getBuilderStatusLabel(statusType)}
+                              {statusType === 'completed' && 'Completed'}
+                              {statusType === 'in-progress' && 'In Progress'}
+                              {statusType === 'pending' && 'Pending'}
                             </button>
-                            <button type="button" className="builder-trash" onClick={() => handleRemoveBuilderSubtask(idx)}>
+                            <button
+                              type="button"
+                              className="trash-btn"
+                              onClick={() => handleRemoveBuilderSubtask(idx)}
+                            >
                               <ion-icon name="trash-outline"></ion-icon>
                             </button>
                           </div>
@@ -970,12 +1072,21 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </div>
               )}
 
-              {/* Footer */}
-              <div className="modal-foot">
-                <button type="button" className="btn-cancel" onClick={handleCancelTask} disabled={isbtnLoading}>
+              {/* Modal Footer */}
+              <div className="sleek-modal-footer">
+                <button
+                  type="button"
+                  className="sleek-btn-cancel"
+                  onClick={handleCancelTask}
+                  disabled={isbtnLoading}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-submit" disabled={isbtnLoading || note.title.length < 3}>
+                <button
+                  type="submit"
+                  className="sleek-btn-submit"
+                  disabled={isbtnLoading || note.title.length < 3}
+                >
                   {isbtnLoading ? (
                     <DotPulse size={18} color="#ffffff" />
                   ) : (

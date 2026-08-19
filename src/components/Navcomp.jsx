@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import noteContext from '../context/notes/noteContext';
-import './Note.css';
+import './Skeleton.css';
 
 const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [suggestions] = useState(['/commits', 'High', 'Medium', 'Low']);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -11,26 +12,28 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
 
   const context = useContext(noteContext);
   const { notes } = context || { notes: [] };
+
   const navigate = useNavigate();
 
+  // Productivity metrics
   const totalNotes = notes ? notes.length : 0;
   const completedNotes = notes ? notes.filter((n) => n.completed).length : 0;
 
-  // Global '/' hotkey to focus search
+  // Global hotkey to focus search bar on '/'
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
-      if (
-        e.key === '/' &&
-        document.activeElement !== searchInputRef.current &&
-        !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)
-      ) {
+      if (e.key === '/' && document.activeElement !== searchInputRef.current && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
       }
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
+
+  const toggleMenu = () => setIsMenuVisible(!isMenuVisible);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -42,6 +45,7 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
   const handlePrioritySelect = (priority) => {
     localStorage.setItem('tasknote_selected_priority', priority);
     onSearchChange(searchQuery, priority);
+    setIsMenuVisible(false);
   };
 
   const handleSearchChange = (e) => {
@@ -60,120 +64,146 @@ const Navcomp = ({ searchQuery, onSearchChange, selectedPriority }) => {
   const clearSearch = () => {
     onSearchChange('', selectedPriority);
     setShowSuggestions(false);
-    searchInputRef.current?.focus();
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   };
 
   const handleSuggestionClick = (suggestion) => {
-    if (['High', 'Medium', 'Low'].includes(suggestion)) {
+    if (suggestion === 'High' || suggestion === 'Medium' || suggestion === 'Low') {
       handlePrioritySelect(suggestion);
     } else {
       onSearchChange(suggestion, selectedPriority);
     }
     setShowSuggestions(false);
+    setIsMenuVisible(false);
   };
 
   const priorityOptions = [
-    { label: 'All',  value: 'All',    color: '#6366f1' },
-    { label: 'High', value: 'High',   color: '#e11d48' },
-    { label: 'Med',  value: 'Medium', color: '#7c3aed' },
-    { label: 'Low',  value: 'Low',    color: '#059669' },
+    { label: 'All', value: 'All', color: '#6366f1' },
+    { label: 'High', value: 'High', color: '#f43f5e' },
+    { label: 'Med', value: 'Medium', color: '#6366f1' },
+    { label: 'Low', value: 'Low', color: '#10b981' },
   ];
 
   const hasToken = typeof window !== 'undefined' && Boolean(localStorage.getItem('token'));
+
   if (!hasToken) return null;
 
   return (
-    <header className="nav-root">
-      <div className="nav-inner">
+    <header className="sleek-header">
+      <div className="sleek-header-inner">
         {/* Brand */}
-        <Link to="/" className="nav-brand">
-          <div className="nav-brand-mark">
-            <ion-icon name="checkbox-outline"></ion-icon>
+        <Link to="/" className="sleek-brand">
+          <div className="sleek-brand-icon">
+            <ion-icon name="checkbox"></ion-icon>
           </div>
-          <span className="nav-brand-text">TaskNote</span>
+          <span className="sleek-brand-name">TaskNote</span>
           {totalNotes > 0 && (
-            <span className="nav-task-pill" title={`${completedNotes}/${totalNotes} completed`}>
+            <span className="sleek-stat-tag" title={`${completedNotes}/${totalNotes} done`}>
               {completedNotes}/{totalNotes}
             </span>
           )}
         </Link>
 
         {/* Search */}
-        <div className="nav-search">
-          <span className="nav-search-icon">
-            <ion-icon name="search-outline"></ion-icon>
-          </span>
+        <div className="sleek-search-wrap">
+          <ion-icon name="search-outline" class="sleek-search-ico"></ion-icon>
           <input
             ref={searchInputRef}
             type="text"
-            className="nav-search-input"
+            className="sleek-search-input"
             value={searchQuery}
             onChange={handleSearchChange}
-            onFocus={() => { if (searchQuery.trim()) setShowSuggestions(true); }}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-            placeholder="Search tasks... (/)"
+            onFocus={() => {
+              if (searchQuery.trim()) setShowSuggestions(true);
+            }}
+            placeholder="Search tasks, links, subtasks... (/)"
           />
-          <div className="nav-search-right">
-            {searchQuery ? (
-              <button type="button" className="nav-clear-btn" onClick={clearSearch}>
-                <ion-icon name="close-circle"></ion-icon>
-              </button>
-            ) : (
-              <span className="nav-kbd">/</span>
-            )}
-          </div>
+          {searchQuery ? (
+            <button type="button" className="sleek-search-clear" onClick={clearSearch}>
+              <ion-icon name="close-circle"></ion-icon>
+            </button>
+          ) : (
+            <span className="sleek-search-kbd">/</span>
+          )}
 
           {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="nav-suggestions">
-              {filteredSuggestions.map((s, i) => (
-                <div key={i} className="nav-suggestion-item" onMouseDown={() => handleSuggestionClick(s)}>
+            <div className="sleek-suggestions-popover">
+              {filteredSuggestions.map((suggestion, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="sleek-suggestion-item"
+                >
                   <ion-icon name="sparkles-outline"></ion-icon>
-                  <span>{s}</span>
+                  <span>{suggestion}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Priority tabs — desktop only */}
-        <div className="nav-priority-tabs">
-          {priorityOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={`nav-tab ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
-              onClick={() => handlePrioritySelect(opt.value)}
-            >
-              {opt.value !== 'All' && (
-                <span className="nav-tab-dot" style={{ backgroundColor: opt.color }}></span>
-              )}
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* Priority Tabs & Logout */}
+        <div className="sleek-header-right">
+          <div className="sleek-priority-tabs">
+            {priorityOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`sleek-tab-btn ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
+                onClick={() => handlePrioritySelect(opt.value)}
+              >
+                {opt.value !== 'All' && (
+                  <span className="sleek-dot" style={{ backgroundColor: opt.color }}></span>
+                )}
+                <span>{opt.label}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* Logout */}
-        <button type="button" className="nav-logout" onClick={handleLogout} title="Logout">
-          <ion-icon name="log-out-outline"></ion-icon>
-        </button>
-      </div>
-
-      {/* Mobile priority bar — scrollable row, always visible below nav */}
-      <div className="nav-mobile-bar">
-        {priorityOptions.map((opt) => (
           <button
-            key={opt.value}
             type="button"
-            className={`nav-mobile-tab ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
-            onClick={() => handlePrioritySelect(opt.value)}
+            className="sleek-logout-btn"
+            onClick={handleLogout}
+            title="Logout"
           >
-            {opt.label}
+            <ion-icon name="log-out-outline"></ion-icon>
           </button>
-        ))}
-        <button type="button" className="nav-mobile-tab" onClick={handleLogout} style={{ color: '#e11d48' }}>
-          Logout
-        </button>
+
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            className="sleek-mobile-toggle"
+            onClick={toggleMenu}
+            aria-label="Toggle Menu"
+          >
+            <ion-icon name={isMenuVisible ? 'close-outline' : 'menu-outline'}></ion-icon>
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {isMenuVisible && (
+        <div className="sleek-mobile-drawer">
+          <div className="sleek-mobile-pills">
+            {priorityOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={`sleek-mobile-pill ${selectedPriority.toLowerCase() === opt.value.toLowerCase() ? 'active' : ''}`}
+                onClick={() => handlePrioritySelect(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <button type="button" className="sleek-mobile-logout" onClick={handleLogout}>
+            <ion-icon name="log-out-outline"></ion-icon>
+            <span>Logout</span>
+          </button>
+        </div>
+      )}
     </header>
   );
 };
