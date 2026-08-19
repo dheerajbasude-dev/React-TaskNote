@@ -261,6 +261,12 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [editingNote, setEditingNote] = useState(null);
   const [isbtnLoading, setIsbtnLoading] = useState(false);
 
+  // Delete Confirmation Modal states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Modal subtask builder state
   const [activeModalTab, setActiveModalTab] = useState('plaintext');
   const [builderSubtasks, setBuilderSubtasks] = useState([]);
@@ -617,14 +623,34 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   };
 
-  // Delete Task Trigger
+  // Delete Task Modal Trigger
   const taskDeleted = (event, noteItem) => {
     event.stopPropagation();
-    const confirmBox = window.confirm(`Delete "${noteItem.title}"?`);
-    if (confirmBox === true) {
-      playRandomDeleteSound();
-      deleteNote(noteItem._id);
-    }
+    setTaskToDelete(noteItem);
+    setDeleteConfirmInput('');
+    setShowDeleteModal(true);
+  };
+
+  // Confirm Delete Handler (with sound playback upon deletion)
+  const handleConfirmDelete = async (e) => {
+    if (e) e.preventDefault();
+    if (!taskToDelete) return;
+    if (deleteConfirmInput.trim().toUpperCase() !== 'DELETE') return;
+
+    setIsDeleting(true);
+    playRandomDeleteSound();
+    await deleteNote(taskToDelete._id);
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+    setTaskToDelete(null);
+    setDeleteConfirmInput('');
+  };
+
+  // Cancel Delete
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setTaskToDelete(null);
+    setDeleteConfirmInput('');
   };
 
   // Search matches highlighting
@@ -1140,6 +1166,85 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     <DotPulse size={18} color="#ffffff" />
                   ) : (
                     <span>{isEditing ? 'Save Changes' : 'Create Task'}</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sleek Glassmorphic Delete Confirmation Modal */}
+      {showDeleteModal && taskToDelete && (
+        <div
+          className="sleek-modal-overlay"
+          onClick={handleCancelDelete}
+        >
+          <div
+            className="sleek-delete-modal-box"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sleek-delete-modal-header">
+              <div className="sleek-delete-icon-orb">
+                <ion-icon name="trash-outline"></ion-icon>
+              </div>
+              <div className="sleek-delete-header-text">
+                <h2>Delete Task</h2>
+                <p>This action is permanent and cannot be undone.</p>
+              </div>
+              <button
+                type="button"
+                className="sleek-modal-close-btn"
+                onClick={handleCancelDelete}
+                aria-label="Close"
+              >
+                <ion-icon name="close"></ion-icon>
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmDelete} className="sleek-delete-modal-body">
+              <div className="sleek-delete-target-preview">
+                <span className="preview-label">Task:</span>
+                <span className="preview-title">{taskToDelete.title}</span>
+              </div>
+
+              <div className="sleek-delete-input-group">
+                <label htmlFor="delete-confirm-input">
+                  Type <strong>DELETE</strong> to enable the delete button:
+                </label>
+                <input
+                  id="delete-confirm-input"
+                  type="text"
+                  className="sleek-delete-input"
+                  placeholder="Type DELETE to confirm"
+                  value={deleteConfirmInput}
+                  onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                  autoFocus
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="sleek-delete-modal-footer">
+                <button
+                  type="button"
+                  className="sleek-btn-cancel"
+                  onClick={handleCancelDelete}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="sleek-btn-danger"
+                  disabled={deleteConfirmInput.trim().toUpperCase() !== 'DELETE' || isDeleting}
+                >
+                  {isDeleting ? (
+                    <DotPulse size={16} color="#ffffff" />
+                  ) : (
+                    <>
+                      <ion-icon name="trash-outline"></ion-icon>
+                      <span>Delete Task</span>
+                    </>
                   )}
                 </button>
               </div>
