@@ -13,7 +13,7 @@ import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
 // ============================================================================
-// SMART MULTI-CATEGORY CONTENT ANALYZER & PARSER
+// CONTENT CLASSIFIER & PARSER
 // ============================================================================
 
 export const analyzeContent = (title, desc) => {
@@ -32,10 +32,7 @@ export const analyzeContent = (title, desc) => {
     };
   }
 
-  // --------------------------------------------------------------------------
-  // 1. Check for Genuine Subtasks Tracker
-  // Must have clear status markers like ": pending", ": in-progress", ": completed", ": done", ": 12--pending[14:25]", or "- [x] / - [ ]"
-  // --------------------------------------------------------------------------
+  // 1. Subtasks Tracker Check
   const linesOrParts = trimmed.includes('\n')
     ? trimmed.split('\n').map((s) => s.trim()).filter(Boolean)
     : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
@@ -94,18 +91,14 @@ export const analyzeContent = (title, desc) => {
     };
   }
 
-  // --------------------------------------------------------------------------
-  // 2. Check for Links / Resources / Websites / Bookmarks
-  // e.g. "{ [Free4Talk] , [Speak & improve] , [Speaking Club] }" or "https://..." or "[Google](https://google.com)"
-  // --------------------------------------------------------------------------
+  // 2. Links & Resources Check
   const bracketMatches = [...trimmed.matchAll(/\[([^\]]+)\](?:\(([^)]+)\))?/g)];
   const urlMatches = trimmed.match(/https?:\/\/[^\s,)]+/gi);
   const isWebsiteCategory =
     safeTitle.toLowerCase().includes('website') ||
     safeTitle.toLowerCase().includes('link') ||
     safeTitle.toLowerCase().includes('resource') ||
-    safeTitle.toLowerCase().includes('site') ||
-    safeTitle.toLowerCase().includes('url');
+    safeTitle.toLowerCase().includes('site');
 
   if (bracketMatches.length > 0 || urlMatches || isWebsiteCategory) {
     const resources = [];
@@ -155,18 +148,13 @@ export const analyzeContent = (title, desc) => {
     }
   }
 
-  // --------------------------------------------------------------------------
-  // 3. Check for Documentation / Code Explanation / Guide
-  // e.g. contains code snippets, markdown headers, bullet lists, or multiline text
-  // --------------------------------------------------------------------------
+  // 3. Documentation / Code Explanation
   const isCode =
     trimmed.includes('```') ||
     trimmed.includes('const ') ||
     trimmed.includes('function ') ||
     trimmed.includes('import ') ||
     trimmed.includes('def ') ||
-    trimmed.includes('class ') ||
-    trimmed.includes('SELECT ') ||
     trimmed.includes('=>');
 
   const isDoc =
@@ -174,13 +162,12 @@ export const analyzeContent = (title, desc) => {
     trimmed.includes('\n* ') ||
     trimmed.includes('\n1. ') ||
     trimmed.includes('##') ||
-    trimmed.includes('`') ||
     trimmed.split('\n').length >= 3;
 
   if (isCode || isDoc) {
     return {
       type: 'docs',
-      label: isCode ? 'Code / Snippet' : 'Documentation',
+      label: isCode ? 'Code' : 'Docs',
       icon: isCode ? 'code-slash-outline' : 'reader-outline',
       color: '#8b5cf6',
       data: {
@@ -191,9 +178,6 @@ export const analyzeContent = (title, desc) => {
     };
   }
 
-  // --------------------------------------------------------------------------
-  // 4. Default: General Note
-  // --------------------------------------------------------------------------
   return {
     type: 'note',
     label: 'Note',
@@ -247,7 +231,7 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
 };
 
 // ============================================================================
-// MAIN COMPACT & PREMIUM COMPONENT
+// MAIN COMPACT COMPONENT (SINGLE DEFINITIVE LAYOUT)
 // ============================================================================
 
 const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
@@ -268,16 +252,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const { notes, setNotes, getNotes, addNote, editNote, deleteNote, updateNoteCompletedStatus, filteredNotes, setFilteredNotes } = context;
   const navigate = useNavigate();
 
-  // Layout View Mode (Compact Grid vs Compact List)
-  const [viewMode, setViewMode] = useState(
-    () => localStorage.getItem('tasknote_view_mode') || 'grid'
-  );
-
-  const handleToggleViewMode = (mode) => {
-    setViewMode(mode);
-    localStorage.setItem('tasknote_view_mode', mode);
-  };
-
   // Modal, editing and loading states
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -287,7 +261,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [isbtnLoading, setIsbtnLoading] = useState(false);
 
   // Modal subtask builder state
-  const [activeModalTab, setActiveModalTab] = useState('plaintext'); // 'plaintext' | 'structured'
+  const [activeModalTab, setActiveModalTab] = useState('plaintext');
   const [builderSubtasks, setBuilderSubtasks] = useState([]);
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
@@ -357,7 +331,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     playSound(Math.random() < 0.5 ? TaskDeleted1Sound : TaskDeleted2Sound);
   };
 
-  // Synchronize builderSubtasks with note.description
   const syncBuilderToDescription = (subtasksList) => {
     if (subtasksList.length === 0) {
       setNote((prev) => ({ ...prev, description: '' }));
@@ -402,7 +375,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     syncBuilderToDescription(updated);
   };
 
-  // Preset Template Insertions
   const handleApplyPresetTemplate = (presetType) => {
     if (presetType === 'websites') {
       setNote((prev) => ({
@@ -429,7 +401,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       setNote((prev) => ({
         ...prev,
         title: prev.title || 'DOCS: Architecture & Key Points',
-        description: '## Key Implementation Notes\n- Use React hooks for clean lifecycle management\n- Persist user custom orders in localStorage\n- Fast API endpoints for real-time sync\n```js\n// Example utility\nconst isDone = (status) => status === "completed";\n```',
+        description: '## Key Implementation Notes\n- Use React hooks for clean lifecycle management\n- Persist user custom orders in localStorage\n- Fast API endpoints for real-time sync',
       }));
       setActiveModalTab('plaintext');
     } else if (presetType === 'sprint') {
@@ -601,7 +573,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     await updateNoteCompletedStatus(noteItem._id, completed);
   };
 
-  // SILENT Subtask toggle directly from the card (NO LOUD EDIT TONE)
+  // SILENT Subtask toggle directly on the card
   const handleCardSubtaskClick = async (e, noteItem, subtaskIndex) => {
     e.stopPropagation();
     const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIndex);
@@ -677,124 +649,74 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setSearchQuery('');
   }
 
-  // Helper to render docs/code text with clean formatting
+  // Render docs text compactly
   const renderDocsContent = (text, query) => {
     if (!text) return null;
-    const lines = text.split('\n');
+    const lines = text.split('\n').filter(Boolean);
     return (
-      <div className="premium-docs-block">
-        {lines.map((line, idx) => {
-          if (line.startsWith('## ')) {
-            return (
-              <h4 key={idx} className="docs-heading">
-                {highlightMatches(line.replace('## ', ''), query)}
-              </h4>
-            );
-          }
-          if (line.startsWith('- ') || line.startsWith('* ')) {
-            return (
-              <div key={idx} className="docs-bullet-row">
-                <span className="docs-bullet">•</span>
-                <span className="docs-bullet-text">{highlightMatches(line.slice(2), query)}</span>
-              </div>
-            );
-          }
-          if (line.startsWith('```')) {
-            return null;
-          }
-          return (
-            <p key={idx} className="docs-paragraph">
-              {highlightMatches(line, query)}
-            </p>
-          );
-        })}
+      <div className="compact-docs-box">
+        {lines.slice(0, 3).map((line, idx) => (
+          <div key={idx} className="compact-doc-line">
+            <span className="doc-bullet">•</span>
+            <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
+          </div>
+        ))}
+        {lines.length > 3 && (
+          <span className="compact-more-lines">+{lines.length - 3} more lines</span>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="premium-page-wrapper">
-      <main className="premium-app-container" ref={taskNoteContainerRef}>
-        {/* Dashboard Control Bar */}
-        <div className="premium-dashboard-bar">
-          <div className="premium-heading-row">
-            <h1 className="premium-page-title">
-              {selectedPriority === 'All' ? 'All Tasks' : `${selectedPriority} Priority`}
+    <div className="sleek-page-wrapper">
+      <main className="sleek-app-container" ref={taskNoteContainerRef}>
+        {/* Sleek Dashboard Control Bar */}
+        <div className="sleek-dashboard-bar">
+          <div className="sleek-title-area">
+            <h1 className="sleek-view-title">
+              {selectedPriority === 'All' ? 'Tasks' : `${selectedPriority} Priority`}
             </h1>
-            <span className="premium-count-badge">
+            <span className="sleek-badge-count">
               {filteredNotes.length}
             </span>
           </div>
 
-          <div className="premium-bar-actions">
-            {/* View Switcher: Grid vs List */}
-            <div className="premium-view-switcher">
-              <button
-                type="button"
-                className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => handleToggleViewMode('grid')}
-                title="Grid View"
-              >
-                <ion-icon name="grid-outline"></ion-icon>
-              </button>
-              <button
-                type="button"
-                className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => handleToggleViewMode('list')}
-                title="List View"
-              >
-                <ion-icon name="list-outline"></ion-icon>
-              </button>
-            </div>
-
-            {/* Clean Add Task Button */}
-            <button
-              type="button"
-              className="premium-add-task-btn"
-              onClick={openModal}
-              title="Add task (+)"
-            >
-              <ion-icon name="add"></ion-icon>
-              <span>New Task</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="sleek-create-btn"
+            onClick={openModal}
+            title="Create Task (or press '+')"
+          >
+            <ion-icon name="add"></ion-icon>
+            <span>New Task</span>
+          </button>
         </div>
 
-        {/* Task Cards: Grid vs List Mode */}
+        {/* Unified Sleek Task Feed */}
         {isLoading ? (
-          <div className="premium-tasks-container view-grid">
-            {Array.from({ length: 6 }, (_, index) => (
-              <div className="premium-card skeleton-card" key={`skeleton-${index}`}>
-                <div className="premium-card-header">
-                  <Skeleton circle height={20} width={20} />
-                  <Skeleton height={18} width="60%" />
-                </div>
-                <div className="premium-card-body">
-                  <Skeleton count={2} />
+          <div className="sleek-tasks-feed">
+            {Array.from({ length: 5 }, (_, index) => (
+              <div className="sleek-task-row skeleton-row" key={`skeleton-${index}`}>
+                <Skeleton circle height={18} width={18} />
+                <div style={{ flex: 1 }}>
+                  <Skeleton height={14} width="50%" />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredNotes.length === 0 ? (
-          <div className="premium-empty-state">
-            <div className="empty-icon-box">
-              <ion-icon name="sparkles-outline"></ion-icon>
-            </div>
-            <h3 className="empty-title">
-              {searchQuery ? 'No matching tasks' : 'No tasks found'}
-            </h3>
-            <p className="empty-desc">
-              {searchQuery
-                ? `No tasks match "${searchQuery}".`
-                : 'Click "New Task" above to add your first note, links list, or progress tracker.'}
-            </p>
-            <button type="button" className="empty-create-btn" onClick={openModal}>
+          <div className="sleek-empty-card">
+            <ion-icon name="sparkles-outline"></ion-icon>
+            <h3>{searchQuery ? 'No matching tasks' : 'No tasks here yet'}</h3>
+            <p>{searchQuery ? `No tasks match "${searchQuery}".` : 'Add your first task or link collection.'}</p>
+            <button type="button" onClick={openModal}>
               <ion-icon name="add"></ion-icon>
-              <span>New Task</span>
+              <span>Create Task</span>
             </button>
           </div>
         ) : (
-          <div className={`premium-tasks-container view-${viewMode}`}>
+          <div className="sleek-tasks-feed">
             {filteredNotes.map((noteItem, index) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
@@ -803,7 +725,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
               return (
                 <article
-                  className={`premium-card ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
+                  className={`sleek-task-row ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
                   key={noteItem._id}
                   draggable={true}
@@ -812,191 +734,162 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
                   style={{
-                    '--card-accent': getPriorityColor(noteItem.tag),
+                    '--row-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  <div className="premium-left-accent"></div>
+                  {/* Left: Complete Toggle Circle */}
+                  <button
+                    type="button"
+                    className={`sleek-check-circle ${noteItem.completed ? 'checked' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleNoteCompletion(noteItem);
+                    }}
+                    title={noteItem.completed ? 'Mark pending' : 'Mark done'}
+                  >
+                    <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
+                  </button>
 
-                  <div className="premium-card-main">
-                    {/* Header Row */}
-                    <div className="premium-card-header">
-                      <div className="premium-title-group">
-                        {/* Priority Badge */}
-                        <span
-                          className="premium-priority-badge"
-                          style={{
-                            color: getPriorityColor(noteItem.tag),
-                            backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
-                            borderColor: `${getPriorityColor(noteItem.tag)}30`,
-                          }}
-                        >
-                          {(noteItem.tag || 'medium').toUpperCase()}
-                        </span>
+                  {/* Center: Main Task Content */}
+                  <div className="sleek-task-content">
+                    {/* Header line: Tags & Title */}
+                    <div className="sleek-title-line">
+                      <span
+                        className="sleek-priority-tag"
+                        style={{
+                          color: getPriorityColor(noteItem.tag),
+                          backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
+                        }}
+                      >
+                        {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
+                      </span>
 
-                        {/* Content Category Badge */}
-                        <span
-                          className="premium-category-badge"
-                          style={{
-                            color: analysis.color,
-                            backgroundColor: `${analysis.color}10`,
-                            borderColor: `${analysis.color}25`,
-                          }}
-                        >
-                          <ion-icon name={analysis.icon}></ion-icon>
-                          <span>{analysis.label}</span>
-                        </span>
+                      <span
+                        className="sleek-cat-tag"
+                        style={{
+                          color: analysis.color,
+                          backgroundColor: `${analysis.color}10`,
+                        }}
+                      >
+                        <ion-icon name={analysis.icon}></ion-icon>
+                        <span>{analysis.label}</span>
+                      </span>
 
-                        <h2 className={`premium-title ${noteItem.completed ? 'strike' : ''}`}>
-                          {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
-                        </h2>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="premium-actions">
-                        <button
-                          type="button"
-                          className="premium-btn edit"
-                          title="Edit task"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            updateNote(noteItem);
-                          }}
-                        >
-                          <ion-icon name="create-outline"></ion-icon>
-                        </button>
-
-                        <button
-                          type="button"
-                          className={`premium-btn complete ${noteItem.completed ? 'active' : ''}`}
-                          title={noteItem.completed ? 'Mark pending' : 'Mark done'}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleNoteCompletion(noteItem);
-                          }}
-                        >
-                          <ion-icon name={noteItem.completed ? 'checkmark-circle' : 'ellipse-outline'}></ion-icon>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="premium-btn delete"
-                          title="Delete task"
-                          onClick={(e) => taskDeleted(e, noteItem)}
-                        >
-                          <ion-icon name="trash-outline"></ion-icon>
-                        </button>
-                      </div>
+                      <span className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}>
+                        {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
+                      </span>
                     </div>
 
-                    {/* Body: Dynamic Rendering Based on Content Type */}
-                    <div className="premium-card-body">
+                    {/* Content Section: Dynamic rendering */}
+                    <div className="sleek-body-area">
                       {/* TYPE 1: SUBTASKS TRACKER */}
                       {analysis.type === 'subtasks' && analysis.data && (
-                        <div className="premium-subtasks-wrapper">
-                          <div className="premium-progress-row">
-                            <div className="premium-progress-track">
+                        <div className="sleek-subtasks-group">
+                          <div className="sleek-mini-progress">
+                            <div className="sleek-progress-bar-wrap">
                               <div
-                                className="premium-progress-bar"
+                                className="sleek-progress-bar-fill"
                                 style={{
                                   width: `${analysis.data.percentage}%`,
-                                  background: analysis.data.percentage === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)',
+                                  background: analysis.data.percentage === 100 ? '#10b981' : '#6366f1',
                                 }}
                               ></div>
                             </div>
-                            <span className="premium-progress-text">
+                            <span className="sleek-progress-num">
                               {analysis.data.completedCount}/{analysis.data.totalCount} ({analysis.data.percentage}%)
                             </span>
                           </div>
 
-                          <div className="premium-chips-grid">
+                          <div className="sleek-chips-wrap">
                             {(isExpanded ? analysis.data.items : analysis.data.items.slice(0, 6)).map((subItem, sIdx) => {
                               const statusType = getSubtaskStatusType(subItem.status);
                               return (
                                 <button
                                   key={subItem.id || sIdx}
                                   type="button"
-                                  className={`premium-subtask-chip status-${statusType}`}
+                                  className={`sleek-subtask-pill status-${statusType}`}
                                   onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
-                                  title={`Click to cycle status (Now: ${subItem.status})`}
+                                  title={`Click to cycle status (${subItem.status})`}
                                 >
-                                  <span className="chip-icon">
-                                    {statusType === 'completed' && <ion-icon name="checkmark-circle"></ion-icon>}
-                                    {statusType === 'in-progress' && <ion-icon name="flash"></ion-icon>}
-                                    {statusType === 'pending' && <ion-icon name="ellipse-outline"></ion-icon>}
+                                  <span className="pill-dot"></span>
+                                  <span className="pill-topic">
+                                    {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
                                   </span>
-                                  <span className="chip-topic">
-                                    {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}:
-                                  </span>
-                                  <span className="chip-status">
+                                  <span className="pill-status">
                                     {searchQuery ? highlightMatches(subItem.status, searchQuery) : subItem.status}
                                   </span>
                                 </button>
                               );
                             })}
-                          </div>
 
-                          {analysis.data.items.length > 6 && (
-                            <button
-                              type="button"
-                              className="premium-expand-btn"
-                              onClick={(e) => toggleCardExpansion(e, noteItem._id)}
-                            >
-                              <span>{isExpanded ? 'Show less' : `+${analysis.data.items.length - 6} more subtasks`}</span>
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      {/* TYPE 2: LINKS & RESOURCES / WEBSITES */}
-                      {analysis.type === 'resources' && analysis.data && (
-                        <div className="premium-resources-wrapper">
-                          <div className="premium-resources-grid">
-                            {analysis.data.items.map((res, rIdx) => (
+                            {analysis.data.items.length > 6 && (
                               <button
-                                key={res.id || rIdx}
                                 type="button"
-                                className="premium-resource-chip"
-                                onClick={(e) => handleOpenResource(e, res.url)}
-                                title={`Open ${res.title} in new tab`}
+                                className="sleek-expand-chip"
+                                onClick={(e) => toggleCardExpansion(e, noteItem._id)}
                               >
-                                <ion-icon name="open-outline" class="resource-link-icon"></ion-icon>
-                                <span className="resource-title">
-                                  {searchQuery ? highlightMatches(res.title, searchQuery) : res.title}
-                                </span>
+                                {isExpanded ? 'less' : `+${analysis.data.items.length - 6}`}
                               </button>
-                            ))}
+                            )}
                           </div>
                         </div>
                       )}
 
-                      {/* TYPE 3: DOCUMENTATION & EXPLANATIONS */}
-                      {analysis.type === 'docs' && (
-                        <div className="premium-docs-wrapper">
-                          {renderDocsContent(noteItem.description, searchQuery)}
+                      {/* TYPE 2: LINKS & SITES */}
+                      {analysis.type === 'resources' && analysis.data && (
+                        <div className="sleek-resources-wrap">
+                          {analysis.data.items.map((res, rIdx) => (
+                            <button
+                              key={res.id || rIdx}
+                              type="button"
+                              className="sleek-resource-pill"
+                              onClick={(e) => handleOpenResource(e, res.url)}
+                              title={`Open ${res.title}`}
+                            >
+                              <ion-icon name="open-outline"></ion-icon>
+                              <span>{searchQuery ? highlightMatches(res.title, searchQuery) : res.title}</span>
+                            </button>
+                          ))}
                         </div>
                       )}
 
-                      {/* TYPE 4: GENERAL NOTE */}
+                      {/* TYPE 3: DOCS & CODE */}
+                      {analysis.type === 'docs' && renderDocsContent(noteItem.description, searchQuery)}
+
+                      {/* TYPE 4: PLAIN NOTE */}
                       {analysis.type === 'note' && (
-                        <p className="premium-plain-desc">
+                        <p className="sleek-plain-text">
                           {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    {/* Footer */}
-                    <div className="premium-card-footer">
-                      <div className="premium-footer-meta">
-                        <span className="premium-date" title={`Created ${noteItem.date}`}>
-                          <ion-icon name="calendar-outline"></ion-icon> {noteItem.date}
-                        </span>
-                        {Boolean(noteItem.updatedDate && (noteItem.isEdited || noteItem.updatedDate !== noteItem.date)) && (
-                          <span className="premium-edited-badge" title={`Edited ${noteItem.updatedDate}`}>
-                            • edited
-                          </span>
-                        )}
-                      </div>
-                      <span className="premium-idx">#{index + 1}</span>
+                  {/* Right: Meta & Fast Actions */}
+                  <div className="sleek-right-actions">
+                    <span className="sleek-date-meta">{noteItem.date}</span>
+
+                    <div className="sleek-action-icons">
+                      <button
+                        type="button"
+                        className="sleek-icon-btn edit"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateNote(noteItem);
+                        }}
+                        title="Edit"
+                      >
+                        <ion-icon name="create-outline"></ion-icon>
+                      </button>
+
+                      <button
+                        type="button"
+                        className="sleek-icon-btn delete"
+                        onClick={(e) => taskDeleted(e, noteItem)}
+                        title="Delete"
+                      >
+                        <ion-icon name="trash-outline"></ion-icon>
+                      </button>
                     </div>
                   </div>
                 </article>
@@ -1008,64 +901,61 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
       {/* Scroll to Top */}
       {showScrollButton && (
-        <button type="button" className="premium-scroll-top" onClick={scrollToTop} title="Scroll Top">
+        <button type="button" className="sleek-scroll-top" onClick={scrollToTop} title="Scroll Top">
           <ArrowCircleUpSharpIcon />
         </button>
       )}
 
       {/* =================================================================== */}
-      {/* PREMIUM ADD / EDIT MODAL                                            */}
+      {/* SLEEK ADD / EDIT MODAL                                              */}
       {/* =================================================================== */}
       {showModal && (
-        <div className="premium-modal-overlay" onClick={handleCancelTask}>
-          <div className="premium-modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="premium-modal-header">
-              <div className="modal-title-wrap">
-                <div className="modal-icon-badge">
-                  <ion-icon name={isEditing ? 'create-outline' : 'sparkles-outline'}></ion-icon>
-                </div>
+        <div className="sleek-modal-overlay" onClick={handleCancelTask}>
+          <div className="sleek-modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="sleek-modal-header">
+              <div className="modal-title-box">
+                <ion-icon name={isEditing ? 'create-outline' : 'sparkles-outline'}></ion-icon>
                 <h3>{isEditing ? 'Edit Task' : 'New Task'}</h3>
               </div>
-              <button type="button" className="modal-close" onClick={handleCancelTask}>
+              <button type="button" className="modal-close-ico" onClick={handleCancelTask}>
                 <ion-icon name="close"></ion-icon>
               </button>
             </div>
 
-            <form className="premium-modal-form" onSubmit={handleAddTask}>
+            <form className="sleek-modal-form" onSubmit={handleAddTask}>
               {/* Title & Priority Row */}
-              <div className="modal-top-row">
+              <div className="modal-row-title">
                 <input
                   id="task-title"
                   name="title"
                   type="text"
-                  className="modal-title-input"
+                  className="sleek-input-title"
                   value={note.title}
                   onChange={onChange}
                   minLength={3}
-                  placeholder="Task title (e.g. WEBSITE: English practice, Job Prep, Docs)..."
+                  placeholder="Task title (e.g. WEBSITE: English practice, Sprint Beta)..."
                   required
                   autoFocus
                 />
 
-                {/* Priority Selector Pills */}
-                <div className="modal-priority-pills">
+                <div className="sleek-modal-priority">
                   <button
                     type="button"
-                    className={`modal-p-btn high ${note.tag === 'high' ? 'active' : ''}`}
+                    className={`priority-pill high ${note.tag === 'high' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'high' })}
                   >
                     High
                   </button>
                   <button
                     type="button"
-                    className={`modal-p-btn med ${note.tag === 'medium' ? 'active' : ''}`}
+                    className={`priority-pill med ${note.tag === 'medium' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'medium' })}
                   >
                     Med
                   </button>
                   <button
                     type="button"
-                    className={`modal-p-btn low ${note.tag === 'low' ? 'active' : ''}`}
+                    className={`priority-pill low ${note.tag === 'low' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'low' })}
                   >
                     Low
@@ -1074,164 +964,142 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               </div>
 
               {/* Mode Tabs */}
-              <div className="modal-subtasks-section">
-                <div className="modal-tabs-compact">
-                  <button
-                    type="button"
-                    className={`tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveModalTab('plaintext');
-                      if (builderSubtasks.length > 0) {
-                        syncBuilderToDescription(builderSubtasks);
-                      }
-                    }}
-                  >
-                    📝 Universal Editor / Text
-                  </button>
-                  <button
-                    type="button"
-                    className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveModalTab('structured');
-                      if (builderSubtasks.length === 0 && note.description.trim()) {
-                        const analysis = analyzeContent('', note.description);
-                        if (analysis.type === 'subtasks' && analysis.data) {
-                          setBuilderSubtasks(analysis.data.items);
-                        }
-                      }
-                    }}
-                  >
-                    📋 Subtask Builder ({builderSubtasks.length})
-                  </button>
-                </div>
-
-                {/* TAB 1: UNIVERSAL EDITOR (LINKS, DOCS, NOTES, CODE) */}
-                {activeModalTab === 'plaintext' && (
-                  <div className="modal-plain-wrap">
-                    {/* 1-Click Templates */}
-                    <div className="modal-templates-row">
-                      <span className="templates-label">⚡ 1-Click Presets:</span>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('websites')}>
-                        🔗 Websites List
-                      </button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>
-                        💼 Interview Prep
-                      </button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('docs')}>
-                        📄 Docs & Code
-                      </button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>
-                        🚀 Dev Sprint
-                      </button>
-                    </div>
-
-                    <textarea
-                      id="task-desc"
-                      name="description"
-                      className="modal-plain-textarea"
-                      value={note.description}
-                      rows={5}
-                      onChange={onChange}
-                      minLength={3}
-                      placeholder="Type plain text, bracketed sites { [Free4Talk] , [Speaking Club] }, documentation, or key-value subtasks..."
-                      required
-                    ></textarea>
-
-                    <span className="editor-helper-text">
-                      💡 <strong>Smart Categorization:</strong> TaskNote automatically detects if your text is a <strong>Website/Links list</strong>, <strong>Documentation</strong>, <strong>Subtasks Tracker</strong>, or <strong>General Note</strong>!
-                    </span>
-                  </div>
-                )}
-
-                {/* TAB 2: STRUCTURED SUBTASK BUILDER */}
-                {activeModalTab === 'structured' && (
-                  <div className="modal-builder-wrap">
-                    {/* Quick Add Row */}
-                    <div className="modal-quick-add-row">
-                      <input
-                        type="text"
-                        placeholder="Add subtask topic & press Enter..."
-                        value={newSubtaskTopic}
-                        onChange={(e) => setNewSubtaskTopic(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddSubtaskToBuilder();
-                          }
-                        }}
-                      />
-                      <select
-                        value={newSubtaskStatus}
-                        onChange={(e) => setNewSubtaskStatus(e.target.value)}
-                      >
-                        <option value="pending">⏳ Pending</option>
-                        <option value="in-progress">⚡ In Progress</option>
-                        <option value="completed">✅ Completed</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={handleAddSubtaskToBuilder}
-                        disabled={!newSubtaskTopic.trim()}
-                      >
-                        Add
-                      </button>
-                    </div>
-
-                    {/* Subtasks Item List */}
-                    <div className="modal-subtasks-scroll">
-                      {builderSubtasks.length === 0 ? (
-                        <div className="modal-empty-hint">
-                          Type a subtask topic above or use the presets in the Universal Editor!
-                        </div>
-                      ) : (
-                        builderSubtasks.map((item, idx) => {
-                          const statusType = getSubtaskStatusType(item.status);
-                          return (
-                            <div className="modal-subtask-row" key={item.id || idx}>
-                              <span className="row-num">{idx + 1}.</span>
-                              <input
-                                type="text"
-                                className="row-topic-input"
-                                value={item.topic}
-                                onChange={(e) => {
-                                  const updated = [...builderSubtasks];
-                                  updated[idx].topic = e.target.value;
-                                  setBuilderSubtasks(updated);
-                                  syncBuilderToDescription(updated);
-                                }}
-                              />
-                              <button
-                                type="button"
-                                className={`row-status-btn status-${statusType}`}
-                                onClick={() => handleCycleBuilderStatus(idx)}
-                                title="Click to cycle status"
-                              >
-                                {statusType === 'completed' && 'Completed'}
-                                {statusType === 'in-progress' && 'In Progress'}
-                                {statusType === 'pending' && 'Pending'}
-                              </button>
-                              <button
-                                type="button"
-                                className="row-del-btn"
-                                onClick={() => handleRemoveBuilderSubtask(idx)}
-                                title="Delete"
-                              >
-                                <ion-icon name="trash-outline"></ion-icon>
-                              </button>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div className="premium-modal-footer">
+              <div className="sleek-modal-tabs">
                 <button
                   type="button"
-                  className="modal-cancel-btn"
+                  className={`tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveModalTab('plaintext');
+                    if (builderSubtasks.length > 0) {
+                      syncBuilderToDescription(builderSubtasks);
+                    }
+                  }}
+                >
+                  📝 Text / Links / Docs
+                </button>
+                <button
+                  type="button"
+                  className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveModalTab('structured');
+                    if (builderSubtasks.length === 0 && note.description.trim()) {
+                      const analysis = analyzeContent('', note.description);
+                      if (analysis.type === 'subtasks' && analysis.data) {
+                        setBuilderSubtasks(analysis.data.items);
+                      }
+                    }
+                  }}
+                >
+                  📋 Subtask Builder ({builderSubtasks.length})
+                </button>
+              </div>
+
+              {/* TAB 1: UNIVERSAL TEXT */}
+              {activeModalTab === 'plaintext' && (
+                <div className="modal-tab-body">
+                  <div className="sleek-presets-bar">
+                    <span>⚡ Presets:</span>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('websites')}>🔗 Websites List</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>💼 Interview Prep</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('docs')}>📄 Docs / Notes</button>
+                    <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>🚀 Dev Sprint</button>
+                  </div>
+
+                  <textarea
+                    id="task-desc"
+                    name="description"
+                    className="sleek-textarea"
+                    value={note.description}
+                    rows={4}
+                    onChange={onChange}
+                    minLength={3}
+                    placeholder="Enter plain text, bracketed sites { [Free4Talk] , [Speak & improve] }, docs, or subtasks..."
+                    required
+                  ></textarea>
+                </div>
+              )}
+
+              {/* TAB 2: STRUCTURED BUILDER */}
+              {activeModalTab === 'structured' && (
+                <div className="modal-tab-body">
+                  <div className="builder-input-row">
+                    <input
+                      type="text"
+                      placeholder="Add subtask topic & press Enter..."
+                      value={newSubtaskTopic}
+                      onChange={(e) => setNewSubtaskTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddSubtaskToBuilder();
+                        }
+                      }}
+                    />
+                    <select
+                      value={newSubtaskStatus}
+                      onChange={(e) => setNewSubtaskStatus(e.target.value)}
+                    >
+                      <option value="pending">⏳ Pending</option>
+                      <option value="in-progress">⚡ In Progress</option>
+                      <option value="completed">✅ Completed</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={handleAddSubtaskToBuilder}
+                      disabled={!newSubtaskTopic.trim()}
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  <div className="builder-list-scroll">
+                    {builderSubtasks.length === 0 ? (
+                      <div className="builder-empty">Type a subtask topic above or use the Presets!</div>
+                    ) : (
+                      builderSubtasks.map((item, idx) => {
+                        const statusType = getSubtaskStatusType(item.status);
+                        return (
+                          <div className="builder-item-row" key={item.id || idx}>
+                            <span className="idx-num">{idx + 1}.</span>
+                            <input
+                              type="text"
+                              value={item.topic}
+                              onChange={(e) => {
+                                const updated = [...builderSubtasks];
+                                updated[idx].topic = e.target.value;
+                                setBuilderSubtasks(updated);
+                                syncBuilderToDescription(updated);
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className={`status-btn status-${statusType}`}
+                              onClick={() => handleCycleBuilderStatus(idx)}
+                            >
+                              {statusType === 'completed' && 'Completed'}
+                              {statusType === 'in-progress' && 'In Progress'}
+                              {statusType === 'pending' && 'Pending'}
+                            </button>
+                            <button
+                              type="button"
+                              className="trash-btn"
+                              onClick={() => handleRemoveBuilderSubtask(idx)}
+                            >
+                              <ion-icon name="trash-outline"></ion-icon>
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Modal Footer */}
+              <div className="sleek-modal-footer">
+                <button
+                  type="button"
+                  className="sleek-btn-cancel"
                   onClick={handleCancelTask}
                   disabled={isbtnLoading}
                 >
@@ -1239,11 +1107,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </button>
                 <button
                   type="submit"
-                  className="modal-save-btn"
+                  className="sleek-btn-submit"
                   disabled={isbtnLoading || note.title.length < 3}
                 >
                   {isbtnLoading ? (
-                    <DotPulse size={20} color="#ffffff" />
+                    <DotPulse size={18} color="#ffffff" />
                   ) : (
                     <span>{isEditing ? 'Save Changes' : 'Create Task'}</span>
                   )}
