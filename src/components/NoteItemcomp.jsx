@@ -711,10 +711,30 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  {/* Top Header Line: Smart Status Pill + Tags + Title + Date & Actions */}
+                  {/* Top Header Line: Title -> Priority -> Category / Status Pill -> Date & Actions */}
                   <div className="sleek-row-header">
                     <div className="sleek-row-header-left">
-                      {/* Smart Interactive Status & Category Pill */}
+                      {/* 1. Title */}
+                      <span
+                        className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
+                        draggable={false}
+                        onDragStart={(e) => e.stopPropagation()}
+                      >
+                        {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
+                      </span>
+
+                      {/* 2. Priority Tag */}
+                      <span
+                        className="sleek-priority-tag"
+                        style={{
+                          color: getPriorityColor(noteItem.tag),
+                          backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
+                        }}
+                      >
+                        {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
+                      </span>
+
+                      {/* 3. Smart Category / Status Pill */}
                       <button
                         type="button"
                         className={`sleek-status-pill ${noteItem.completed ? 'is-done' : ''}`}
@@ -734,24 +754,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                           {noteItem.completed ? 'Done' : analysis.label}
                         </span>
                       </button>
-
-                      <span
-                        className="sleek-priority-tag"
-                        style={{
-                          color: getPriorityColor(noteItem.tag),
-                          backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
-                        }}
-                      >
-                        {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
-                      </span>
-
-                      <span
-                        className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
-                        draggable={false}
-                        onDragStart={(e) => e.stopPropagation()}
-                      >
-                        {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
-                      </span>
                     </div>
 
                     <div className="sleek-row-header-right">
