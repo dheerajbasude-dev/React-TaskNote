@@ -484,14 +484,14 @@
 /* Search Matching Text Highlight Badge */
 .search-highlight-badge,
 mark.search-highlight-badge {
-  background: #fef08a !important;
-  color: #854d0e !important;
-  font-weight: 800 !important;
-  padding: 1px 4px !important;
-  border-radius: 3px !important;
-  box-shadow: 0 0 8px rgba(250, 204, 21, 0.6) !important;
-  border: 1px solid #facc15 !important;
-  display: inline !important;
+    background: #b685e5 !important;
+    color: #000 !important;
+    font-weight: 800 !important;
+    padding: 1px 4px !important;
+    border-radius: 3px !important;
+    box-shadow: 0 0 8px #e0cdf2 !important;
+    border: 1px solid #c490f5 !important;
+    display: inline !important;
 }
 
 .sleek-task-row.is-completed {
