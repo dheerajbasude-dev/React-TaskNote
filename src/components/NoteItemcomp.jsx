@@ -498,6 +498,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setNote({ title: '', description: '', tag: 'medium' });
   }, []);
 
+  const handleCancelDelete = useCallback(() => {
+    setShowDeleteModal(false);
+    setTaskToDelete(null);
+    setDeleteConfirmInput('');
+    setIsDeleting(false);
+  }, []);
+
   const openModal = () => {
     setShowModal(true);
     setIsEditing(false);
@@ -706,7 +713,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Open modal for editing
   const handleEditClick = (e, noteItem) => {
-    e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     setIsEditing(true);
     setEditingNote(noteItem);
 
@@ -735,28 +742,25 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Open delete confirmation modal
   const handleOpenDeleteModal = (e, noteItem) => {
-    e.stopPropagation();
+    if (e && e.stopPropagation) e.stopPropagation();
     setTaskToDelete(noteItem);
     setDeleteConfirmInput('');
     setShowDeleteModal(true);
   };
 
-  // Close delete confirmation modal
-  const handleCloseDeleteModal = () => {
-    setShowDeleteModal(false);
-    setTaskToDelete(null);
-    setDeleteConfirmInput('');
-    setIsDeleting(false);
-  };
+  // Aliases for compatibility
+  const updateNote = (noteItem) => handleEditClick({ stopPropagation: () => {} }, noteItem);
+  const taskDeleted = (e, noteItem) => handleOpenDeleteModal(e, noteItem);
 
   // Confirm delete handler
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (deleteConfirmInput.trim().toUpperCase() !== 'DELETE' || !taskToDelete) return;
     setIsDeleting(true);
     try {
       await deleteNote(taskToDelete._id);
       playRandomDeleteSound();
-      handleCloseDeleteModal();
+      handleCancelDelete();
     } catch (err) {
       console.warn('Delete failed', err);
     } finally {
@@ -980,6 +984,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                             e.stopPropagation();
                             toggleNoteCompletion(noteItem);
                           }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
                           title={noteItem.completed ? 'Mark pending' : 'Mark done'}
                         >
                           <ion-icon name={noteItem.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}></ion-icon>
@@ -990,9 +996,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                           className="sleek-icon-btn edit"
                           onClick={(e) => {
                             e.stopPropagation();
-                            updateNote(noteItem);
+                            handleEditClick(e, noteItem);
                           }}
-                          title="Edit"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                          title="Edit Task"
                         >
                           <ion-icon name="create-outline"></ion-icon>
                         </button>
@@ -1000,8 +1008,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         <button
                           type="button"
                           className="sleek-icon-btn delete"
-                          onClick={(e) => taskDeleted(e, noteItem)}
-                          title="Delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDeleteModal(e, noteItem);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                          title="Delete Task"
                         >
                           <ion-icon name="trash-outline"></ion-icon>
                         </button>
