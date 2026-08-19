@@ -381,49 +381,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     syncBuilderToDescription(updated);
   };
 
-  const handleApplyPresetTemplate = (presetType) => {
-    if (presetType === 'websites') {
-      setNote((prev) => ({
-        ...prev,
-        title: prev.title || 'WEBSITE: Resources & Useful Sites',
-        description: '{ [Free4Talk] , [Speak & improve] , [Speaking Club] , [Speak better every lesson] }',
-      }));
-      setActiveModalTab('plaintext');
-    } else if (presetType === 'interview') {
-      const items = [
-        { id: `p-1`, topic: 'Interview', status: 'pending' },
-        { id: `p-2`, topic: 'Interview-prep', status: 'pending' },
-        { id: `p-3`, topic: 'Java', status: 'pending' },
-        { id: `p-4`, topic: 'SpringBoot', status: 'completed' },
-        { id: `p-5`, topic: 'Microservice-topics', status: 'pending' },
-        { id: `p-6`, topic: 'DSA', status: 'pending' },
-        { id: `p-7`, topic: 'System-design', status: 'pending' },
-        { id: `p-8`, topic: 'Coding', status: 'pending' },
-      ];
-      setBuilderSubtasks(items);
-      syncBuilderToDescription(items);
-      setActiveModalTab('structured');
-    } else if (presetType === 'docs') {
-      setNote((prev) => ({
-        ...prev,
-        title: prev.title || 'DOCS: Architecture & Key Points',
-        description: '## Key Implementation Notes\n- Use React hooks for clean lifecycle management\n- Persist user custom orders in localStorage\n- Fast API endpoints for real-time sync',
-      }));
-      setActiveModalTab('plaintext');
-    } else if (presetType === 'sprint') {
-      const items = [
-        { id: `p-1`, topic: 'UI/UX Design', status: 'completed' },
-        { id: `p-2`, topic: 'Backend API', status: 'in-progress' },
-        { id: `p-3`, topic: 'Frontend Integration', status: 'pending' },
-        { id: `p-4`, topic: 'Testing & QA', status: 'pending' },
-        { id: `p-5`, topic: 'Deployment', status: 'pending' },
-      ];
-      setBuilderSubtasks(items);
-      syncBuilderToDescription(items);
-      setActiveModalTab('structured');
-    }
-  };
-
   // Filter notes based on search query & priority
   useEffect(() => {
     const customOrderStr = localStorage.getItem('tasknote_custom_order');
@@ -1027,7 +984,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     }
                   }}
                 >
-                  📝 Text / Links / Docs
+                  📝 Markdown (.md)
                 </button>
                 <button
                   type="button"
@@ -1046,26 +1003,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </button>
               </div>
 
-              {/* TAB 1: UNIVERSAL TEXT */}
+              {/* TAB 1: MARKDOWN (.md) TEXT */}
               {activeModalTab === 'plaintext' && (
                 <div className="modal-tab-body">
-                  <div className="sleek-presets-bar">
-                    <span>⚡ Presets:</span>
-                    <button type="button" onClick={() => handleApplyPresetTemplate('websites')}>🔗 Websites List</button>
-                    <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>💼 Interview Prep</button>
-                    <button type="button" onClick={() => handleApplyPresetTemplate('docs')}>📄 Docs / Notes</button>
-                    <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>🚀 Dev Sprint</button>
-                  </div>
-
                   <textarea
                     id="task-desc"
                     name="description"
                     className="sleek-textarea"
                     value={note.description}
-                    rows={4}
+                    rows={5}
                     onChange={onChange}
                     minLength={3}
-                    placeholder="Enter plain text, bracketed sites { [Free4Talk] , [Speak & improve] }, docs, or subtasks..."
+                    placeholder="Write description in Markdown (.md)... Supports - bullets, 1. numbered lists, [links](url), ## headings, code, and text."
                     required
                   ></textarea>
                 </div>

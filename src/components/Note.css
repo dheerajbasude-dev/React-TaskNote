@@ -1122,43 +1122,23 @@ mark.search-highlight-badge {
   gap: 8px;
 }
 
-.sleek-presets-bar {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.sleek-presets-bar span {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.sleek-presets-bar button {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
-  font-size: 0.7rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sleek-presets-bar button:hover {
-  background: #6366f1;
-  color: #ffffff;
-  border-color: #6366f1;
-}
-
 .sleek-textarea {
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   font-family: inherit;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
   resize: vertical;
+  min-height: 90px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sleek-textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .builder-input-row {
