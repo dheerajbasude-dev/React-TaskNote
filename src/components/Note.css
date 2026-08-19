@@ -544,9 +544,26 @@
   color: var(--text-muted);
 }
 
+.sleek-date-badge-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
 .sleek-date-meta {
   font-size: 0.68rem;
   color: var(--text-muted);
+  font-weight: 500;
+}
+
+.sleek-updated-tag {
+  font-size: 0.64rem;
+  color: #6366f1;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
 }
 
 .sleek-action-icons {

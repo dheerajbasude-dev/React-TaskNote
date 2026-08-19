@@ -8,6 +8,7 @@ import UnCompletedTaskSound from './Sounds/UnCompletedTask.mp3';
 import TaskDeleted1Sound from './Sounds/TaskDeleted1.mp3';
 import TaskDeleted2Sound from './Sounds/TaskDeleted2.mp3';
 import AddTaskSound from './Sounds/AddTask.mp3';
+import EditTaskSound from './Sounds/Edited.mp3';
 import Skeleton from 'react-loading-skeleton';
 import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
@@ -533,6 +534,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     if (isEditing && editingNote) {
       editNote(editingNote._id, note.title, finalDescription, note.tag)
         .then(() => {
+          playSound(EditTaskSound);
           setNote({ title: '', description: '', tag: 'medium' });
           setIsEditing(false);
           setIsbtnLoading(false);
@@ -541,8 +543,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     } else {
       addNote(note.title, finalDescription, note.tag)
         .then(() => {
-          setNote({ title: '', description: '', tag: 'medium' });
           playSound(AddTaskSound);
+          setNote({ title: '', description: '', tag: 'medium' });
           setIsbtnLoading(false);
           handleCancelTask();
         });
@@ -753,7 +755,19 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     </div>
 
                     <div className="sleek-row-header-right">
-                      <span className="sleek-date-meta">{noteItem.date}</span>
+                      <div className="sleek-date-badge-wrap">
+                        <span className="sleek-date-meta" title={`Created on ${noteItem.date}`}>
+                          {noteItem.date}
+                        </span>
+                        {Boolean(noteItem.updatedDate || noteItem.isEdited) && (
+                          <span
+                            className="sleek-updated-tag"
+                            title={`Last updated: ${noteItem.updatedDate || 'recently'}`}
+                          >
+                            (edited {noteItem.updatedDate ? noteItem.updatedDate : ''})
+                          </span>
+                        )}
+                      </div>
 
                       <div className="sleek-action-icons">
                         <button

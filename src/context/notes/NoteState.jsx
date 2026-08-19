@@ -180,6 +180,12 @@ const NoteState = (props) => {
           if (response.ok) {
             const json = await response.json();
             const updated = json.note || {};
+            const nowFormatted = new Date().toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
             setNotes((prevNotes) =>
               prevNotes.map((item) =>
                 item._id === id
@@ -189,7 +195,7 @@ const NoteState = (props) => {
                       title,
                       description,
                       tag,
-                      updatedDate: updated.updatedDate || item.updatedDate,
+                      updatedDate: updated.updatedDate || nowFormatted,
                       isEdited: true,
                     }
                   : item
