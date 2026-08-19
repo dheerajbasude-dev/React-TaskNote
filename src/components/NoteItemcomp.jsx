@@ -170,6 +170,9 @@ export const analyzeContent = (title, desc) => {
   // 4. Documentation / Code Explanation
   const isCode =
     trimmed.includes('```') ||
+    trimmed.includes('public class') ||
+    trimmed.includes('public static void') ||
+    trimmed.includes('System.out.println') ||
     trimmed.includes('const ') ||
     trimmed.includes('function ') ||
     trimmed.includes('import ') ||
@@ -177,11 +180,17 @@ export const analyzeContent = (title, desc) => {
     trimmed.includes('=>');
 
   const isDoc =
+    trimmed.includes('```') ||
+    trimmed.startsWith('#') ||
+    trimmed.includes('\n#') ||
+    trimmed.includes('##') ||
     trimmed.includes('\n- ') ||
     trimmed.includes('\n* ') ||
     trimmed.includes('\n1. ') ||
-    trimmed.includes('##') ||
-    trimmed.split('\n').length >= 3;
+    trimmed.startsWith('- ') ||
+    trimmed.startsWith('* ') ||
+    trimmed.startsWith('1. ') ||
+    trimmed.split('\n').length >= 2;
 
   if (isCode || isDoc) {
     return {
@@ -247,6 +256,53 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
 
   analysis.data.items[targetIndex].status = newStatus;
   return analysis.data.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
+};
+
+// ============================================================================
+// SLEEK CODE SNIPPET BOX (WITH 1-CLICK COPY)
+// ============================================================================
+const CodeSnippetBox = ({ code, language }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = (e) => {
+    e.stopPropagation();
+    try {
+      navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.warn('Copy failed', err);
+    }
+  };
+
+  return (
+    <div
+      className="sleek-code-container"
+      draggable={false}
+      onDragStart={(e) => e.stopPropagation()}
+    >
+      <div className="sleek-code-topbar">
+        <div className="sleek-code-header-left">
+          <span className="code-dot red"></span>
+          <span className="code-dot yellow"></span>
+          <span className="code-dot green"></span>
+          <span className="code-lang-badge">{(language || 'code').toUpperCase()}</span>
+        </div>
+        <button
+          type="button"
+          className="sleek-code-copy-btn"
+          onClick={handleCopy}
+          title="Copy code to clipboard"
+        >
+          <ion-icon name={copied ? 'checkmark-outline' : 'copy-outline'}></ion-icon>
+          <span>{copied ? 'Copied!' : 'Copy'}</span>
+        </button>
+      </div>
+      <pre className="sleek-code-pre">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 };
 
 // ============================================================================
@@ -649,63 +705,170 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     });
   };
 
-  // Render docs and markdown text compactly with image support
+  // Render rich Markdown: headings (#, ##, ###), code blocks (```lang ... ```), images, lists, and inline formatting
   const renderDocsContent = (text, query) => {
     if (!text) return null;
-    const lines = text.split('\n').filter(Boolean);
+
+    // 1. Parse fenced code blocks ```lang ... ```
+    const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+    const segments = [];
+    let lastIdx = 0;
+    let match;
+
+    while ((match = codeBlockRegex.exec(text)) !== null) {
+      if (match.index > lastIdx) {
+        segments.push({ type: 'text', content: text.slice(lastIdx, match.index) });
+      }
+      segments.push({
+        type: 'code',
+        language: match[1] || 'code',
+        code: match[2].trimEnd(),
+      });
+      lastIdx = match.index + match[0].length;
+    }
+
+    if (lastIdx < text.length) {
+      segments.push({ type: 'text', content: text.slice(lastIdx) });
+    }
+
+    // Helper for formatting inline markdown (bold, inline code, links)
+    const renderInlineMarkdown = (lineText) => {
+      // Inline code `...`
+      const parts = lineText.split(/(`[^`]+`)/g);
+      return parts.map((part, pIdx) => {
+        if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+          return (
+            <code key={pIdx} className="sleek-inline-code">
+              {part.slice(1, -1)}
+            </code>
+          );
+        }
+        // Bold **...**
+        const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+        return boldParts.map((bPart, bIdx) => {
+          if (bPart.startsWith('**') && bPart.endsWith('**') && bPart.length >= 4) {
+            return (
+              <strong key={`${pIdx}-${bIdx}`}>
+                {highlightMatches(bPart.slice(2, -2), query)}
+              </strong>
+            );
+          }
+          return highlightMatches(bPart, query);
+        });
+      });
+    };
+
     return (
       <div className="compact-docs-box">
-        {lines.map((line, idx) => {
-          const trimmedLine = line.trim();
-          const imgMatch = trimmedLine.match(/!\[(.*?)\]\(([^\)]+)\)/i);
-          const directImgMatch = trimmedLine.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i) || trimmedLine.match(/^(https?:\/\/images\.unsplash\.com\/[^\s)]+)$/i);
-
-          if (imgMatch) {
-            const altText = imgMatch[1] ? imgMatch[1].trim() : 'Image';
-            const imgUrl = imgMatch[2] ? imgMatch[2].trim() : '';
+        {segments.map((seg, sIdx) => {
+          if (seg.type === 'code') {
             return (
-              <div key={idx} className="sleek-card-img-wrap">
-                <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
-                  <img
-                    src={imgUrl}
-                    alt={altText}
-                    className="sleek-card-embedded-img"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </a>
-                {altText && altText !== 'Image' && <span className="sleek-img-caption">{altText}</span>}
-              </div>
+              <CodeSnippetBox
+                key={`code-${sIdx}`}
+                code={seg.code}
+                language={seg.language}
+              />
             );
           }
 
-          if (directImgMatch) {
-            const imgUrl = directImgMatch[1] || trimmedLine;
+          const lines = seg.content.split('\n').filter((l) => l.trim().length > 0);
+          return lines.map((line, lIdx) => {
+            const trimmedLine = line.trim();
+
+            // Headings #, ##, ###
+            if (/^#\s+/.test(trimmedLine)) {
+              return (
+                <h4 key={`h1-${sIdx}-${lIdx}`} className="sleek-md-heading h1">
+                  {renderInlineMarkdown(trimmedLine.replace(/^#\s+/, ''))}
+                </h4>
+              );
+            }
+            if (/^##\s+/.test(trimmedLine)) {
+              return (
+                <h5 key={`h2-${sIdx}-${lIdx}`} className="sleek-md-heading h2">
+                  {renderInlineMarkdown(trimmedLine.replace(/^##\s+/, ''))}
+                </h5>
+              );
+            }
+            if (/^###\s+/.test(trimmedLine)) {
+              return (
+                <h6 key={`h3-${sIdx}-${lIdx}`} className="sleek-md-heading h3">
+                  {renderInlineMarkdown(trimmedLine.replace(/^###\s+/, ''))}
+                </h6>
+              );
+            }
+
+            // Markdown Image: ![alt](url)
+            const imgMatch = trimmedLine.match(/!\[(.*?)\]\(([^\)]+)\)/i);
+            const directImgMatch = trimmedLine.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i) || trimmedLine.match(/^(https?:\/\/images\.unsplash\.com\/[^\s)]+)$/i);
+
+            if (imgMatch) {
+              const altText = imgMatch[1] ? imgMatch[1].trim() : 'Image';
+              const imgUrl = imgMatch[2] ? imgMatch[2].trim() : '';
+              return (
+                <div key={`img-${sIdx}-${lIdx}`} className="sleek-card-img-wrap">
+                  <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
+                    <img
+                      src={imgUrl}
+                      alt={altText}
+                      className="sleek-card-embedded-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </a>
+                  {altText && altText !== 'Image' && <span className="sleek-img-caption">{altText}</span>}
+                </div>
+              );
+            }
+
+            if (directImgMatch) {
+              const imgUrl = directImgMatch[1] || trimmedLine;
+              return (
+                <div key={`img-${sIdx}-${lIdx}`} className="sleek-card-img-wrap">
+                  <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
+                    <img
+                      src={imgUrl}
+                      alt="Embedded Media"
+                      className="sleek-card-embedded-img"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </a>
+                </div>
+              );
+            }
+
+            // Bullets & List Items
+            if (/^[-*]\s+/.test(trimmedLine)) {
+              return (
+                <div key={`b-${sIdx}-${lIdx}`} className="compact-doc-line">
+                  <span className="doc-bullet">•</span>
+                  <span>{renderInlineMarkdown(trimmedLine.replace(/^[-*]\s+/, ''))}</span>
+                </div>
+              );
+            }
+
+            if (/^\d+\.\s+/.test(trimmedLine)) {
+              const numMatch = trimmedLine.match(/^(\d+)\.\s+(.*)$/);
+              return (
+                <div key={`num-${sIdx}-${lIdx}`} className="compact-doc-line numbered">
+                  <span className="doc-num-badge">{numMatch ? numMatch[1] : '•'}.</span>
+                  <span>{renderInlineMarkdown(numMatch ? numMatch[2] : trimmedLine)}</span>
+                </div>
+              );
+            }
+
+            // Regular Markdown paragraph line
             return (
-              <div key={idx} className="sleek-card-img-wrap">
-                <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
-                  <img
-                    src={imgUrl}
-                    alt="Embedded Media"
-                    className="sleek-card-embedded-img"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </a>
+              <div key={`p-${sIdx}-${lIdx}`} className="sleek-md-line">
+                {renderInlineMarkdown(trimmedLine)}
               </div>
             );
-          }
-
-          return (
-            <div key={idx} className="compact-doc-line">
-              <span className="doc-bullet">•</span>
-              <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
-            </div>
-          );
+          });
         })}
       </div>
     );

@@ -809,7 +809,7 @@ mark.search-highlight-badge {
 .compact-docs-box {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   font-size: 0.78rem;
   color: var(--text-secondary);
   user-select: text !important;
@@ -826,10 +826,161 @@ mark.search-highlight-badge {
   cursor: text;
 }
 
+.compact-doc-line.numbered {
+  gap: 6px;
+}
+
+.doc-num-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366f1;
+  user-select: none;
+}
+
 .doc-bullet {
   color: #6366f1;
   font-size: 0.9rem;
   user-select: none;
+}
+
+/* Markdown Headings */
+.sleek-md-heading {
+  margin: 4px 0 2px 0;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.sleek-md-heading.h1 {
+  font-size: 0.95rem;
+  color: #1e1b4b;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+  padding-bottom: 2px;
+}
+
+.sleek-md-heading.h2 {
+  font-size: 0.88rem;
+  color: #312e81;
+}
+
+.sleek-md-heading.h3 {
+  font-size: 0.82rem;
+  color: #4338ca;
+}
+
+.sleek-md-line {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 1px 0;
+}
+
+.sleek-inline-code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
+  color: #4f46e5;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  font-weight: 600;
+}
+
+/* Sleek Fenced Code Block Snippet Box */
+.sleek-code-container {
+  margin: 6px 0;
+  background: #0f172a;
+  border-radius: var(--radius-sm);
+  border: 1px solid #1e293b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.sleek-code-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+}
+
+.sleek-code-header-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.code-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.code-dot.red {
+  background: #f87171;
+}
+
+.code-dot.yellow {
+  background: #fbbf24;
+}
+
+.code-dot.green {
+  background: #34d399;
+}
+
+.code-lang-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-left: 4px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.sleek-code-copy-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sleek-code-copy-btn:hover {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
+  border-color: #6366f1;
+}
+
+.sleek-code-copy-btn ion-icon {
+  font-size: 0.8rem;
+}
+
+.sleek-code-pre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #f1f5f9;
+  tab-size: 4;
+}
+
+.sleek-code-pre code {
+  font-family: inherit;
+  white-space: pre;
+  word-break: normal;
+  word-wrap: normal;
 }
 
 .sleek-plain-text {
