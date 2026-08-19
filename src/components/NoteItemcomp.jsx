@@ -13,95 +13,194 @@ import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
 // ============================================================================
-// STRUCTURED SUBTASKS & PROGRESS TRACKER UTILITIES
+// SMART MULTI-CATEGORY CONTENT ANALYZER & PARSER
 // ============================================================================
 
-export const parseDescription = (desc) => {
-  if (!desc || typeof desc !== 'string') {
-    return { isStructured: false, items: [], rawText: '', totalCount: 0, completedCount: 0, inProgressCount: 0, percentage: 0 };
-  }
+export const analyzeContent = (title, desc) => {
+  const safeTitle = typeof title === 'string' ? title : '';
+  const safeDesc = typeof desc === 'string' ? desc : '';
+  const trimmed = safeDesc.trim();
 
-  const trimmed = desc.trim();
   if (!trimmed) {
-    return { isStructured: false, items: [], rawText: '', totalCount: 0, completedCount: 0, inProgressCount: 0, percentage: 0 };
+    return {
+      type: 'note',
+      label: 'Note',
+      icon: 'document-text-outline',
+      color: '#64748b',
+      data: null,
+      rawText: '',
+    };
   }
 
-  // Split by newline or comma
-  const parts = trimmed.includes('\n')
+  // --------------------------------------------------------------------------
+  // 1. Check for Genuine Subtasks Tracker
+  // Must have clear status markers like ": pending", ": in-progress", ": completed", ": done", ": 12--pending[14:25]", or "- [x] / - [ ]"
+  // --------------------------------------------------------------------------
+  const linesOrParts = trimmed.includes('\n')
     ? trimmed.split('\n').map((s) => s.trim()).filter(Boolean)
     : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
 
-  const structuredItems = [];
-  let foundStructuredFormat = false;
+  const genuineSubtasks = [];
+  const statusKeywords = ['pending', 'completed', 'in-progress', 'done', 'todo', 'progress', 'doing', 'finished', '--'];
 
-  for (let i = 0; i < parts.length; i++) {
-    const part = parts[i];
-
-    // Markdown checkbox: "- [x] task"
+  for (let i = 0; i < linesOrParts.length; i++) {
+    const part = linesOrParts[i];
     const mdMatch = part.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
     if (mdMatch) {
-      const isDone = mdMatch[1].toLowerCase() === 'x';
-      structuredItems.push({
+      genuineSubtasks.push({
         id: `subtask-${i}`,
         topic: mdMatch[2].trim(),
-        status: isDone ? 'completed' : 'pending',
-        raw: part,
+        status: mdMatch[1].toLowerCase() === 'x' ? 'completed' : 'pending',
       });
-      foundStructuredFormat = true;
       continue;
     }
 
-    // Key-value pair: "Topic: status"
     const colonIdx = part.indexOf(':');
     if (colonIdx > 0 && colonIdx < part.length - 1) {
       const topic = part.slice(0, colonIdx).trim();
-      const status = part.slice(colonIdx + 1).trim();
-      if (topic && status) {
-        structuredItems.push({
+      const statusRaw = part.slice(colonIdx + 1).trim();
+      const sLow = statusRaw.toLowerCase();
+      const isLikelyStatus = statusKeywords.some((k) => sLow.includes(k)) || /^\d+--/.test(sLow);
+      if (isLikelyStatus && topic.length < 60) {
+        genuineSubtasks.push({
           id: `subtask-${i}`,
           topic,
-          status,
-          raw: part,
+          status: statusRaw,
         });
-        foundStructuredFormat = true;
-        continue;
       }
     }
   }
 
-  if (foundStructuredFormat && structuredItems.length > 0) {
-    const totalCount = structuredItems.length;
-    const completedCount = structuredItems.filter((item) => {
+  if (genuineSubtasks.length >= 2 || (genuineSubtasks.length === 1 && linesOrParts.length === 1 && (genuineSubtasks[0].status.includes('pending') || genuineSubtasks[0].status.includes('completed')))) {
+    const totalCount = genuineSubtasks.length;
+    const completedCount = genuineSubtasks.filter((item) => {
       const s = item.status.toLowerCase();
-      return s.includes('completed') || s.includes('done') || s === 'finish' || s === 'finished';
+      return s.includes('completed') || s.includes('done') || s === 'finished';
     }).length;
-
-    const inProgressCount = structuredItems.filter((item) => {
-      const s = item.status.toLowerCase();
-      return !s.includes('completed') && !s.includes('done') && (s.includes('progress') || s.includes('--') || s.includes('[') || s.includes('active') || s.includes('doing'));
-    }).length;
-
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
     return {
-      isStructured: true,
-      items: structuredItems,
-      rawText: desc,
-      totalCount,
-      completedCount,
-      inProgressCount,
-      percentage,
+      type: 'subtasks',
+      label: 'Subtasks',
+      icon: 'list-circle-outline',
+      color: '#6366f1',
+      data: {
+        items: genuineSubtasks,
+        totalCount,
+        completedCount,
+        percentage,
+      },
+      rawText: safeDesc,
     };
   }
 
+  // --------------------------------------------------------------------------
+  // 2. Check for Links / Resources / Websites / Bookmarks
+  // e.g. "{ [Free4Talk] , [Speak & improve] , [Speaking Club] }" or "https://..." or "[Google](https://google.com)"
+  // --------------------------------------------------------------------------
+  const bracketMatches = [...trimmed.matchAll(/\[([^\]]+)\](?:\(([^)]+)\))?/g)];
+  const urlMatches = trimmed.match(/https?:\/\/[^\s,)]+/gi);
+  const isWebsiteCategory =
+    safeTitle.toLowerCase().includes('website') ||
+    safeTitle.toLowerCase().includes('link') ||
+    safeTitle.toLowerCase().includes('resource') ||
+    safeTitle.toLowerCase().includes('site') ||
+    safeTitle.toLowerCase().includes('url');
+
+  if (bracketMatches.length > 0 || urlMatches || isWebsiteCategory) {
+    const resources = [];
+    if (bracketMatches.length > 0) {
+      bracketMatches.forEach((m, idx) => {
+        const name = m[1].trim();
+        const customUrl = m[2] ? m[2].trim() : null;
+        let url = customUrl;
+        if (!url) {
+          if (name.startsWith('http')) {
+            url = name;
+          } else if (name.includes('.') && !name.includes(' ')) {
+            url = `https://${name}`;
+          } else {
+            url = `https://www.google.com/search?q=${encodeURIComponent(name)}`;
+          }
+        }
+        resources.push({
+          id: `res-${idx}`,
+          title: name,
+          url,
+        });
+      });
+    } else if (urlMatches) {
+      urlMatches.forEach((url, idx) => {
+        let domain = url.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
+        resources.push({
+          id: `res-${idx}`,
+          title: domain || url,
+          url,
+        });
+      });
+    }
+
+    if (resources.length > 0) {
+      return {
+        type: 'resources',
+        label: 'Links & Sites',
+        icon: 'link-outline',
+        color: '#06b6d4',
+        data: {
+          items: resources,
+          totalCount: resources.length,
+        },
+        rawText: safeDesc,
+      };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // 3. Check for Documentation / Code Explanation / Guide
+  // e.g. contains code snippets, markdown headers, bullet lists, or multiline text
+  // --------------------------------------------------------------------------
+  const isCode =
+    trimmed.includes('```') ||
+    trimmed.includes('const ') ||
+    trimmed.includes('function ') ||
+    trimmed.includes('import ') ||
+    trimmed.includes('def ') ||
+    trimmed.includes('class ') ||
+    trimmed.includes('SELECT ') ||
+    trimmed.includes('=>');
+
+  const isDoc =
+    trimmed.includes('\n- ') ||
+    trimmed.includes('\n* ') ||
+    trimmed.includes('\n1. ') ||
+    trimmed.includes('##') ||
+    trimmed.includes('`') ||
+    trimmed.split('\n').length >= 3;
+
+  if (isCode || isDoc) {
+    return {
+      type: 'docs',
+      label: isCode ? 'Code / Snippet' : 'Documentation',
+      icon: isCode ? 'code-slash-outline' : 'reader-outline',
+      color: '#8b5cf6',
+      data: {
+        isCode,
+        lineCount: trimmed.split('\n').length,
+      },
+      rawText: safeDesc,
+    };
+  }
+
+  // --------------------------------------------------------------------------
+  // 4. Default: General Note
+  // --------------------------------------------------------------------------
   return {
-    isStructured: false,
-    items: [],
-    rawText: desc,
-    totalCount: 0,
-    completedCount: 0,
-    inProgressCount: 0,
-    percentage: 0,
+    type: 'note',
+    label: 'Note',
+    icon: 'document-text-outline',
+    color: '#64748b',
+    data: null,
+    rawText: safeDesc,
   };
 };
 
@@ -118,10 +217,12 @@ export const getSubtaskStatusType = (statusStr) => {
 };
 
 export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
-  const parsed = parseDescription(currentDesc);
-  if (!parsed.isStructured || !parsed.items[targetIndex]) return currentDesc;
+  const analysis = analyzeContent('', currentDesc);
+  if (analysis.type !== 'subtasks' || !analysis.data || !analysis.data.items[targetIndex]) {
+    return currentDesc;
+  }
 
-  const item = parsed.items[targetIndex];
+  const item = analysis.data.items[targetIndex];
   const currentStatusType = getSubtaskStatusType(item.status);
 
   let newStatus = '';
@@ -141,8 +242,8 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
     }
   }
 
-  parsed.items[targetIndex].status = newStatus;
-  return parsed.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
+  analysis.data.items[targetIndex].status = newStatus;
+  return analysis.data.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
 };
 
 // ============================================================================
@@ -185,8 +286,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [editingNote, setEditingNote] = useState(null);
   const [isbtnLoading, setIsbtnLoading] = useState(false);
 
-  // Subtask Builder State in Modal
-  const [activeModalTab, setActiveModalTab] = useState('structured');
+  // Modal subtask builder state
+  const [activeModalTab, setActiveModalTab] = useState('plaintext'); // 'plaintext' | 'structured'
   const [builderSubtasks, setBuilderSubtasks] = useState([]);
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
@@ -246,7 +347,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setShowModal(true);
     setIsEditing(false);
     setEditingNote(null);
-    setActiveModalTab('structured');
+    setActiveModalTab('plaintext');
     setBuilderSubtasks([]);
     setNewSubtaskTopic('');
     setNewSubtaskStatus('pending');
@@ -301,10 +402,17 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     syncBuilderToDescription(updated);
   };
 
+  // Preset Template Insertions
   const handleApplyPresetTemplate = (presetType) => {
-    let items = [];
-    if (presetType === 'interview') {
-      items = [
+    if (presetType === 'websites') {
+      setNote((prev) => ({
+        ...prev,
+        title: prev.title || 'WEBSITE: Resources & Useful Sites',
+        description: '{ [Free4Talk] , [Speak & improve] , [Speaking Club] , [Speak better every lesson] }',
+      }));
+      setActiveModalTab('plaintext');
+    } else if (presetType === 'interview') {
+      const items = [
         { id: `p-1`, topic: 'Interview', status: 'pending' },
         { id: `p-2`, topic: 'Interview-prep', status: 'pending' },
         { id: `p-3`, topic: 'Java', status: 'pending' },
@@ -314,33 +422,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
         { id: `p-7`, topic: 'System-design', status: 'pending' },
         { id: `p-8`, topic: 'Coding', status: 'pending' },
       ];
+      setBuilderSubtasks(items);
+      syncBuilderToDescription(items);
+      setActiveModalTab('structured');
+    } else if (presetType === 'docs') {
+      setNote((prev) => ({
+        ...prev,
+        title: prev.title || 'DOCS: Architecture & Key Points',
+        description: '## Key Implementation Notes\n- Use React hooks for clean lifecycle management\n- Persist user custom orders in localStorage\n- Fast API endpoints for real-time sync\n```js\n// Example utility\nconst isDone = (status) => status === "completed";\n```',
+      }));
+      setActiveModalTab('plaintext');
     } else if (presetType === 'sprint') {
-      items = [
+      const items = [
         { id: `p-1`, topic: 'UI/UX Design', status: 'completed' },
         { id: `p-2`, topic: 'Backend API', status: 'in-progress' },
         { id: `p-3`, topic: 'Frontend Integration', status: 'pending' },
-        { id: `p-4`, topic: 'Unit Tests', status: 'pending' },
+        { id: `p-4`, topic: 'Testing & QA', status: 'pending' },
         { id: `p-5`, topic: 'Deployment', status: 'pending' },
       ];
-    } else if (presetType === 'study') {
-      items = [
-        { id: `p-1`, topic: 'Theory & Core', status: 'completed' },
-        { id: `p-2`, topic: 'Hands-on Labs', status: 'in-progress' },
-        { id: `p-3`, topic: 'Practice Problems', status: 'pending' },
-        { id: `p-4`, topic: 'Revision', status: 'pending' },
-      ];
-    } else if (presetType === 'daily') {
-      items = [
-        { id: `p-1`, topic: 'Morning Standup', status: 'completed' },
-        { id: `p-2`, topic: 'Primary Task Block', status: 'in-progress' },
-        { id: `p-3`, topic: 'Code Review', status: 'pending' },
-        { id: `p-4`, topic: 'Daily Wrap-up', status: 'pending' },
-      ];
+      setBuilderSubtasks(items);
+      syncBuilderToDescription(items);
+      setActiveModalTab('structured');
     }
-
-    setBuilderSubtasks(items);
-    syncBuilderToDescription(items);
-    setActiveModalTab('structured');
   };
 
   // Filter notes based on search query & priority
@@ -376,7 +479,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setFilteredNotes(filtered);
   }, [notes, searchQuery, selectedPriority, setFilteredNotes]);
 
-  // Keyboard shortcuts (Escape to close modal, + or n to open modal)
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (evt) => {
       if (evt.key === 'Escape' && showModal) {
@@ -503,8 +606,15 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     e.stopPropagation();
     const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIndex);
     if (updatedDesc !== noteItem.description) {
-      // Completely silent & frictionless
       await editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
+    }
+  };
+
+  // Open resource link safely
+  const handleOpenResource = (e, url) => {
+    e.stopPropagation();
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -519,9 +629,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       tag: currentNote.tag || 'medium',
     });
 
-    const parsed = parseDescription(currentNote.description);
-    if (parsed.isStructured && parsed.items.length > 0) {
-      setBuilderSubtasks(parsed.items);
+    const analysis = analyzeContent(currentNote.title, currentNote.description);
+    if (analysis.type === 'subtasks' && analysis.data) {
+      setBuilderSubtasks(analysis.data.items);
       setActiveModalTab('structured');
     } else {
       setBuilderSubtasks([]);
@@ -567,6 +677,41 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setSearchQuery('');
   }
 
+  // Helper to render docs/code text with clean formatting
+  const renderDocsContent = (text, query) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return (
+      <div className="premium-docs-block">
+        {lines.map((line, idx) => {
+          if (line.startsWith('## ')) {
+            return (
+              <h4 key={idx} className="docs-heading">
+                {highlightMatches(line.replace('## ', ''), query)}
+              </h4>
+            );
+          }
+          if (line.startsWith('- ') || line.startsWith('* ')) {
+            return (
+              <div key={idx} className="docs-bullet-row">
+                <span className="docs-bullet">•</span>
+                <span className="docs-bullet-text">{highlightMatches(line.slice(2), query)}</span>
+              </div>
+            );
+          }
+          if (line.startsWith('```')) {
+            return null;
+          }
+          return (
+            <p key={idx} className="docs-paragraph">
+              {highlightMatches(line, query)}
+            </p>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="premium-page-wrapper">
       <main className="premium-app-container" ref={taskNoteContainerRef}>
@@ -602,7 +747,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               </button>
             </div>
 
-            {/* ONLY ONE CLEAN ADD TASK BUTTON */}
+            {/* Clean Add Task Button */}
             <button
               type="button"
               className="premium-add-task-btn"
@@ -641,7 +786,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             <p className="empty-desc">
               {searchQuery
                 ? `No tasks match "${searchQuery}".`
-                : 'Click "New Task" above to add your first note or subtask tracker.'}
+                : 'Click "New Task" above to add your first note, links list, or progress tracker.'}
             </p>
             <button type="button" className="empty-create-btn" onClick={openModal}>
               <ion-icon name="add"></ion-icon>
@@ -653,10 +798,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             {filteredNotes.map((noteItem, index) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
-              const parsed = parseDescription(noteItem.description);
+              const analysis = analyzeContent(noteItem.title, noteItem.description);
               const isExpanded = Boolean(expandedCards[noteItem._id]);
-              const visibleItems = isExpanded ? parsed.items : parsed.items.slice(0, 6);
-              const hasMoreItems = parsed.items.length > 6;
 
               return (
                 <article
@@ -678,6 +821,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     {/* Header Row */}
                     <div className="premium-card-header">
                       <div className="premium-title-group">
+                        {/* Priority Badge */}
                         <span
                           className="premium-priority-badge"
                           style={{
@@ -688,6 +832,20 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         >
                           {(noteItem.tag || 'medium').toUpperCase()}
                         </span>
+
+                        {/* Content Category Badge */}
+                        <span
+                          className="premium-category-badge"
+                          style={{
+                            color: analysis.color,
+                            backgroundColor: `${analysis.color}10`,
+                            borderColor: `${analysis.color}25`,
+                          }}
+                        >
+                          <ion-icon name={analysis.icon}></ion-icon>
+                          <span>{analysis.label}</span>
+                        </span>
+
                         <h2 className={`premium-title ${noteItem.completed ? 'strike' : ''}`}>
                           {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                         </h2>
@@ -730,29 +888,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </div>
                     </div>
 
-                    {/* Body: Structured Subtasks Chips or Plain Text */}
+                    {/* Body: Dynamic Rendering Based on Content Type */}
                     <div className="premium-card-body">
-                      {parsed.isStructured ? (
+                      {/* TYPE 1: SUBTASKS TRACKER */}
+                      {analysis.type === 'subtasks' && analysis.data && (
                         <div className="premium-subtasks-wrapper">
-                          {/* Mini progress line */}
                           <div className="premium-progress-row">
                             <div className="premium-progress-track">
                               <div
                                 className="premium-progress-bar"
                                 style={{
-                                  width: `${parsed.percentage}%`,
-                                  background: parsed.percentage === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)',
+                                  width: `${analysis.data.percentage}%`,
+                                  background: analysis.data.percentage === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)',
                                 }}
                               ></div>
                             </div>
                             <span className="premium-progress-text">
-                              {parsed.completedCount}/{parsed.totalCount} ({parsed.percentage}%)
+                              {analysis.data.completedCount}/{analysis.data.totalCount} ({analysis.data.percentage}%)
                             </span>
                           </div>
 
-                          {/* Subtask Chips */}
                           <div className="premium-chips-grid">
-                            {visibleItems.map((subItem, sIdx) => {
+                            {(isExpanded ? analysis.data.items : analysis.data.items.slice(0, 6)).map((subItem, sIdx) => {
                               const statusType = getSubtaskStatusType(subItem.status);
                               return (
                                 <button
@@ -778,17 +935,49 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                             })}
                           </div>
 
-                          {hasMoreItems && (
+                          {analysis.data.items.length > 6 && (
                             <button
                               type="button"
                               className="premium-expand-btn"
                               onClick={(e) => toggleCardExpansion(e, noteItem._id)}
                             >
-                              <span>{isExpanded ? 'Show less' : `+${parsed.items.length - 6} more`}</span>
+                              <span>{isExpanded ? 'Show less' : `+${analysis.data.items.length - 6} more subtasks`}</span>
                             </button>
                           )}
                         </div>
-                      ) : (
+                      )}
+
+                      {/* TYPE 2: LINKS & RESOURCES / WEBSITES */}
+                      {analysis.type === 'resources' && analysis.data && (
+                        <div className="premium-resources-wrapper">
+                          <div className="premium-resources-grid">
+                            {analysis.data.items.map((res, rIdx) => (
+                              <button
+                                key={res.id || rIdx}
+                                type="button"
+                                className="premium-resource-chip"
+                                onClick={(e) => handleOpenResource(e, res.url)}
+                                title={`Open ${res.title} in new tab`}
+                              >
+                                <ion-icon name="open-outline" class="resource-link-icon"></ion-icon>
+                                <span className="resource-title">
+                                  {searchQuery ? highlightMatches(res.title, searchQuery) : res.title}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* TYPE 3: DOCUMENTATION & EXPLANATIONS */}
+                      {analysis.type === 'docs' && (
+                        <div className="premium-docs-wrapper">
+                          {renderDocsContent(noteItem.description, searchQuery)}
+                        </div>
+                      )}
+
+                      {/* TYPE 4: GENERAL NOTE */}
+                      {analysis.type === 'note' && (
                         <p className="premium-plain-desc">
                           {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
                         </p>
@@ -853,7 +1042,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   value={note.title}
                   onChange={onChange}
                   minLength={3}
-                  placeholder="Task title (e.g. Job Prep, Project Release)..."
+                  placeholder="Task title (e.g. WEBSITE: English practice, Job Prep, Docs)..."
                   required
                   autoFocus
                 />
@@ -889,19 +1078,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 <div className="modal-tabs-compact">
                   <button
                     type="button"
-                    className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
-                    onClick={() => {
-                      setActiveModalTab('structured');
-                      if (builderSubtasks.length === 0 && note.description.trim()) {
-                        const p = parseDescription(note.description);
-                        if (p.isStructured) setBuilderSubtasks(p.items);
-                      }
-                    }}
-                  >
-                    Subtask Tracker ({builderSubtasks.length})
-                  </button>
-                  <button
-                    type="button"
                     className={`tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
                     onClick={() => {
                       setActiveModalTab('plaintext');
@@ -910,21 +1086,66 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       }
                     }}
                   >
-                    Plain Notes
+                    📝 Universal Editor / Text
+                  </button>
+                  <button
+                    type="button"
+                    className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
+                    onClick={() => {
+                      setActiveModalTab('structured');
+                      if (builderSubtasks.length === 0 && note.description.trim()) {
+                        const analysis = analyzeContent('', note.description);
+                        if (analysis.type === 'subtasks' && analysis.data) {
+                          setBuilderSubtasks(analysis.data.items);
+                        }
+                      }
+                    }}
+                  >
+                    📋 Subtask Builder ({builderSubtasks.length})
                   </button>
                 </div>
 
-                {activeModalTab === 'structured' ? (
-                  <div className="modal-builder-wrap">
+                {/* TAB 1: UNIVERSAL EDITOR (LINKS, DOCS, NOTES, CODE) */}
+                {activeModalTab === 'plaintext' && (
+                  <div className="modal-plain-wrap">
                     {/* 1-Click Templates */}
                     <div className="modal-templates-row">
-                      <span className="templates-label">⚡ Presets:</span>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>💼 Interview Prep</button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>🚀 Sprint</button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('study')}>📚 Study</button>
-                      <button type="button" onClick={() => handleApplyPresetTemplate('daily')}>✅ Daily</button>
+                      <span className="templates-label">⚡ 1-Click Presets:</span>
+                      <button type="button" onClick={() => handleApplyPresetTemplate('websites')}>
+                        🔗 Websites List
+                      </button>
+                      <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>
+                        💼 Interview Prep
+                      </button>
+                      <button type="button" onClick={() => handleApplyPresetTemplate('docs')}>
+                        📄 Docs & Code
+                      </button>
+                      <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>
+                        🚀 Dev Sprint
+                      </button>
                     </div>
 
+                    <textarea
+                      id="task-desc"
+                      name="description"
+                      className="modal-plain-textarea"
+                      value={note.description}
+                      rows={5}
+                      onChange={onChange}
+                      minLength={3}
+                      placeholder="Type plain text, bracketed sites { [Free4Talk] , [Speaking Club] }, documentation, or key-value subtasks..."
+                      required
+                    ></textarea>
+
+                    <span className="editor-helper-text">
+                      💡 <strong>Smart Categorization:</strong> TaskNote automatically detects if your text is a <strong>Website/Links list</strong>, <strong>Documentation</strong>, <strong>Subtasks Tracker</strong>, or <strong>General Note</strong>!
+                    </span>
+                  </div>
+                )}
+
+                {/* TAB 2: STRUCTURED SUBTASK BUILDER */}
+                {activeModalTab === 'structured' && (
+                  <div className="modal-builder-wrap">
                     {/* Quick Add Row */}
                     <div className="modal-quick-add-row">
                       <input
@@ -960,7 +1181,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     <div className="modal-subtasks-scroll">
                       {builderSubtasks.length === 0 ? (
                         <div className="modal-empty-hint">
-                          Type a subtask topic above or click a 1-click preset!
+                          Type a subtask topic above or use the presets in the Universal Editor!
                         </div>
                       ) : (
                         builderSubtasks.map((item, idx) => {
@@ -1002,20 +1223,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         })
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div className="modal-plain-wrap">
-                    <textarea
-                      id="task-desc"
-                      name="description"
-                      className="modal-plain-textarea"
-                      value={note.description}
-                      rows={4}
-                      onChange={onChange}
-                      minLength={3}
-                      placeholder="Notes or freeform description..."
-                      required
-                    ></textarea>
                   </div>
                 )}
               </div>
