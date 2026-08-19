@@ -499,6 +499,60 @@ mark.search-highlight-badge {
   opacity: 0.88;
 }
 
+/* Drag & Drop Reordering Mode (Triggered on Double-Click / Hold) */
+@keyframes taskVibrate {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  15% { transform: translate(-3px, 1px) rotate(-0.8deg); }
+  30% { transform: translate(3px, -1px) rotate(0.8deg); }
+  45% { transform: translate(-2px, -1px) rotate(-0.5deg); }
+  60% { transform: translate(2px, 1px) rotate(0.5deg); }
+  75% { transform: translate(-1px, 1px) rotate(-0.3deg); }
+  90% { transform: translate(1px, -1px) rotate(0.3deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes taskGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99, 102, 241, 0.28);
+  }
+  50% {
+    box-shadow: 0 0 0 3.5px #8b5cf6, 0 12px 28px rgba(139, 92, 246, 0.45);
+  }
+}
+
+.sleek-task-row.is-drag-ready {
+  animation: taskVibrate 0.38s ease-in-out, taskGlowPulse 1.6s infinite ease-in-out !important;
+  border-color: #6366f1 !important;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, #ffffff 100%) !important;
+  cursor: grab !important;
+  transform: translateY(-2px);
+  z-index: 10;
+}
+
+.sleek-task-row.is-drag-ready:active {
+  cursor: grabbing !important;
+}
+
+.sleek-drag-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+  user-select: none;
+  animation: fadeIn 0.2s ease;
+}
+
+.sleek-drag-ready-badge ion-icon {
+  font-size: 0.75rem;
+}
+
 .sleek-task-row.is-dragging {
   opacity: 0.4;
   transform: scale(0.99);

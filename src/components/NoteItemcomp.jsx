@@ -411,9 +411,46 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
 
-  // Drag & Drop State
+  // Drag & Drop State (Activated on Double-Click or Hold)
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [activeDragId, setActiveDragId] = useState(null);
+  const holdTimerRef = useRef(null);
+
+  // Trigger vibration / haptic feedback & highlight card ready to drag
+  const handleActivateDrag = useCallback((noteItem) => {
+    if (!noteItem) return;
+    setActiveDragId(noteItem._id);
+    if ('vibrate' in navigator) {
+      try {
+        navigator.vibrate([50, 40, 50]);
+      } catch (err) {}
+    }
+  }, []);
+
+  const handleTouchHoldStart = (noteItem) => {
+    holdTimerRef.current = setTimeout(() => {
+      handleActivateDrag(noteItem);
+    }, 450);
+  };
+
+  const handleTouchHoldEnd = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+  };
+
+  // Dismiss drag-ready mode if clicked outside
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (activeDragId && !e.target.closest('.sleek-task-row.is-drag-ready')) {
+        setActiveDragId(null);
+      }
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [activeDragId]);
 
   // Scroll handling
   useEffect(() => {
@@ -570,13 +607,16 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   }, [showModal, handleCancelTask]);
 
   // Drag and Drop
-  const handleDragStart = (e, index) => {
+  const handleDragStart = (e, index, noteItem) => {
     const selection = window.getSelection();
     if (selection && selection.toString().length > 0) {
       e.preventDefault();
       return;
     }
     setDraggingIndex(index);
+    if (noteItem) {
+      setActiveDragId(noteItem._id);
+    }
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', index.toString());
   };
@@ -594,6 +634,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     if (draggingIndex === null || draggingIndex === targetIndex) {
       setDraggingIndex(null);
       setDragOverIndex(null);
+      setActiveDragId(null);
       return;
     }
 
@@ -620,11 +661,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
     setDraggingIndex(null);
     setDragOverIndex(null);
+    setActiveDragId(null);
   };
 
   const handleDragEnd = () => {
     setDraggingIndex(null);
     setDragOverIndex(null);
+    setActiveDragId(null);
   };
 
   // Add / Edit task submission
@@ -661,102 +704,114 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setNote({ ...note, [e.target.name]: e.target.value });
   };
 
-  const getPriorityColor = (tag) => {
-    if (tag === 'low') return '#10b981';
-    if (tag === 'medium') return '#6366f1';
-    if (tag === 'high') return '#f43f5e';
-    return '#6366f1';
-  };
-
-  // Toggle completion of the entire note
-  const toggleNoteCompletion = async (noteItem) => {
-    const completed = !noteItem.completed;
-    noteItem.completed = completed;
-    if (!completed) {
-      playSound(UnCompletedTaskSound);
-    } else {
-      playSound(TaskCompletedSound);
-    }
-    await updateNoteCompletedStatus(noteItem._id, completed);
-  };
-
-  // SILENT Subtask toggle directly on the card
-  const handleCardSubtaskClick = async (e, noteItem, subtaskIndex) => {
+  // Open modal for editing
+  const handleEditClick = (e, noteItem) => {
     e.stopPropagation();
-    const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIndex);
-    if (updatedDesc !== noteItem.description) {
-      await editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
-    }
-  };
-
-  // Open resource link safely
-  const handleOpenResource = (e, url) => {
-    e.stopPropagation();
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  // Edit Note Trigger
-  const updateNote = (currentNote) => {
     setIsEditing(true);
-    setShowModal(true);
-    setEditingNote(currentNote);
-    setNote({
-      title: currentNote.title,
-      description: currentNote.description,
-      tag: currentNote.tag || 'medium',
-    });
+    setEditingNote(noteItem);
 
-    const analysis = analyzeContent(currentNote.title, currentNote.description);
+    const analysis = analyzeContent(noteItem.title, noteItem.description);
     if (analysis.type === 'subtasks' && analysis.data) {
-      setBuilderSubtasks(analysis.data.items);
       setActiveModalTab('structured');
+      setBuilderSubtasks(
+        analysis.data.items.map((it, idx) => ({
+          id: `edit-sub-${idx}`,
+          topic: it.topic,
+          status: it.status,
+        }))
+      );
     } else {
-      setBuilderSubtasks([]);
       setActiveModalTab('plaintext');
+      setBuilderSubtasks([]);
     }
+
+    setNote({
+      title: noteItem.title,
+      description: noteItem.description,
+      tag: noteItem.tag || 'medium',
+    });
+    setShowModal(true);
   };
 
-  // Delete Task Modal Trigger
-  const taskDeleted = (event, noteItem) => {
-    event.stopPropagation();
+  // Open delete confirmation modal
+  const handleOpenDeleteModal = (e, noteItem) => {
+    e.stopPropagation();
     setTaskToDelete(noteItem);
     setDeleteConfirmInput('');
     setShowDeleteModal(true);
   };
 
-  // Confirm Delete Handler (with sound playback upon deletion)
-  const handleConfirmDelete = async (e) => {
-    if (e) e.preventDefault();
-    if (!taskToDelete) return;
-    if (deleteConfirmInput.trim().toUpperCase() !== 'DELETE') return;
-
-    setIsDeleting(true);
-    playRandomDeleteSound();
-    await deleteNote(taskToDelete._id);
+  // Close delete confirmation modal
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setTaskToDelete(null);
+    setDeleteConfirmInput('');
     setIsDeleting(false);
-    setShowDeleteModal(false);
-    setTaskToDelete(null);
-    setDeleteConfirmInput('');
   };
 
-  // Cancel Delete
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false);
-    setTaskToDelete(null);
-    setDeleteConfirmInput('');
+  // Confirm delete handler
+  const handleConfirmDelete = async () => {
+    if (deleteConfirmInput.trim().toUpperCase() !== 'DELETE' || !taskToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteNote(taskToDelete._id);
+      playRandomDeleteSound();
+      handleCloseDeleteModal();
+    } catch (err) {
+      console.warn('Delete failed', err);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
-  // Search matches highlighting
+  // Toggle completion with sound
+  const toggleNoteCompletion = (noteItem) => {
+    const newStatus = !noteItem.completed;
+    updateNoteCompletedStatus(noteItem._id, newStatus);
+    if (newStatus) {
+      playSound(TaskCompletedSound);
+    } else {
+      playSound(UnCompletedTaskSound);
+    }
+  };
+
+  // Subtask click within a card
+  const handleCardSubtaskClick = (e, noteItem, subtaskIdx) => {
+    e.stopPropagation();
+    const updatedDesc = toggleSubtaskStatusInText(noteItem.description, subtaskIdx);
+    editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
+  };
+
+  // Open resource link
+  const handleOpenResource = (e, url) => {
+    e.stopPropagation();
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  // Priority color helper
+  const getPriorityColor = (tag) => {
+    switch (tag?.toLowerCase()) {
+      case 'high':
+        return '#ef4444';
+      case 'medium':
+        return '#f59e0b';
+      case 'low':
+        return '#10b981';
+      default:
+        return '#6366f1';
+    }
+  };
+
+  // Highlight search matches
   const highlightMatches = (text, query) => {
-    if (!query || typeof text !== 'string') return text;
+    if (!query || !text) return text;
     const cleanQuery = query.trim();
     if (!cleanQuery) return text;
-    const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedQuery})`, 'gi');
-    const parts = text.split(regex);
-    if (parts.length === 1) return text;
+
+    const regex = new RegExp(`(${cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const parts = String(text).split(regex);
+
     return parts.map((part, index) => {
       if (part.toLowerCase() === cleanQuery.toLowerCase()) {
         return (
@@ -787,16 +842,20 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
         ) : filteredNotes.length === 0 ? (
           <div className="sleek-empty-card">
             <div className="sleek-empty-icon-wrap">
-              <ion-icon name={searchQuery ? "search-outline" : "sparkles-outline"}></ion-icon>
+              <ion-icon name={searchQuery ? 'search-outline' : 'checkbox-outline'}></ion-icon>
             </div>
-            <h3>{searchQuery ? 'No matching tasks' : 'No tasks here yet'}</h3>
-            <p>{searchQuery ? `No tasks match "${searchQuery}".` : 'Add your first task or link collection.'}</p>
+            <h4>{searchQuery ? 'No matching tasks found' : 'All caught up! No tasks left.'}</h4>
+            <p>
+              {searchQuery
+                ? `No tasks found matching "${searchQuery}". Try a different keyword.`
+                : 'Your workspace is clear. Create a new task to stay organized and productive.'}
+            </p>
             <div className="sleek-empty-actions">
               {searchQuery && (
                 <button
                   type="button"
                   className="empty-clear-btn"
-                  onClick={() => setSearchQuery && setSearchQuery('')}
+                  onClick={() => setSearchQuery('')}
                 >
                   <ion-icon name="close-circle-outline"></ion-icon>
                   <span>Clear Search</span>
@@ -822,17 +881,23 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
               return (
                 <article
-                  className={`sleek-task-row ${isFirst ? 'is-spotlight-focus' : ''} ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
+                  className={`sleek-task-row ${isFirst ? 'is-spotlight-focus' : ''} ${noteItem.completed ? 'is-completed' : ''} ${activeDragId === noteItem._id ? 'is-drag-ready' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
                   key={noteItem._id}
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, index)}
+                  draggable={activeDragId === noteItem._id}
+                  onDoubleClick={() => handleActivateDrag(noteItem)}
+                  onTouchStart={() => handleTouchHoldStart(noteItem)}
+                  onTouchEnd={handleTouchHoldEnd}
+                  onMouseDown={() => handleTouchHoldStart(noteItem)}
+                  onMouseUp={handleTouchHoldEnd}
+                  onDragStart={(e) => handleDragStart(e, index, noteItem)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDrop={(e) => handleDrop(e, index)}
                   onDragEnd={handleDragEnd}
                   style={{
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
+                  title={activeDragId === noteItem._id ? 'Ready to move! Drag up/down to reorder' : 'Double-click or hold to activate drag reordering'}
                 >
                   {/* Top Header Line: Title -> Priority -> Category / Status Pill -> Index -> Date & Actions */}
                   <div className="sleek-row-header">
@@ -882,6 +947,14 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       <span className="sleek-task-index">
                         #{index + 1}
                       </span>
+
+                      {/* 5. Drag Ready Glow Badge */}
+                      {activeDragId === noteItem._id && (
+                        <span className="sleek-drag-ready-badge" title="Drag up/down to reorder">
+                          <ion-icon name="hand-right"></ion-icon>
+                          <span>Ready to Drag</span>
+                        </span>
+                      )}
                     </div>
 
                     <div className="sleek-row-header-right">
