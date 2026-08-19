@@ -411,11 +411,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
 
-  // Drag & Drop State (Activated on Double-Click or Hold)
+  // Drag & Drop State (Activated exclusively on 3-times click / Triple-Click)
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [activeDragId, setActiveDragId] = useState(null);
-  const holdTimerRef = useRef(null);
+  const clickCountRef = useRef({ id: null, count: 0, lastTime: 0 });
 
   // Trigger vibration / haptic feedback & highlight card ready to drag
   const handleActivateDrag = useCallback((noteItem) => {
@@ -428,16 +428,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   }, []);
 
-  const handleTouchHoldStart = (noteItem) => {
-    holdTimerRef.current = setTimeout(() => {
-      handleActivateDrag(noteItem);
-    }, 450);
-  };
+  // 3-Times Click (Triple-Click) Handler
+  const handleTaskTripleClick = (e, noteItem) => {
+    if (!noteItem) return;
 
-  const handleTouchHoldEnd = () => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
+    // 1. Native DOM event counter (3 clicks in rapid succession)
+    if (e.detail === 3) {
+      handleActivateDrag(noteItem);
+      clickCountRef.current = { id: null, count: 0, lastTime: 0 };
+      return;
+    }
+
+    // 2. High-precision fallback counter within 450ms window
+    const now = Date.now();
+    if (clickCountRef.current.id === noteItem._id && now - clickCountRef.current.lastTime < 450) {
+      const newCount = clickCountRef.current.count + 1;
+      clickCountRef.current = { id: noteItem._id, count: newCount, lastTime: now };
+      if (newCount >= 3) {
+        handleActivateDrag(noteItem);
+        clickCountRef.current = { id: null, count: 0, lastTime: 0 };
+      }
+    } else {
+      clickCountRef.current = { id: noteItem._id, count: 1, lastTime: now };
     }
   };
 
@@ -889,11 +901,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   data-index={index}
                   key={noteItem._id}
                   draggable={activeDragId === noteItem._id}
-                  onDoubleClick={() => handleActivateDrag(noteItem)}
-                  onTouchStart={() => handleTouchHoldStart(noteItem)}
-                  onTouchEnd={handleTouchHoldEnd}
-                  onMouseDown={() => handleTouchHoldStart(noteItem)}
-                  onMouseUp={handleTouchHoldEnd}
+                  onClick={(e) => handleTaskTripleClick(e, noteItem)}
                   onDragStart={(e) => handleDragStart(e, index, noteItem)}
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDrop={(e) => handleDrop(e, index)}
@@ -901,7 +909,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   style={{
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
-                  title={activeDragId === noteItem._id ? 'Ready to move! Drag up/down to reorder' : 'Double-click or hold to activate drag reordering'}
+                  title={activeDragId === noteItem._id ? 'Ready to move! Drag up/down to reorder' : 'Click 3 times to activate drag reordering'}
                 >
                   {/* Top Header Line: Title -> Priority -> Category / Status Pill -> Index -> Date & Actions */}
                   <div className="sleek-row-header">
