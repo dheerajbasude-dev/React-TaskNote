@@ -919,26 +919,30 @@ mark.search-highlight-badge {
   font-weight: 600;
 }
 
-.sleek-pure-markdown pre {
-  margin: 6px 0;
-  background: #0f172a;
-  border-radius: var(--radius-sm);
-  border: 1px solid #1e293b;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+/* ==========================================================================
+   VS CODE JELLYFISH THEME (BIOLUMINESCENT SYNTAX HIGHLIGHTING)
+   ========================================================================== */
+
+.vs-jellyfish-theme {
+  background: #181824 !important;
+  border: 1px solid rgba(139, 92, 246, 0.28) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 24px rgba(10, 10, 20, 0.45), 0 0 16px rgba(124, 58, 237, 0.12) !important;
+  margin: 8px 0 !important;
   overflow: hidden;
   position: relative;
 }
 
-.sleek-code-header-bar {
+.vs-jellyfish-theme .sleek-code-header-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 6px 12px;
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: #12121e;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
 }
 
-.sleek-code-header-left {
+.vs-jellyfish-theme .sleek-code-header-left {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -963,48 +967,127 @@ mark.search-highlight-badge {
   background: #34d399;
 }
 
-.code-lang-badge {
+.vs-jellyfish-theme .code-lang-badge {
   font-size: 0.65rem;
   font-weight: 800;
-  color: #94a3b8;
-  letter-spacing: 0.05em;
-  margin-left: 4px;
+  color: #c4b5fd;
+  letter-spacing: 0.06em;
+  margin-left: 6px;
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  text-shadow: 0 0 8px rgba(196, 181, 253, 0.4);
 }
 
-.sleek-code-copy-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+.vs-jellyfish-theme .sleek-code-copy-btn {
+  background: rgba(139, 92, 246, 0.15);
+  color: #ddd6fe;
+  border: 1px solid rgba(139, 92, 246, 0.35);
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: 2px 9px;
   font-size: 0.68rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.sleek-code-copy-btn:hover {
-  background: rgba(99, 102, 241, 0.35);
+.vs-jellyfish-theme .sleek-code-copy-btn:hover {
+  background: #7c3aed;
   color: #ffffff;
-  border-color: #6366f1;
+  border-color: #a78bfa;
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
+  transform: translateY(-1px);
 }
 
-.sleek-pure-markdown pre code {
-  display: block;
-  padding: 10px 12px;
+.vs-jellyfish-theme .sleek-code-copy-btn .copy-text.copied {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.vs-jellyfish-theme .sleek-code-pre {
+  margin: 0;
+  padding: 12px 14px;
   overflow-x: auto;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: #f1f5f9;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #e2e8f0;
   tab-size: 4;
+  background: transparent;
+}
+
+.vs-jellyfish-theme .sleek-code-pre code {
+  font-family: inherit;
   white-space: pre;
   word-break: normal;
   word-wrap: normal;
+  display: block;
+}
+
+/* VS Code JellyFish Syntax Token Colors */
+.vs-jellyfish-theme .hljs-keyword,
+.vs-jellyfish-theme .hljs-selector-tag,
+.vs-jellyfish-theme .hljs-subst {
+  color: #ff5c8d !important; /* Jellyfish Neon Magenta / Pink */
+  font-weight: 600;
+}
+
+.vs-jellyfish-theme .hljs-title.class_,
+.vs-jellyfish-theme .hljs-title.class,
+.vs-jellyfish-theme .hljs-type,
+.vs-jellyfish-theme .hljs-built_in {
+  color: #00e8c6 !important; /* Bioluminescent Cyan */
+  font-weight: 600;
+}
+
+.vs-jellyfish-theme .hljs-title.function_,
+.vs-jellyfish-theme .hljs-title.function,
+.vs-jellyfish-theme .hljs-title {
+  color: #5eb7ff !important; /* Electric Aquamarine / Sky Blue */
+  font-weight: 600;
+}
+
+.vs-jellyfish-theme .hljs-string,
+.vs-jellyfish-theme .hljs-bullet {
+  color: #ffd166 !important; /* Jellyfish Warm Coral / Gold */
+}
+
+.vs-jellyfish-theme .hljs-number,
+.vs-jellyfish-theme .hljs-literal,
+.vs-jellyfish-theme .hljs-boolean {
+  color: #bd93f9 !important; /* Neon Lavender */
+}
+
+.vs-jellyfish-theme .hljs-comment,
+.vs-jellyfish-theme .hljs-quote {
+  color: #707a9e !important; /* Deep Twilight Ocean Muted Slate */
+  font-style: italic;
+}
+
+.vs-jellyfish-theme .hljs-params,
+.vs-jellyfish-theme .hljs-variable,
+.vs-jellyfish-theme .hljs-attr {
+  color: #ffb86c !important; /* Peach Coral */
+}
+
+.vs-jellyfish-theme .hljs-operator,
+.vs-jellyfish-theme .hljs-punctuation {
+  color: #8be9fd !important; /* Aquamarine */
+}
+
+.vs-jellyfish-theme .hljs-meta,
+.vs-jellyfish-theme .hljs-symbol {
+  color: #ff79c6 !important;
+}
+
+.vs-jellyfish-theme .hljs-tag,
+.vs-jellyfish-theme .hljs-name {
+  color: #ff5c8d !important;
+}
+
+.vs-jellyfish-theme .hljs-attribute {
+  color: #50fa7b !important;
 }
 
 .sleek-pure-markdown img.sleek-card-embedded-img {

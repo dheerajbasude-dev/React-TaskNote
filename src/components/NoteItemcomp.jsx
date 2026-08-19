@@ -4,6 +4,7 @@ import noteContext from '../context/notes/noteContext';
 import { useNavigate } from 'react-router-dom';
 import { DotPulse } from '@uiball/loaders';
 import { marked } from 'marked';
+import hljs from 'highlight.js';
 import TaskCompletedSound from './Sounds/TaskCompleted.mp3';
 import UnCompletedTaskSound from './Sounds/UnCompletedTask.mp3';
 import TaskDeleted1Sound from './Sounds/TaskDeleted1.mp3';
@@ -14,7 +15,47 @@ import Skeleton from 'react-loading-skeleton';
 import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
-// Configure marked with GitHub-Flavored Markdown & automatic line breaks
+// Configure marked with GitHub-Flavored Markdown & VS Code JellyFish syntax highlighting
+const renderer = new marked.Renderer();
+renderer.code = function ({ text, lang }) {
+  const code = text || '';
+  const language = (lang || '').trim().toLowerCase();
+  let highlighted = '';
+
+  try {
+    if (language && hljs.getLanguage(language)) {
+      highlighted = hljs.highlight(code, { language }).value;
+    } else {
+      highlighted = hljs.highlightAuto(code).value;
+    }
+  } catch (err) {
+    highlighted = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  const displayLang = (language || 'code').toUpperCase();
+
+  return `
+    <div class="sleek-code-container vs-jellyfish-theme" draggable="false">
+      <div class="sleek-code-header-bar">
+        <div class="sleek-code-header-left">
+          <span class="code-dot red"></span>
+          <span class="code-dot yellow"></span>
+          <span class="code-dot green"></span>
+          <span class="code-lang-badge">${displayLang}</span>
+        </div>
+        <button type="button" class="sleek-code-copy-btn" title="Copy code">
+          <span class="copy-text">Copy</span>
+        </button>
+      </div>
+      <pre class="sleek-code-pre"><code class="hljs ${language ? `language-${language}` : ''}">${highlighted}</code></pre>
+    </div>
+  `;
+};
+
+marked.use({ renderer });
 marked.setOptions({
   gfm: true,
   breaks: true,
@@ -287,51 +328,31 @@ const PureMarkdownRenderer = ({ content }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Decorate code blocks with topbar, language badge, and 1-click copy button
-    const preElements = containerRef.current.querySelectorAll('pre');
-    preElements.forEach((pre) => {
-      if (pre.querySelector('.sleek-code-header-bar')) return;
-
-      const codeElement = pre.querySelector('code');
-      const codeText = codeElement ? codeElement.innerText : pre.innerText;
-      const langClass = codeElement ? Array.from(codeElement.classList).find(c => c.startsWith('language-')) : '';
-      const language = langClass ? langClass.replace('language-', '').toUpperCase() : 'CODE';
-
-      const topbar = document.createElement('div');
-      topbar.className = 'sleek-code-header-bar';
-      topbar.innerHTML = `
-        <div class="sleek-code-header-left">
-          <span class="code-dot red"></span>
-          <span class="code-dot yellow"></span>
-          <span class="code-dot green"></span>
-          <span class="code-lang-badge">${language}</span>
-        </div>
-        <button type="button" class="sleek-code-copy-btn" title="Copy code">
-          <span class="copy-text">Copy</span>
-        </button>
-      `;
-
-      const copyBtn = topbar.querySelector('.sleek-code-copy-btn');
-      copyBtn.addEventListener('click', (e) => {
+    // Attach copy button listeners to all rendered code blocks
+    const copyButtons = containerRef.current.querySelectorAll('.sleek-code-copy-btn');
+    copyButtons.forEach((btn) => {
+      btn.onclick = (e) => {
         e.stopPropagation();
-        navigator.clipboard.writeText(codeText);
-        copyBtn.innerHTML = `<span>Copied! ✓</span>`;
-        setTimeout(() => {
-          copyBtn.innerHTML = `<span class="copy-text">Copy</span>`;
-        }, 2000);
-      });
-
-      pre.insertBefore(topbar, pre.firstChild);
+        const codeBlock = btn.closest('.sleek-code-container')?.querySelector('pre code');
+        const text = codeBlock ? codeBlock.innerText : '';
+        if (text) {
+          navigator.clipboard.writeText(text);
+          btn.innerHTML = `<span class="copy-text copied">Copied! ✓</span>`;
+          setTimeout(() => {
+            btn.innerHTML = `<span class="copy-text">Copy</span>`;
+          }, 2000);
+        }
+      };
     });
 
     // Make all embedded images interactive
     const imgElements = containerRef.current.querySelectorAll('img');
     imgElements.forEach((img) => {
       img.classList.add('sleek-card-embedded-img');
-      img.addEventListener('click', (e) => {
+      img.onclick = (e) => {
         e.stopPropagation();
         window.open(img.src, '_blank', 'noopener,noreferrer');
-      });
+      };
     });
   }, [rawHtml]);
 
