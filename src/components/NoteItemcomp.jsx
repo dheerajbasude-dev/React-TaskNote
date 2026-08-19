@@ -265,7 +265,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [builderSubtasks, setBuilderSubtasks] = useState([]);
   const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
   const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
-  const [expandedCards, setExpandedCards] = useState({});
 
   // Drag & Drop State
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -639,31 +638,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     });
   };
 
-  const toggleCardExpansion = (e, noteId) => {
-    e.stopPropagation();
-    setExpandedCards((prev) => ({ ...prev, [noteId]: !prev[noteId] }));
-  };
-
-  if (searchQuery === '/commits') {
-    navigate('/commits');
-    setSearchQuery('');
-  }
-
   // Render docs text compactly
   const renderDocsContent = (text, query) => {
     if (!text) return null;
     const lines = text.split('\n').filter(Boolean);
     return (
       <div className="compact-docs-box">
-        {lines.slice(0, 3).map((line, idx) => (
+        {lines.map((line, idx) => (
           <div key={idx} className="compact-doc-line">
             <span className="doc-bullet">•</span>
             <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
           </div>
         ))}
-        {lines.length > 3 && (
-          <span className="compact-more-lines">+{lines.length - 3} more lines</span>
-        )}
       </div>
     );
   };
@@ -721,7 +707,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
               const analysis = analyzeContent(noteItem.title, noteItem.description);
-              const isExpanded = Boolean(expandedCards[noteItem._id]);
 
               return (
                 <article
@@ -801,7 +786,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                           </div>
 
                           <div className="sleek-chips-wrap">
-                            {(isExpanded ? analysis.data.items : analysis.data.items.slice(0, 6)).map((subItem, sIdx) => {
+                            {analysis.data.items.map((subItem, sIdx) => {
                               const statusType = getSubtaskStatusType(subItem.status);
                               return (
                                 <button
@@ -821,16 +806,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                                 </button>
                               );
                             })}
-
-                            {analysis.data.items.length > 6 && (
-                              <button
-                                type="button"
-                                className="sleek-expand-chip"
-                                onClick={(e) => toggleCardExpansion(e, noteItem._id)}
-                              >
-                                {isExpanded ? 'less' : `+${analysis.data.items.length - 6}`}
-                              </button>
-                            )}
                           </div>
                         </div>
                       )}
