@@ -841,7 +841,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                                 onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
                                 title={`Click to cycle status (${subItem.status})`}
                               >
-                                <span className="pill-dot"></span>
                                 <span className="pill-topic">
                                   {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
                                 </span>

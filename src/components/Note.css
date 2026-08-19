@@ -746,19 +746,10 @@ mark.search-highlight-badge {
   transform: translateY(-1px);
 }
 
-.sleek-subtask-pill .pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-}
-
 .sleek-subtask-pill.status-completed {
   background: #ecfdf5;
   color: #047857;
   border-color: #a7f3d0;
-}
-.sleek-subtask-pill.status-completed .pill-dot {
-  background: #10b981;
 }
 
 .sleek-subtask-pill.status-in-progress {
@@ -766,17 +757,11 @@ mark.search-highlight-badge {
   color: #1d4ed8;
   border-color: #bfdbfe;
 }
-.sleek-subtask-pill.status-in-progress .pill-dot {
-  background: #3b82f6;
-}
 
 .sleek-subtask-pill.status-pending {
   background: #fffbeb;
   color: #b45309;
   border-color: #fde68a;
-}
-.sleek-subtask-pill.status-pending .pill-dot {
-  background: #f59e0b;
 }
 
 /* Links & Sites */
