@@ -92,8 +92,26 @@ export const analyzeContent = (title, desc) => {
     };
   }
 
-  // 2. Links & Resources Check
-  const bracketMatches = [...trimmed.matchAll(/\[([^\]]+)\](?:\(([^)]+)\))?/g)];
+  // 2. Image / Media Check (Markdown ![alt](url) or direct image URL)
+  const hasMarkdownImg = /!\[(.*?)\]\(([^\)]+)\)/i.test(trimmed);
+  const hasDirectImg = /(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)/i.test(trimmed) || /https?:\/\/images\.unsplash\.com\/[^\s)]+/i.test(trimmed);
+
+  if (hasMarkdownImg || hasDirectImg) {
+    return {
+      type: 'image',
+      label: 'Image',
+      icon: 'image-outline',
+      color: '#ec4899',
+      data: {
+        hasImage: true,
+        lineCount: trimmed.split('\n').length,
+      },
+      rawText: safeDesc,
+    };
+  }
+
+  // 3. Links & Resources Check (Ignore Markdown images starting with !)
+  const bracketMatches = [...trimmed.matchAll(/(?<!\!)\[([^\]]+)\](?:\(([^)]+)\))?/g)];
   const urlMatches = trimmed.match(/https?:\/\/[^\s,)]+/gi);
   const isWebsiteCategory =
     safeTitle.toLowerCase().includes('website') ||
@@ -147,24 +165,6 @@ export const analyzeContent = (title, desc) => {
         rawText: safeDesc,
       };
     }
-  }
-
-  // 3. Image / Media Check (Markdown ![alt](url) or direct image URL)
-  const hasMarkdownImg = /!\[(.*?)\]\((https?:\/\/[^\s)]+|data:image\/[^\s)]+)\)/i.test(trimmed);
-  const hasDirectImg = /(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)/i.test(trimmed);
-
-  if (hasMarkdownImg || hasDirectImg) {
-    return {
-      type: 'docs',
-      label: 'Image',
-      icon: 'image-outline',
-      color: '#ec4899',
-      data: {
-        hasImage: true,
-        lineCount: trimmed.split('\n').length,
-      },
-      rawText: safeDesc,
-    };
   }
 
   // 4. Documentation / Code Explanation
@@ -656,12 +656,13 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     return (
       <div className="compact-docs-box">
         {lines.map((line, idx) => {
-          const imgMatch = line.match(/!\[(.*?)\]\((https?:\/\/[^\s)]+|data:image\/[^\s)]+)\)/i);
-          const directImgMatch = line.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i);
+          const trimmedLine = line.trim();
+          const imgMatch = trimmedLine.match(/!\[(.*?)\]\(([^\)]+)\)/i);
+          const directImgMatch = trimmedLine.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i) || trimmedLine.match(/^(https?:\/\/images\.unsplash\.com\/[^\s)]+)$/i);
 
           if (imgMatch) {
-            const altText = imgMatch[1] || 'Image';
-            const imgUrl = imgMatch[2];
+            const altText = imgMatch[1] ? imgMatch[1].trim() : 'Image';
+            const imgUrl = imgMatch[2] ? imgMatch[2].trim() : '';
             return (
               <div key={idx} className="sleek-card-img-wrap">
                 <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
@@ -670,7 +671,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     alt={altText}
                     className="sleek-card-embedded-img"
                     loading="lazy"
-                    onError={(e) => { e.target.style.display = 'none'; }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
                   />
                 </a>
                 {altText && altText !== 'Image' && <span className="sleek-img-caption">{altText}</span>}
@@ -679,7 +682,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
           }
 
           if (directImgMatch) {
-            const imgUrl = directImgMatch[1];
+            const imgUrl = directImgMatch[1] || trimmedLine;
             return (
               <div key={idx} className="sleek-card-img-wrap">
                 <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
@@ -688,7 +691,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     alt="Embedded Media"
                     className="sleek-card-embedded-img"
                     loading="lazy"
-                    onError={(e) => { e.target.style.display = 'none'; }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
                   />
                 </a>
               </div>
@@ -939,8 +944,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </div>
                     )}
 
-                    {/* TYPE 3: DOCS & CODE */}
-                    {analysis.type === 'docs' && renderDocsContent(noteItem.description, searchQuery)}
+                    {/* TYPE 3: DOCS, CODE & IMAGES */}
+                    {(analysis.type === 'docs' || analysis.type === 'image') && renderDocsContent(noteItem.description, searchQuery)}
 
                     {/* TYPE 4: PLAIN NOTE */}
                     {analysis.type === 'note' && (
