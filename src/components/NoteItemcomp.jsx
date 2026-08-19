@@ -984,7 +984,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     }
                   }}
                 >
-                  📝 Markdown (.md)
+                  📝Task
                 </button>
                 <button
                   type="button"
@@ -999,7 +999,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     }
                   }}
                 >
-                  📋 Subtask Builder ({builderSubtasks.length})
+                  📋Subtask ({builderSubtasks.length})
                 </button>
               </div>
 
