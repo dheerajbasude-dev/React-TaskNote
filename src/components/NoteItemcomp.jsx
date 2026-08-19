@@ -697,10 +697,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
               const analysis = analyzeContent(noteItem.title, noteItem.description);
+              const isFirst = index === 0;
 
               return (
                 <article
-                  className={`sleek-task-row ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
+                  className={`sleek-task-row ${isFirst ? 'is-spotlight-focus' : ''} ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
                   key={noteItem._id}
                   draggable={true}
@@ -726,6 +727,14 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       >
                         <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
                       </button>
+
+                      {/* Spotlight Focus Badge on first item */}
+                      {isFirst && (
+                        <span className="sleek-focus-badge" title="Top Priority Focus">
+                          <ion-icon name="sparkles"></ion-icon>
+                          <span>Focus</span>
+                        </span>
+                      )}
 
                       <span
                         className="sleek-priority-tag"
