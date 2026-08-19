@@ -3,6 +3,7 @@ import './Note.css';
 import noteContext from '../context/notes/noteContext';
 import { useNavigate } from 'react-router-dom';
 import { DotPulse } from '@uiball/loaders';
+import { marked } from 'marked';
 import TaskCompletedSound from './Sounds/TaskCompleted.mp3';
 import UnCompletedTaskSound from './Sounds/UnCompletedTask.mp3';
 import TaskDeleted1Sound from './Sounds/TaskDeleted1.mp3';
@@ -12,6 +13,12 @@ import EditTaskSound from './Sounds/Edited.mp3';
 import Skeleton from 'react-loading-skeleton';
 import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
+
+// Configure marked with GitHub-Flavored Markdown & automatic line breaks
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 // ============================================================================
 // CONTENT CLASSIFIER & PARSER
@@ -259,49 +266,85 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
 };
 
 // ============================================================================
-// SLEEK CODE SNIPPET BOX (WITH 1-CLICK COPY)
+// PURE GFM MARKDOWN RENDERER (100% SPEC COMPLIANT WITH SYNTAX CODE BOXES)
 // ============================================================================
-const CodeSnippetBox = ({ code, language }) => {
-  const [copied, setCopied] = useState(false);
+const PureMarkdownRenderer = ({ content }) => {
+  const containerRef = useRef(null);
 
-  const handleCopy = (e) => {
-    e.stopPropagation();
+  const rawHtml = React.useMemo(() => {
+    if (!content) return '';
     try {
-      navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.warn('Copy failed', err);
+      let html = marked.parse(content);
+      // Ensure all links open in a new tab safely
+      html = html.replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"([^>]*)>/gi, '<a href="$1" target="_blank" rel="noopener noreferrer" class="sleek-md-link"$2>');
+      return html;
+    } catch (e) {
+      console.warn('Markdown parse error:', e);
+      return content;
     }
-  };
+  }, [content]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Decorate code blocks with topbar, language badge, and 1-click copy button
+    const preElements = containerRef.current.querySelectorAll('pre');
+    preElements.forEach((pre) => {
+      if (pre.querySelector('.sleek-code-header-bar')) return;
+
+      const codeElement = pre.querySelector('code');
+      const codeText = codeElement ? codeElement.innerText : pre.innerText;
+      const langClass = codeElement ? Array.from(codeElement.classList).find(c => c.startsWith('language-')) : '';
+      const language = langClass ? langClass.replace('language-', '').toUpperCase() : 'CODE';
+
+      const topbar = document.createElement('div');
+      topbar.className = 'sleek-code-header-bar';
+      topbar.innerHTML = `
+        <div class="sleek-code-header-left">
+          <span class="code-dot red"></span>
+          <span class="code-dot yellow"></span>
+          <span class="code-dot green"></span>
+          <span class="code-lang-badge">${language}</span>
+        </div>
+        <button type="button" class="sleek-code-copy-btn" title="Copy code">
+          <span class="copy-text">Copy</span>
+        </button>
+      `;
+
+      const copyBtn = topbar.querySelector('.sleek-code-copy-btn');
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(codeText);
+        copyBtn.innerHTML = `<span>Copied! ✓</span>`;
+        setTimeout(() => {
+          copyBtn.innerHTML = `<span class="copy-text">Copy</span>`;
+        }, 2000);
+      });
+
+      pre.insertBefore(topbar, pre.firstChild);
+    });
+
+    // Make all embedded images interactive
+    const imgElements = containerRef.current.querySelectorAll('img');
+    imgElements.forEach((img) => {
+      img.classList.add('sleek-card-embedded-img');
+      img.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.open(img.src, '_blank', 'noopener,noreferrer');
+      });
+    });
+  }, [rawHtml]);
+
+  if (!content) return null;
 
   return (
     <div
-      className="sleek-code-container"
+      ref={containerRef}
+      className="sleek-pure-markdown"
       draggable={false}
       onDragStart={(e) => e.stopPropagation()}
-    >
-      <div className="sleek-code-topbar">
-        <div className="sleek-code-header-left">
-          <span className="code-dot red"></span>
-          <span className="code-dot yellow"></span>
-          <span className="code-dot green"></span>
-          <span className="code-lang-badge">{(language || 'code').toUpperCase()}</span>
-        </div>
-        <button
-          type="button"
-          className="sleek-code-copy-btn"
-          onClick={handleCopy}
-          title="Copy code to clipboard"
-        >
-          <ion-icon name={copied ? 'checkmark-outline' : 'copy-outline'}></ion-icon>
-          <span>{copied ? 'Copied!' : 'Copy'}</span>
-        </button>
-      </div>
-      <pre className="sleek-code-pre">
-        <code>{code}</code>
-      </pre>
-    </div>
+      dangerouslySetInnerHTML={{ __html: rawHtml }}
+    />
   );
 };
 
@@ -705,175 +748,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     });
   };
 
-  // Render rich Markdown: headings (#, ##, ###), code blocks (```lang ... ```), images, lists, and inline formatting
-  const renderDocsContent = (text, query) => {
-    if (!text) return null;
-
-    // 1. Parse fenced code blocks ```lang ... ```
-    const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
-    const segments = [];
-    let lastIdx = 0;
-    let match;
-
-    while ((match = codeBlockRegex.exec(text)) !== null) {
-      if (match.index > lastIdx) {
-        segments.push({ type: 'text', content: text.slice(lastIdx, match.index) });
-      }
-      segments.push({
-        type: 'code',
-        language: match[1] || 'code',
-        code: match[2].trimEnd(),
-      });
-      lastIdx = match.index + match[0].length;
-    }
-
-    if (lastIdx < text.length) {
-      segments.push({ type: 'text', content: text.slice(lastIdx) });
-    }
-
-    // Helper for formatting inline markdown (bold, inline code, links)
-    const renderInlineMarkdown = (lineText) => {
-      // Inline code `...`
-      const parts = lineText.split(/(`[^`]+`)/g);
-      return parts.map((part, pIdx) => {
-        if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
-          return (
-            <code key={pIdx} className="sleek-inline-code">
-              {part.slice(1, -1)}
-            </code>
-          );
-        }
-        // Bold **...**
-        const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
-        return boldParts.map((bPart, bIdx) => {
-          if (bPart.startsWith('**') && bPart.endsWith('**') && bPart.length >= 4) {
-            return (
-              <strong key={`${pIdx}-${bIdx}`}>
-                {highlightMatches(bPart.slice(2, -2), query)}
-              </strong>
-            );
-          }
-          return highlightMatches(bPart, query);
-        });
-      });
-    };
-
-    return (
-      <div className="compact-docs-box">
-        {segments.map((seg, sIdx) => {
-          if (seg.type === 'code') {
-            return (
-              <CodeSnippetBox
-                key={`code-${sIdx}`}
-                code={seg.code}
-                language={seg.language}
-              />
-            );
-          }
-
-          const lines = seg.content.split('\n').filter((l) => l.trim().length > 0);
-          return lines.map((line, lIdx) => {
-            const trimmedLine = line.trim();
-
-            // Headings #, ##, ###
-            if (/^#\s+/.test(trimmedLine)) {
-              return (
-                <h4 key={`h1-${sIdx}-${lIdx}`} className="sleek-md-heading h1">
-                  {renderInlineMarkdown(trimmedLine.replace(/^#\s+/, ''))}
-                </h4>
-              );
-            }
-            if (/^##\s+/.test(trimmedLine)) {
-              return (
-                <h5 key={`h2-${sIdx}-${lIdx}`} className="sleek-md-heading h2">
-                  {renderInlineMarkdown(trimmedLine.replace(/^##\s+/, ''))}
-                </h5>
-              );
-            }
-            if (/^###\s+/.test(trimmedLine)) {
-              return (
-                <h6 key={`h3-${sIdx}-${lIdx}`} className="sleek-md-heading h3">
-                  {renderInlineMarkdown(trimmedLine.replace(/^###\s+/, ''))}
-                </h6>
-              );
-            }
-
-            // Markdown Image: ![alt](url)
-            const imgMatch = trimmedLine.match(/!\[(.*?)\]\(([^\)]+)\)/i);
-            const directImgMatch = trimmedLine.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i) || trimmedLine.match(/^(https?:\/\/images\.unsplash\.com\/[^\s)]+)$/i);
-
-            if (imgMatch) {
-              const altText = imgMatch[1] ? imgMatch[1].trim() : 'Image';
-              const imgUrl = imgMatch[2] ? imgMatch[2].trim() : '';
-              return (
-                <div key={`img-${sIdx}-${lIdx}`} className="sleek-card-img-wrap">
-                  <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
-                    <img
-                      src={imgUrl}
-                      alt={altText}
-                      className="sleek-card-embedded-img"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </a>
-                  {altText && altText !== 'Image' && <span className="sleek-img-caption">{altText}</span>}
-                </div>
-              );
-            }
-
-            if (directImgMatch) {
-              const imgUrl = directImgMatch[1] || trimmedLine;
-              return (
-                <div key={`img-${sIdx}-${lIdx}`} className="sleek-card-img-wrap">
-                  <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
-                    <img
-                      src={imgUrl}
-                      alt="Embedded Media"
-                      className="sleek-card-embedded-img"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </a>
-                </div>
-              );
-            }
-
-            // Bullets & List Items
-            if (/^[-*]\s+/.test(trimmedLine)) {
-              return (
-                <div key={`b-${sIdx}-${lIdx}`} className="compact-doc-line">
-                  <span className="doc-bullet">•</span>
-                  <span>{renderInlineMarkdown(trimmedLine.replace(/^[-*]\s+/, ''))}</span>
-                </div>
-              );
-            }
-
-            if (/^\d+\.\s+/.test(trimmedLine)) {
-              const numMatch = trimmedLine.match(/^(\d+)\.\s+(.*)$/);
-              return (
-                <div key={`num-${sIdx}-${lIdx}`} className="compact-doc-line numbered">
-                  <span className="doc-num-badge">{numMatch ? numMatch[1] : '•'}.</span>
-                  <span>{renderInlineMarkdown(numMatch ? numMatch[2] : trimmedLine)}</span>
-                </div>
-              );
-            }
-
-            // Regular Markdown paragraph line
-            return (
-              <div key={`p-${sIdx}-${lIdx}`} className="sleek-md-line">
-                {renderInlineMarkdown(trimmedLine)}
-              </div>
-            );
-          });
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="sleek-page-wrapper">
       <main className="sleek-app-container" ref={taskNoteContainerRef}>
@@ -1089,32 +963,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       </div>
                     )}
 
-                    {/* TYPE 2: LINKS & SITES */}
-                    {analysis.type === 'resources' && analysis.data && (
-                      <div className="sleek-resources-wrap">
-                        {analysis.data.items.map((res, rIdx) => (
-                          <button
-                            key={res.id || rIdx}
-                            type="button"
-                            className="sleek-resource-pill"
-                            onClick={(e) => handleOpenResource(e, res.url)}
-                            title={`Open ${res.title}`}
-                          >
-                            <ion-icon name="open-outline"></ion-icon>
-                            <span>{searchQuery ? highlightMatches(res.title, searchQuery) : res.title}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* TYPE 3: DOCS, CODE & IMAGES */}
-                    {(analysis.type === 'docs' || analysis.type === 'image') && renderDocsContent(noteItem.description, searchQuery)}
-
-                    {/* TYPE 4: PLAIN NOTE */}
-                    {analysis.type === 'note' && (
-                      <p className="sleek-plain-text">
-                        {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
-                      </p>
+                    {/* PURE GFM MARKDOWN (.md) RENDERER FOR ALL TASKS & DESCRIPTIONS */}
+                    {analysis.type !== 'subtasks' && (
+                      <PureMarkdownRenderer content={noteItem.description} />
                     )}
                   </div>
                 </article>
