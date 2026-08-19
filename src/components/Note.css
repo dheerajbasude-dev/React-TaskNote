@@ -484,33 +484,47 @@
   flex-shrink: 0;
 }
 
-/* Complete Circle */
-.sleek-check-circle {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1.5px solid #cbd5e1;
-  background: #ffffff;
-  color: transparent;
+/* Smart Status & Category Pill (Interactive replacement for checkbox circle) */
+.sleek-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--pill-color, #6366f1);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.sleek-status-pill .status-pill-icon {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.12s ease;
-  padding: 0;
+  font-size: 0.8rem;
 }
 
-.sleek-check-circle:hover {
-  border-color: #10b981;
-  color: #10b981;
+.sleek-status-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.18);
+  border-color: var(--pill-color, #6366f1);
 }
 
-.sleek-check-circle.checked {
-  background: #10b981;
+.sleek-status-pill.is-done {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.sleek-status-pill.is-done:hover {
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
   border-color: #10b981;
-  color: #ffffff;
 }
 
 .sleek-priority-tag {
@@ -579,17 +593,24 @@
   color: var(--text-primary);
 }
 
+.sleek-icon-btn.check:hover,
+.sleek-icon-btn.check.active {
+  color: #10b981;
+  background: #ecfdf5;
+}
+
 .sleek-icon-btn.edit:hover {
   color: #2563eb;
+  background: #eff6ff;
 }
 
 .sleek-icon-btn.delete:hover {
   color: #ef4444;
+  background: #fee2e2;
 }
 
-/* Row Body Section (Indented cleanly below title) */
+/* Row Body Section */
 .sleek-row-body {
-  margin-left: 26px;
   display: flex;
   flex-direction: column;
   gap: 4px;

@@ -713,19 +713,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     '--row-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  {/* Top Header Line: Checkbox + Tags + Title + Date & Actions */}
+                  {/* Top Header Line: Smart Status Pill + Tags + Title + Date & Actions */}
                   <div className="sleek-row-header">
                     <div className="sleek-row-header-left">
+                      {/* Smart Interactive Status & Category Pill */}
                       <button
                         type="button"
-                        className={`sleek-check-circle ${noteItem.completed ? 'checked' : ''}`}
+                        className={`sleek-status-pill ${noteItem.completed ? 'is-done' : ''}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleNoteCompletion(noteItem);
                         }}
-                        title={noteItem.completed ? 'Mark pending' : 'Mark done'}
+                        title={noteItem.completed ? 'Click to mark pending' : 'Click to mark completed'}
+                        style={{
+                          '--pill-color': noteItem.completed ? '#10b981' : analysis.color,
+                        }}
                       >
-                        <ion-icon name={noteItem.completed ? 'checkmark' : 'ellipse-outline'}></ion-icon>
+                        <span className="status-pill-icon">
+                          <ion-icon name={noteItem.completed ? 'checkmark-circle' : analysis.icon}></ion-icon>
+                        </span>
+                        <span className="status-pill-label">
+                          {noteItem.completed ? 'Done' : analysis.label}
+                        </span>
                       </button>
 
                       {/* Spotlight Focus Badge on first item */}
@@ -746,17 +755,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
                       </span>
 
-                      <span
-                        className="sleek-cat-tag"
-                        style={{
-                          color: analysis.color,
-                          backgroundColor: `${analysis.color}10`,
-                        }}
-                      >
-                        <ion-icon name={analysis.icon}></ion-icon>
-                        <span>{analysis.label}</span>
-                      </span>
-
                       <span className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}>
                         {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                       </span>
@@ -766,6 +764,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       <span className="sleek-date-meta">{noteItem.date}</span>
 
                       <div className="sleek-action-icons">
+                        <button
+                          type="button"
+                          className={`sleek-icon-btn check ${noteItem.completed ? 'active' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleNoteCompletion(noteItem);
+                          }}
+                          title={noteItem.completed ? 'Mark pending' : 'Mark done'}
+                        >
+                          <ion-icon name={noteItem.completed ? 'checkmark-circle' : 'checkmark-circle-outline'}></ion-icon>
+                        </button>
+
                         <button
                           type="button"
                           className="sleek-icon-btn edit"
