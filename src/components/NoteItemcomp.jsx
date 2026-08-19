@@ -659,18 +659,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   return (
     <div className="sleek-page-wrapper">
       <main className="sleek-app-container" ref={taskNoteContainerRef}>
-        {/* Sleek Dashboard Control Bar */}
-        <div className="sleek-dashboard-bar">
-          <div className="sleek-title-area">
-            <h1 className="sleek-view-title">
-              {selectedPriority === 'All' ? 'Tasks' : `${selectedPriority} Priority`}
-            </h1>
-            <span className="sleek-badge-count">
-              {filteredNotes.length}
-            </span>
-          </div>
-        </div>
-
         {/* Unified Sleek Task Feed */}
         {isLoading ? (
           <div className="sleek-tasks-feed">
@@ -764,7 +752,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                             className="sleek-updated-tag"
                             title={`Last updated: ${noteItem.updatedDate || 'recently'}`}
                           >
-                            (edited {noteItem.updatedDate ? noteItem.updatedDate : ''})
+                            {noteItem.updatedDate ? noteItem.updatedDate : ''}
                           </span>
                         )}
                       </div>
