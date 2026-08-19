@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import './Note.css';
 import noteContext from '../context/notes/noteContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ import './Skeleton.css';
 import ArrowCircleUpSharpIcon from '@mui/icons-material/ArrowCircleUpSharp';
 
 // ============================================================================
-// STRUCTURED SUBTASKS UTILITIES
+// STRUCTURED SUBTASKS & PROGRESS TRACKER UTILITIES
 // ============================================================================
 
 export const parseDescription = (desc) => {
@@ -26,6 +26,7 @@ export const parseDescription = (desc) => {
     return { isStructured: false, items: [], rawText: '', totalCount: 0, completedCount: 0, inProgressCount: 0, percentage: 0 };
   }
 
+  // Split by newline or comma
   const parts = trimmed.includes('\n')
     ? trimmed.split('\n').map((s) => s.trim()).filter(Boolean)
     : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
@@ -145,7 +146,7 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
 };
 
 // ============================================================================
-// MAIN COMPACT COMPONENT
+// MAIN COMPACT & PREMIUM COMPONENT
 // ============================================================================
 
 const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
@@ -194,12 +195,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   // Drag & Drop State
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-
-  // Spotlight Focus Mode State
-  const [spotlightNote, setSpotlightNote] = useState(null);
-  const [timerSeconds, setTimerSeconds] = useState(25 * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [timerPreset, setTimerPreset] = useState(25);
 
   // Scroll handling
   useEffect(() => {
@@ -321,25 +316,25 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       ];
     } else if (presetType === 'sprint') {
       items = [
-        { id: `p-1`, topic: 'UI Design', status: 'completed' },
+        { id: `p-1`, topic: 'UI/UX Design', status: 'completed' },
         { id: `p-2`, topic: 'Backend API', status: 'in-progress' },
-        { id: `p-3`, topic: 'Frontend', status: 'pending' },
+        { id: `p-3`, topic: 'Frontend Integration', status: 'pending' },
         { id: `p-4`, topic: 'Unit Tests', status: 'pending' },
         { id: `p-5`, topic: 'Deployment', status: 'pending' },
       ];
     } else if (presetType === 'study') {
       items = [
-        { id: `p-1`, topic: 'Theory', status: 'completed' },
-        { id: `p-2`, topic: 'Coding Labs', status: 'in-progress' },
-        { id: `p-3`, topic: 'Exercises', status: 'pending' },
+        { id: `p-1`, topic: 'Theory & Core', status: 'completed' },
+        { id: `p-2`, topic: 'Hands-on Labs', status: 'in-progress' },
+        { id: `p-3`, topic: 'Practice Problems', status: 'pending' },
         { id: `p-4`, topic: 'Revision', status: 'pending' },
       ];
     } else if (presetType === 'daily') {
       items = [
-        { id: `p-1`, topic: 'Standup', status: 'completed' },
-        { id: `p-2`, topic: 'Focus Task 1', status: 'in-progress' },
+        { id: `p-1`, topic: 'Morning Standup', status: 'completed' },
+        { id: `p-2`, topic: 'Primary Task Block', status: 'in-progress' },
         { id: `p-3`, topic: 'Code Review', status: 'pending' },
-        { id: `p-4`, topic: 'Wrap-up', status: 'pending' },
+        { id: `p-4`, topic: 'Daily Wrap-up', status: 'pending' },
       ];
     }
 
@@ -381,72 +376,14 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setFilteredNotes(filtered);
   }, [notes, searchQuery, selectedPriority, setFilteredNotes]);
 
-  // Keep spotlightNote in sync if notes update
-  useEffect(() => {
-    if (spotlightNote) {
-      const updated = notes.find((n) => n._id === spotlightNote._id);
-      if (updated) {
-        setSpotlightNote(updated);
-      }
-    }
-  }, [notes, spotlightNote]);
-
-  // Spotlight Focus Timer effect
-  useEffect(() => {
-    let interval = null;
-    if (isTimerRunning) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => {
-          if (timerPreset === 0) {
-            return prev + 1;
-          }
-          if (prev <= 1) {
-            setIsTimerRunning(false);
-            playSound(AddTaskSound);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timerPreset, playSound]);
-
-  const setTimerDuration = (minutes) => {
-    setIsTimerRunning(false);
-    setTimerPreset(minutes);
-    setTimerSeconds(minutes * 60);
-  };
-
-  const formatTimer = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
-
-  // Keyboard shortcuts
+  // Keyboard shortcuts (Escape to close modal, + or n to open modal)
   useEffect(() => {
     const handleKeyDown = (evt) => {
-      if (evt.key === 'Escape') {
-        if (spotlightNote) {
-          setSpotlightNote(null);
-          setIsTimerRunning(false);
-          return;
-        }
-        if (showModal) {
-          handleCancelTask();
-        }
+      if (evt.key === 'Escape' && showModal) {
+        handleCancelTask();
       }
 
-      if (spotlightNote) {
-        if (evt.key === 'ArrowLeft') {
-          goToAdjacentSpotlight(-1);
-        } else if (evt.key === 'ArrowRight') {
-          goToAdjacentSpotlight(1);
-        }
-      }
-
-      if ((evt.key === '+' || evt.key === 'n' || evt.key === 'N') && !showModal && !spotlightNote && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      if ((evt.key === '+' || evt.key === 'n' || evt.key === 'N') && !showModal && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         evt.preventDefault();
         openModal();
       }
@@ -454,25 +391,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showModal, spotlightNote, handleCancelTask]);
-
-  const goToAdjacentSpotlight = (direction) => {
-    if (!spotlightNote || filteredNotes.length === 0) return;
-    const currentIndex = filteredNotes.findIndex((n) => n._id === spotlightNote._id);
-    if (currentIndex === -1) return;
-    const nextIndex = (currentIndex + direction + filteredNotes.length) % filteredNotes.length;
-    setSpotlightNote(filteredNotes[nextIndex]);
-  };
-
-  const openSpotlight = (noteItem) => {
-    setSpotlightNote(noteItem);
-    setTimerDuration(25);
-  };
-
-  const closeSpotlight = () => {
-    setSpotlightNote(null);
-    setIsTimerRunning(false);
-  };
+  }, [showModal, handleCancelTask]);
 
   // Drag and Drop
   const handleDragStart = (e, index) => {
@@ -562,9 +481,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   const getPriorityColor = (tag) => {
     if (tag === 'low') return '#10b981';
-    if (tag === 'medium') return '#3b82f6';
-    if (tag === 'high') return '#ef4444';
-    return '#3b82f6';
+    if (tag === 'medium') return '#6366f1';
+    if (tag === 'high') return '#f43f5e';
+    return '#6366f1';
   };
 
   // Toggle completion of the entire note
@@ -584,7 +503,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     e.stopPropagation();
     const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIndex);
     if (updatedDesc !== noteItem.description) {
-      // Intentionally silent for seamless fast tapping
+      // Completely silent & frictionless
       await editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
     }
   };
@@ -617,9 +536,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     if (confirmBox === true) {
       playRandomDeleteSound();
       deleteNote(noteItem._id);
-      if (spotlightNote && spotlightNote._id === noteItem._id) {
-        closeSpotlight();
-      }
     }
   };
 
@@ -651,36 +567,28 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setSearchQuery('');
   }
 
-  const currentSpotlightIndex = spotlightNote
-    ? filteredNotes.findIndex((n) => n._id === spotlightNote._id)
-    : -1;
-
-  const currentSpotlightParsed = useMemo(() => {
-    return spotlightNote ? parseDescription(spotlightNote.description) : null;
-  }, [spotlightNote]);
-
   return (
-    <div className="compact-page-wrapper">
-      <main className="compact-app-container" ref={taskNoteContainerRef}>
-        {/* Compact Dashboard Control Bar */}
-        <div className="compact-dashboard-bar">
-          <div className="compact-heading-row">
-            <h1 className="compact-page-title">
-              {selectedPriority === 'All' ? 'Tasks' : `${selectedPriority} Priority`}
+    <div className="premium-page-wrapper">
+      <main className="premium-app-container" ref={taskNoteContainerRef}>
+        {/* Dashboard Control Bar */}
+        <div className="premium-dashboard-bar">
+          <div className="premium-heading-row">
+            <h1 className="premium-page-title">
+              {selectedPriority === 'All' ? 'All Tasks' : `${selectedPriority} Priority`}
             </h1>
-            <span className="compact-count-badge">
+            <span className="premium-count-badge">
               {filteredNotes.length}
             </span>
           </div>
 
-          <div className="compact-bar-actions">
+          <div className="premium-bar-actions">
             {/* View Switcher: Grid vs List */}
-            <div className="compact-view-switcher">
+            <div className="premium-view-switcher">
               <button
                 type="button"
                 className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => handleToggleViewMode('grid')}
-                title="Compact Grid View"
+                title="Grid View"
               >
                 <ion-icon name="grid-outline"></ion-icon>
               </button>
@@ -688,7 +596,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 type="button"
                 className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                 onClick={() => handleToggleViewMode('list')}
-                title="Compact List View"
+                title="List View"
               >
                 <ion-icon name="list-outline"></ion-icon>
               </button>
@@ -697,7 +605,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             {/* ONLY ONE CLEAN ADD TASK BUTTON */}
             <button
               type="button"
-              className="compact-primary-add-btn"
+              className="premium-add-task-btn"
               onClick={openModal}
               title="Add task (+)"
             >
@@ -709,21 +617,21 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
         {/* Task Cards: Grid vs List Mode */}
         {isLoading ? (
-          <div className="compact-tasks-container view-grid">
+          <div className="premium-tasks-container view-grid">
             {Array.from({ length: 6 }, (_, index) => (
-              <div className="compact-card skeleton-card" key={`skeleton-${index}`}>
-                <div className="compact-card-header">
-                  <Skeleton circle height={18} width={18} />
-                  <Skeleton height={16} width="60%" />
+              <div className="premium-card skeleton-card" key={`skeleton-${index}`}>
+                <div className="premium-card-header">
+                  <Skeleton circle height={20} width={20} />
+                  <Skeleton height={18} width="60%" />
                 </div>
-                <div className="compact-card-body">
+                <div className="premium-card-body">
                   <Skeleton count={2} />
                 </div>
               </div>
             ))}
           </div>
         ) : filteredNotes.length === 0 ? (
-          <div className="compact-empty-state">
+          <div className="premium-empty-state">
             <div className="empty-icon-box">
               <ion-icon name="sparkles-outline"></ion-icon>
             </div>
@@ -741,18 +649,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             </button>
           </div>
         ) : (
-          <div className={`compact-tasks-container view-${viewMode}`}>
+          <div className={`premium-tasks-container view-${viewMode}`}>
             {filteredNotes.map((noteItem, index) => {
               const isItemDragging = draggingIndex === index;
               const isItemOver = dragOverIndex === index;
               const parsed = parseDescription(noteItem.description);
               const isExpanded = Boolean(expandedCards[noteItem._id]);
-              const visibleItems = isExpanded ? parsed.items : parsed.items.slice(0, 5);
-              const hasMoreItems = parsed.items.length > 5;
+              const visibleItems = isExpanded ? parsed.items : parsed.items.slice(0, 6);
+              const hasMoreItems = parsed.items.length > 6;
 
               return (
                 <article
-                  className={`compact-card ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
+                  className={`premium-card ${noteItem.completed ? 'is-completed' : ''} ${isItemDragging ? 'is-dragging' : ''} ${isItemOver ? 'drag-over' : ''}`}
                   data-index={index}
                   key={noteItem._id}
                   draggable={true}
@@ -764,45 +672,33 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     '--card-accent': getPriorityColor(noteItem.tag),
                   }}
                 >
-                  {/* Left priority accent indicator */}
-                  <div className="compact-left-accent"></div>
+                  <div className="premium-left-accent"></div>
 
-                  <div className="compact-card-main">
+                  <div className="premium-card-main">
                     {/* Header Row */}
-                    <div className="compact-card-header">
-                      <div className="compact-title-group">
+                    <div className="premium-card-header">
+                      <div className="premium-title-group">
                         <span
-                          className="compact-priority-tag"
+                          className="premium-priority-badge"
                           style={{
                             color: getPriorityColor(noteItem.tag),
-                            backgroundColor: `${getPriorityColor(noteItem.tag)}15`,
+                            backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
+                            borderColor: `${getPriorityColor(noteItem.tag)}30`,
                           }}
                         >
-                          {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
+                          {(noteItem.tag || 'medium').toUpperCase()}
                         </span>
-                        <h2 className={`compact-title ${noteItem.completed ? 'strike' : ''}`}>
+                        <h2 className={`premium-title ${noteItem.completed ? 'strike' : ''}`}>
                           {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                         </h2>
                       </div>
 
                       {/* Action buttons */}
-                      <div className="compact-actions">
+                      <div className="premium-actions">
                         <button
                           type="button"
-                          className="compact-btn spotlight"
-                          title="Focus Mode"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openSpotlight(noteItem);
-                          }}
-                        >
-                          <ion-icon name="scan-outline"></ion-icon>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="compact-btn edit"
-                          title="Edit"
+                          className="premium-btn edit"
+                          title="Edit task"
                           onClick={(e) => {
                             e.stopPropagation();
                             updateNote(noteItem);
@@ -813,7 +709,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
                         <button
                           type="button"
-                          className={`compact-btn complete ${noteItem.completed ? 'active' : ''}`}
+                          className={`premium-btn complete ${noteItem.completed ? 'active' : ''}`}
                           title={noteItem.completed ? 'Mark pending' : 'Mark done'}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -825,8 +721,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
                         <button
                           type="button"
-                          className="compact-btn delete"
-                          title="Delete"
+                          className="premium-btn delete"
+                          title="Delete task"
                           onClick={(e) => taskDeleted(e, noteItem)}
                         >
                           <ion-icon name="trash-outline"></ion-icon>
@@ -835,34 +731,34 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     </div>
 
                     {/* Body: Structured Subtasks Chips or Plain Text */}
-                    <div className="compact-card-body">
+                    <div className="premium-card-body">
                       {parsed.isStructured ? (
-                        <div className="compact-subtasks-wrapper">
+                        <div className="premium-subtasks-wrapper">
                           {/* Mini progress line */}
-                          <div className="compact-progress-row">
-                            <div className="compact-progress-track">
+                          <div className="premium-progress-row">
+                            <div className="premium-progress-track">
                               <div
-                                className="compact-progress-bar"
+                                className="premium-progress-bar"
                                 style={{
                                   width: `${parsed.percentage}%`,
-                                  background: parsed.percentage === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #ec4899)',
+                                  background: parsed.percentage === 100 ? '#10b981' : 'linear-gradient(90deg, #6366f1, #a855f7)',
                                 }}
                               ></div>
                             </div>
-                            <span className="compact-progress-text">
+                            <span className="premium-progress-text">
                               {parsed.completedCount}/{parsed.totalCount} ({parsed.percentage}%)
                             </span>
                           </div>
 
                           {/* Subtask Chips */}
-                          <div className="compact-chips-grid">
+                          <div className="premium-chips-grid">
                             {visibleItems.map((subItem, sIdx) => {
                               const statusType = getSubtaskStatusType(subItem.status);
                               return (
                                 <button
                                   key={subItem.id || sIdx}
                                   type="button"
-                                  className={`compact-subtask-chip status-${statusType}`}
+                                  className={`premium-subtask-chip status-${statusType}`}
                                   onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
                                   title={`Click to cycle status (Now: ${subItem.status})`}
                                 >
@@ -885,33 +781,33 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                           {hasMoreItems && (
                             <button
                               type="button"
-                              className="compact-expand-btn"
+                              className="premium-expand-btn"
                               onClick={(e) => toggleCardExpansion(e, noteItem._id)}
                             >
-                              <span>{isExpanded ? 'Show less' : `+${parsed.items.length - 5} more`}</span>
+                              <span>{isExpanded ? 'Show less' : `+${parsed.items.length - 6} more`}</span>
                             </button>
                           )}
                         </div>
                       ) : (
-                        <p className="compact-plain-desc">
+                        <p className="premium-plain-desc">
                           {searchQuery ? highlightMatches(noteItem.description, searchQuery) : noteItem.description}
                         </p>
                       )}
                     </div>
 
                     {/* Footer */}
-                    <div className="compact-card-footer">
-                      <div className="compact-footer-meta">
-                        <span className="compact-date" title={`Created ${noteItem.date}`}>
-                          {noteItem.date}
+                    <div className="premium-card-footer">
+                      <div className="premium-footer-meta">
+                        <span className="premium-date" title={`Created ${noteItem.date}`}>
+                          <ion-icon name="calendar-outline"></ion-icon> {noteItem.date}
                         </span>
                         {Boolean(noteItem.updatedDate && (noteItem.isEdited || noteItem.updatedDate !== noteItem.date)) && (
-                          <span className="compact-edited-badge" title={`Edited ${noteItem.updatedDate}`}>
+                          <span className="premium-edited-badge" title={`Edited ${noteItem.updatedDate}`}>
                             • edited
                           </span>
                         )}
                       </div>
-                      <span className="compact-idx">#{index + 1}</span>
+                      <span className="premium-idx">#{index + 1}</span>
                     </div>
                   </div>
                 </article>
@@ -923,20 +819,22 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
       {/* Scroll to Top */}
       {showScrollButton && (
-        <button type="button" className="compact-scroll-top" onClick={scrollToTop} title="Scroll Top">
+        <button type="button" className="premium-scroll-top" onClick={scrollToTop} title="Scroll Top">
           <ArrowCircleUpSharpIcon />
         </button>
       )}
 
       {/* =================================================================== */}
-      {/* COMPACT ADD / EDIT MODAL                                            */}
+      {/* PREMIUM ADD / EDIT MODAL                                            */}
       {/* =================================================================== */}
       {showModal && (
-        <div className="compact-modal-overlay" onClick={handleCancelTask}>
-          <div className="compact-modal-box" onClick={(e) => e.stopPropagation()}>
-            <div className="compact-modal-header">
+        <div className="premium-modal-overlay" onClick={handleCancelTask}>
+          <div className="premium-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="premium-modal-header">
               <div className="modal-title-wrap">
-                <ion-icon name={isEditing ? 'create-outline' : 'add-circle-outline'}></ion-icon>
+                <div className="modal-icon-badge">
+                  <ion-icon name={isEditing ? 'create-outline' : 'sparkles-outline'}></ion-icon>
+                </div>
                 <h3>{isEditing ? 'Edit Task' : 'New Task'}</h3>
               </div>
               <button type="button" className="modal-close" onClick={handleCancelTask}>
@@ -944,7 +842,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               </button>
             </div>
 
-            <form className="compact-modal-form" onSubmit={handleAddTask}>
+            <form className="premium-modal-form" onSubmit={handleAddTask}>
               {/* Title & Priority Row */}
               <div className="modal-top-row">
                 <input
@@ -955,7 +853,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   value={note.title}
                   onChange={onChange}
                   minLength={3}
-                  placeholder="Task title (e.g. Job Prep, Sprint Beta)..."
+                  placeholder="Task title (e.g. Job Prep, Project Release)..."
                   required
                   autoFocus
                 />
@@ -1020,7 +918,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   <div className="modal-builder-wrap">
                     {/* 1-Click Templates */}
                     <div className="modal-templates-row">
-                      <span className="templates-label">Presets:</span>
+                      <span className="templates-label">⚡ Presets:</span>
                       <button type="button" onClick={() => handleApplyPresetTemplate('interview')}>💼 Interview Prep</button>
                       <button type="button" onClick={() => handleApplyPresetTemplate('sprint')}>🚀 Sprint</button>
                       <button type="button" onClick={() => handleApplyPresetTemplate('study')}>📚 Study</button>
@@ -1031,7 +929,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     <div className="modal-quick-add-row">
                       <input
                         type="text"
-                        placeholder="Add subtask (e.g. Java, System Design) & press Enter..."
+                        placeholder="Add subtask topic & press Enter..."
                         value={newSubtaskTopic}
                         onChange={(e) => setNewSubtaskTopic(e.target.value)}
                         onKeyDown={(e) => {
@@ -1062,7 +960,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     <div className="modal-subtasks-scroll">
                       {builderSubtasks.length === 0 ? (
                         <div className="modal-empty-hint">
-                          Type a subtask topic above or click a preset template!
+                          Type a subtask topic above or click a 1-click preset!
                         </div>
                       ) : (
                         builderSubtasks.map((item, idx) => {
@@ -1112,10 +1010,10 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                       name="description"
                       className="modal-plain-textarea"
                       value={note.description}
-                      rows={3}
+                      rows={4}
                       onChange={onChange}
                       minLength={3}
-                      placeholder="Notes or description..."
+                      placeholder="Notes or freeform description..."
                       required
                     ></textarea>
                   </div>
@@ -1123,7 +1021,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
               </div>
 
               {/* Modal Footer */}
-              <div className="compact-modal-footer">
+              <div className="premium-modal-footer">
                 <button
                   type="button"
                   className="modal-cancel-btn"
@@ -1140,151 +1038,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   {isbtnLoading ? (
                     <DotPulse size={20} color="#ffffff" />
                   ) : (
-                    <span>{isEditing ? 'Save' : 'Create Task'}</span>
+                    <span>{isEditing ? 'Save Changes' : 'Create Task'}</span>
                   )}
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* =================================================================== */}
-      {/* COMPACT SPOTLIGHT FOCUS WORKSPACE                                   */}
-      {/* =================================================================== */}
-      {spotlightNote && (
-        <div className="spotlight-overlay" onClick={closeSpotlight}>
-          <div className="spotlight-container" onClick={(e) => e.stopPropagation()}>
-            <div className="spotlight-header">
-              <div className="spotlight-badge-container">
-                <span
-                  className="spotlight-priority-badge"
-                  style={{
-                    borderColor: getPriorityColor(spotlightNote.tag),
-                    color: getPriorityColor(spotlightNote.tag),
-                  }}
-                >
-                  {(spotlightNote.tag || 'medium').toUpperCase()} PRIORITY
-                </span>
-                <span className="spotlight-counter">
-                  Task {currentSpotlightIndex + 1} of {filteredNotes.length}
-                </span>
-              </div>
-              <button className="spotlight-close-btn" onClick={closeSpotlight} title="Close (Esc)">
-                <ion-icon name="close"></ion-icon>
-              </button>
-            </div>
-
-            <div className="spotlight-body">
-              <h1 className={`spotlight-title ${spotlightNote.completed ? 'is-completed' : ''}`}>
-                {spotlightNote.title}
-              </h1>
-
-              {currentSpotlightParsed && currentSpotlightParsed.isStructured ? (
-                <div className="spotlight-subtasks-box">
-                  <div className="spotlight-subtasks-header">
-                    <span>Subtasks ({currentSpotlightParsed.completedCount}/{currentSpotlightParsed.totalCount})</span>
-                    <span>{currentSpotlightParsed.percentage}%</span>
-                  </div>
-                  <div className="spotlight-checklist">
-                    {currentSpotlightParsed.items.map((item, idx) => {
-                      const statusType = getSubtaskStatusType(item.status);
-                      return (
-                        <div
-                          key={idx}
-                          className={`spotlight-check-item status-${statusType}`}
-                          onClick={(e) => handleCardSubtaskClick(e, spotlightNote, idx)}
-                        >
-                          <ion-icon
-                            name={
-                              statusType === 'completed'
-                                ? 'checkmark-circle'
-                                : statusType === 'in-progress'
-                                ? 'flash'
-                                : 'ellipse-outline'
-                            }
-                          ></ion-icon>
-                          <span className="spotlight-check-topic">{item.topic}</span>
-                          <span className="spotlight-check-status">{item.status}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <p className="spotlight-description">{spotlightNote.description}</p>
-              )}
-
-              {/* Timer */}
-              <div className="spotlight-timer-card">
-                <div className="spotlight-timer-header">
-                  <span><ion-icon name="timer"></ion-icon> Focus Timer</span>
-                  <div className="spotlight-timer-presets">
-                    <button className={timerPreset === 25 ? 'active' : ''} onClick={() => setTimerDuration(25)}>25m</button>
-                    <button className={timerPreset === 15 ? 'active' : ''} onClick={() => setTimerDuration(15)}>15m</button>
-                    <button className={timerPreset === 5 ? 'active' : ''} onClick={() => setTimerDuration(5)}>5m</button>
-                    <button className={timerPreset === 0 ? 'active' : ''} onClick={() => setTimerDuration(0)}>Stopwatch</button>
-                  </div>
-                </div>
-                <div className="spotlight-timer-display-row">
-                  <div className="spotlight-timer-digits">{formatTimer(timerSeconds)}</div>
-                  <button
-                    className={`timer-action-btn ${isTimerRunning ? 'pause' : 'start'}`}
-                    onClick={() => setIsTimerRunning(!isTimerRunning)}
-                  >
-                    {isTimerRunning ? 'Pause' : 'Focus'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="spotlight-actions">
-                <button
-                  className={`spotlight-btn toggle-complete ${spotlightNote.completed ? 'completed' : ''}`}
-                  onClick={() => toggleNoteCompletion(spotlightNote)}
-                >
-                  <ion-icon name="checkmark-circle"></ion-icon>
-                  <span>{spotlightNote.completed ? 'Completed' : 'Mark Done'}</span>
-                </button>
-                <button
-                  className="spotlight-btn edit"
-                  onClick={() => {
-                    closeSpotlight();
-                    updateNote(spotlightNote);
-                  }}
-                >
-                  <ion-icon name="create"></ion-icon>
-                  <span>Edit</span>
-                </button>
-                <button
-                  className="spotlight-btn delete"
-                  onClick={(e) => taskDeleted(e, spotlightNote)}
-                >
-                  <ion-icon name="trash"></ion-icon>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="spotlight-footer">
-              <button
-                className="spotlight-nav-btn prev"
-                onClick={() => goToAdjacentSpotlight(-1)}
-                disabled={filteredNotes.length <= 1}
-              >
-                <ion-icon name="arrow-back"></ion-icon>
-                <span>Prev</span>
-              </button>
-              <span className="spotlight-hint"><kbd>←</kbd> <kbd>→</kbd> Navigate</span>
-              <button
-                className="spotlight-nav-btn next"
-                onClick={() => goToAdjacentSpotlight(1)}
-                disabled={filteredNotes.length <= 1}
-              >
-                <span>Next</span>
-                <ion-icon name="arrow-forward"></ion-icon>
-              </button>
-            </div>
           </div>
         </div>
       )}
