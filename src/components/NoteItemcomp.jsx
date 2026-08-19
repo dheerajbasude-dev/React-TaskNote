@@ -470,6 +470,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Drag and Drop
   const handleDragStart = (e, index) => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      e.preventDefault();
+      return;
+    }
     setDraggingIndex(index);
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', index.toString());
@@ -740,7 +745,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
                       </span>
 
-                      <span className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}>
+                      <span
+                        className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
+                        draggable={false}
+                        onDragStart={(e) => e.stopPropagation()}
+                      >
                         {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                       </span>
                     </div>
@@ -798,7 +807,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   </div>
 
                   {/* Body Content Section: Cleanly aligned beneath title */}
-                  <div className="sleek-row-body">
+                  <div
+                    className="sleek-row-body"
+                    draggable={false}
+                    onDragStart={(e) => e.stopPropagation()}
+                  >
                     {/* TYPE 1: SUBTASKS TRACKER */}
                     {analysis.type === 'subtasks' && analysis.data && (
                       <div className="sleek-subtasks-group">
