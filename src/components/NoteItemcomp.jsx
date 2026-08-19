@@ -149,7 +149,25 @@ export const analyzeContent = (title, desc) => {
     }
   }
 
-  // 3. Documentation / Code Explanation
+  // 3. Image / Media Check (Markdown ![alt](url) or direct image URL)
+  const hasMarkdownImg = /!\[(.*?)\]\((https?:\/\/[^\s)]+|data:image\/[^\s)]+)\)/i.test(trimmed);
+  const hasDirectImg = /(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)/i.test(trimmed);
+
+  if (hasMarkdownImg || hasDirectImg) {
+    return {
+      type: 'docs',
+      label: 'Image',
+      icon: 'image-outline',
+      color: '#ec4899',
+      data: {
+        hasImage: true,
+        lineCount: trimmed.split('\n').length,
+      },
+      rawText: safeDesc,
+    };
+  }
+
+  // 4. Documentation / Code Explanation
   const isCode =
     trimmed.includes('```') ||
     trimmed.includes('const ') ||
@@ -631,18 +649,59 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     });
   };
 
-  // Render docs text compactly
+  // Render docs and markdown text compactly with image support
   const renderDocsContent = (text, query) => {
     if (!text) return null;
     const lines = text.split('\n').filter(Boolean);
     return (
       <div className="compact-docs-box">
-        {lines.map((line, idx) => (
-          <div key={idx} className="compact-doc-line">
-            <span className="doc-bullet">•</span>
-            <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
-          </div>
-        ))}
+        {lines.map((line, idx) => {
+          const imgMatch = line.match(/!\[(.*?)\]\((https?:\/\/[^\s)]+|data:image\/[^\s)]+)\)/i);
+          const directImgMatch = line.match(/^(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s)]*)?)$/i);
+
+          if (imgMatch) {
+            const altText = imgMatch[1] || 'Image';
+            const imgUrl = imgMatch[2];
+            return (
+              <div key={idx} className="sleek-card-img-wrap">
+                <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
+                  <img
+                    src={imgUrl}
+                    alt={altText}
+                    className="sleek-card-embedded-img"
+                    loading="lazy"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </a>
+                {altText && altText !== 'Image' && <span className="sleek-img-caption">{altText}</span>}
+              </div>
+            );
+          }
+
+          if (directImgMatch) {
+            const imgUrl = directImgMatch[1];
+            return (
+              <div key={idx} className="sleek-card-img-wrap">
+                <a href={imgUrl} target="_blank" rel="noopener noreferrer" title="Click to view full image in new tab">
+                  <img
+                    src={imgUrl}
+                    alt="Embedded Media"
+                    className="sleek-card-embedded-img"
+                    loading="lazy"
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                </a>
+              </div>
+            );
+          }
+
+          return (
+            <div key={idx} className="compact-doc-line">
+              <span className="doc-bullet">•</span>
+              <span>{highlightMatches(line.replace(/^[#\-*0-9.]+\s*/, ''), query)}</span>
+            </div>
+          );
+        })}
       </div>
     );
   };

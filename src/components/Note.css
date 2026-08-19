@@ -843,6 +843,47 @@ mark.search-highlight-badge {
   cursor: text;
 }
 
+/* Embedded Card Images */
+.sleek-card-img-wrap {
+  margin: 4px 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  max-width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sleek-card-img-wrap a {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #f8fafc;
+}
+
+.sleek-card-embedded-img {
+  max-height: 220px;
+  max-width: 100%;
+  width: auto;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-sm);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.sleek-card-embedded-img:hover {
+  transform: scale(1.02);
+}
+
+.sleek-img-caption {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 500;
+}
+
 /* Empty State */
 .sleek-empty-card {
   text-align: center;
