@@ -405,12 +405,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Modal subtask builder state
-  const [activeModalTab, setActiveModalTab] = useState('plaintext');
-  const [builderSubtasks, setBuilderSubtasks] = useState([]);
-  const [newSubtaskTopic, setNewSubtaskTopic] = useState('');
-  const [newSubtaskStatus, setNewSubtaskStatus] = useState('pending');
-
   // Drag & Drop State (Activated exclusively on 3-times click / Triple-Click)
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
@@ -500,9 +494,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const closeModal = () => {
     setShowModal(false);
     setIsEditing(false);
-    setBuilderSubtasks([]);
-    setNewSubtaskTopic('');
-    setNewSubtaskStatus('pending');
+    setEditingNote(null);
   };
 
   const handleCancelTask = useCallback(() => {
@@ -521,58 +513,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     setShowModal(true);
     setIsEditing(false);
     setEditingNote(null);
-    setActiveModalTab('plaintext');
-    setBuilderSubtasks([]);
-    setNewSubtaskTopic('');
-    setNewSubtaskStatus('pending');
+    setNote({ title: '', description: '', tag: 'medium' });
   };
 
   const playRandomDeleteSound = () => {
     playSound(Math.random() < 0.5 ? TaskDeleted1Sound : TaskDeleted2Sound);
-  };
-
-  const syncBuilderToDescription = (subtasksList) => {
-    if (subtasksList.length === 0) {
-      setNote((prev) => ({ ...prev, description: '' }));
-      return;
-    }
-    const formatted = subtasksList.map((item) => `${item.topic}: ${item.status}`).join(' , ');
-    setNote((prev) => ({ ...prev, description: formatted }));
-  };
-
-  const handleAddSubtaskToBuilder = (e) => {
-    if (e) e.preventDefault();
-    if (!newSubtaskTopic.trim()) return;
-
-    const newItem = {
-      id: `builder-${Date.now()}-${Math.random()}`,
-      topic: newSubtaskTopic.trim(),
-      status: newSubtaskStatus || 'pending',
-    };
-
-    const updated = [...builderSubtasks, newItem];
-    setBuilderSubtasks(updated);
-    setNewSubtaskTopic('');
-    syncBuilderToDescription(updated);
-  };
-
-  const handleRemoveBuilderSubtask = (index) => {
-    const updated = builderSubtasks.filter((_, idx) => idx !== index);
-    setBuilderSubtasks(updated);
-    syncBuilderToDescription(updated);
-  };
-
-  const handleCycleBuilderStatus = (index) => {
-    const updated = [...builderSubtasks];
-    const currentStatus = getSubtaskStatusType(updated[index].status);
-    let nextStatus = 'pending';
-    if (currentStatus === 'pending') nextStatus = 'in-progress';
-    else if (currentStatus === 'in-progress') nextStatus = 'completed';
-    else nextStatus = 'pending';
-
-    updated[index].status = nextStatus;
-    setBuilderSubtasks(updated);
-    syncBuilderToDescription(updated);
   };
 
   // Filter notes based on search query & priority
@@ -694,10 +639,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     e.preventDefault();
     setIsbtnLoading(true);
 
-    let finalDescription = note.description.trim();
-    if (activeModalTab === 'structured' && builderSubtasks.length > 0) {
-      finalDescription = builderSubtasks.map((item) => `${item.topic}: ${item.status}`).join(' , ');
-    }
+    const finalDescription = note.description.trim();
 
     if (isEditing && editingNote) {
       editNote(editingNote._id, note.title, finalDescription, note.tag)
@@ -728,21 +670,6 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     if (e && e.stopPropagation) e.stopPropagation();
     setIsEditing(true);
     setEditingNote(noteItem);
-
-    const analysis = analyzeContent(noteItem.title, noteItem.description);
-    if (analysis.type === 'subtasks' && analysis.data) {
-      setActiveModalTab('structured');
-      setBuilderSubtasks(
-        analysis.data.items.map((it, idx) => ({
-          id: `edit-sub-${idx}`,
-          topic: it.topic,
-          status: it.status,
-        }))
-      );
-    } else {
-      setActiveModalTab('plaintext');
-      setBuilderSubtasks([]);
-    }
 
     setNote({
       title: noteItem.title,
@@ -1165,129 +1092,20 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </div>
               </div>
 
-              {/* Mode Tabs */}
-              <div className="sleek-modal-tabs">
-                <button
-                  type="button"
-                  className={`tab-btn ${activeModalTab === 'plaintext' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveModalTab('plaintext');
-                    if (builderSubtasks.length > 0) {
-                      syncBuilderToDescription(builderSubtasks);
-                    }
-                  }}
-                >
-                  📝Task
-                </button>
-                <button
-                  type="button"
-                  className={`tab-btn ${activeModalTab === 'structured' ? 'active' : ''}`}
-                  onClick={() => {
-                    setActiveModalTab('structured');
-                    if (builderSubtasks.length === 0 && note.description.trim()) {
-                      const analysis = analyzeContent('', note.description);
-                      if (analysis.type === 'subtasks' && analysis.data) {
-                        setBuilderSubtasks(analysis.data.items);
-                      }
-                    }
-                  }}
-                >
-                  📋Subtask ({builderSubtasks.length})
-                </button>
+              {/* Description (Pure Markdown .md) */}
+              <div className="modal-tab-body">
+                <textarea
+                  id="task-desc"
+                  name="description"
+                  className="sleek-textarea"
+                  value={note.description}
+                  rows={6}
+                  onChange={onChange}
+                  minLength={3}
+                  placeholder="Write description in Markdown (.md)... Supports - bullets, 1. numbered lists, [links](url), ## headings, code blocks, and images."
+                  required
+                ></textarea>
               </div>
-
-              {/* TAB 1: MARKDOWN (.md) TEXT */}
-              {activeModalTab === 'plaintext' && (
-                <div className="modal-tab-body">
-                  <textarea
-                    id="task-desc"
-                    name="description"
-                    className="sleek-textarea"
-                    value={note.description}
-                    rows={5}
-                    onChange={onChange}
-                    minLength={3}
-                    placeholder="Write description in Markdown (.md)... Supports - bullets, 1. numbered lists, [links](url), ## headings, code, and text."
-                    required
-                  ></textarea>
-                </div>
-              )}
-
-              {/* TAB 2: STRUCTURED BUILDER */}
-              {activeModalTab === 'structured' && (
-                <div className="modal-tab-body">
-                  <div className="builder-input-row">
-                    <input
-                      type="text"
-                      placeholder="Add subtask topic & press Enter..."
-                      value={newSubtaskTopic}
-                      onChange={(e) => setNewSubtaskTopic(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddSubtaskToBuilder();
-                        }
-                      }}
-                    />
-                    <select
-                      value={newSubtaskStatus}
-                      onChange={(e) => setNewSubtaskStatus(e.target.value)}
-                    >
-                      <option value="pending">⏳ Pending</option>
-                      <option value="in-progress">⚡ In Progress</option>
-                      <option value="completed">✅ Completed</option>
-                    </select>
-                    <button
-                      type="button"
-                      onClick={handleAddSubtaskToBuilder}
-                      disabled={!newSubtaskTopic.trim()}
-                    >
-                      Add
-                    </button>
-                  </div>
-
-                  <div className="builder-list-scroll">
-                    {builderSubtasks.length === 0 ? (
-                      <div className="builder-empty">Type a subtask topic above or use the Presets!</div>
-                    ) : (
-                      builderSubtasks.map((item, idx) => {
-                        const statusType = getSubtaskStatusType(item.status);
-                        return (
-                          <div className="builder-item-row" key={item.id || idx}>
-                            <span className="idx-num">{idx + 1}.</span>
-                            <input
-                              type="text"
-                              value={item.topic}
-                              onChange={(e) => {
-                                const updated = [...builderSubtasks];
-                                updated[idx].topic = e.target.value;
-                                setBuilderSubtasks(updated);
-                                syncBuilderToDescription(updated);
-                              }}
-                            />
-                            <button
-                              type="button"
-                              className={`status-btn status-${statusType}`}
-                              onClick={() => handleCycleBuilderStatus(idx)}
-                            >
-                              {statusType === 'completed' && 'Completed'}
-                              {statusType === 'in-progress' && 'In Progress'}
-                              {statusType === 'pending' && 'Pending'}
-                            </button>
-                            <button
-                              type="button"
-                              className="trash-btn"
-                              onClick={() => handleRemoveBuilderSubtask(idx)}
-                            >
-                              <ion-icon name="trash-outline"></ion-icon>
-                            </button>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Modal Footer */}
               <div className="sleek-modal-footer">
