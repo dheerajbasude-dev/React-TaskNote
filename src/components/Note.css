@@ -654,15 +654,17 @@ mark.search-highlight-badge {
 }
 
 .sleek-task-index {
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 800;
-  color: var(--text-muted);
-  background: #f1f5f9;
-  padding: 1px 5px;
-  border-radius: 3px;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  padding: 1px 6px;
+  border-radius: 4px;
   font-family: inherit;
   flex-shrink: 0;
   user-select: none;
+  letter-spacing: 0.02em;
 }
 
 .sleek-task-title {

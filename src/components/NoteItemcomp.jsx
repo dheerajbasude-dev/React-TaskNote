@@ -959,10 +959,15 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   }}
                   title={activeDragId === noteItem._id ? 'Ready to move! Drag up/down to reorder' : 'Click 3 times to activate drag reordering'}
                 >
-                  {/* Top Header Line: Title -> Priority -> Category / Status Pill -> Index -> Date & Actions */}
+                  {/* Top Header Line: Index -> Title -> Priority -> Date & Actions */}
                   <div className="sleek-row-header">
                     <div className="sleek-row-header-left">
-                      {/* 1. Title */}
+                      {/* 1. Index Number */}
+                      <span className="sleek-task-index">
+                        #{index + 1}
+                      </span>
+
+                      {/* 2. Title */}
                       <span
                         className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
                         draggable={false}
@@ -971,7 +976,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
                       </span>
 
-                      {/* 2. Priority Tag */}
+                      {/* 3. Priority Tag */}
                       <span
                         className="sleek-priority-tag"
                         style={{
@@ -982,33 +987,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
                       </span>
 
-                      {/* 3. Smart Category / Status Pill */}
-                      <button
-                        type="button"
-                        className={`sleek-status-pill ${noteItem.completed ? 'is-done' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleNoteCompletion(noteItem);
-                        }}
-                        title={noteItem.completed ? 'Click to mark pending' : 'Click to mark completed'}
-                        style={{
-                          '--pill-color': noteItem.completed ? '#10b981' : analysis.color,
-                        }}
-                      >
-                        <span className="status-pill-icon">
-                          <ion-icon name={noteItem.completed ? 'checkmark-circle' : analysis.icon}></ion-icon>
-                        </span>
-                        <span className="status-pill-label">
-                          {noteItem.completed ? 'Done' : analysis.label}
-                        </span>
-                      </button>
-
-                      {/* 4. Index Number (Placed after Subtasks/Category) */}
-                      <span className="sleek-task-index">
-                        #{index + 1}
-                      </span>
-
-                      {/* 5. Drag Ready Glow Badge */}
+                      {/* 4. Drag Ready Glow Badge */}
                       {activeDragId === noteItem._id && (
                         <span className="sleek-drag-ready-badge" title="Drag up/down to reorder">
                           <ion-icon name="hand-right"></ion-icon>
