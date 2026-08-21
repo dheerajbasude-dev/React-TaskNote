@@ -76,6 +76,66 @@ marked.setOptions({
 // CONTENT CLASSIFIER & PARSER
 // ============================================================================
 
+export const parseSubtaskItem = (rawString, index = 0) => {
+  if (!rawString || typeof rawString !== 'string') {
+    return { id: `subtask-${index}`, topic: '', status: 'pending' };
+  }
+
+  const trimmed = rawString.trim();
+
+  // 1. Markdown checklist: - [x] Topic or * [ ] Topic
+  const mdMatch = trimmed.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
+  if (mdMatch) {
+    return {
+      id: `subtask-${index}`,
+      topic: mdMatch[2].trim(),
+      status: mdMatch[1].toLowerCase() === 'x' ? 'completed' : 'pending',
+    };
+  }
+
+  // 2. Colon separation: e.g. "Java: 13--completed", "Topic: pending", "Java 13--: completed"
+  const colonIdx = trimmed.indexOf(':');
+  if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
+    let topicPart = trimmed.slice(0, colonIdx).trim();
+    let statusPart = trimmed.slice(colonIdx + 1).trim();
+
+    // Check if statusPart has numbers/dashes prefix like "13--completed" or "4--done"
+    const numDashMatch = statusPart.match(/^(\d+--|\d+-|#\d+\s*|-+\s*)(completed|pending|in-progress|done|todo|progress|doing|finished)$/i);
+    if (numDashMatch) {
+      topicPart = `${topicPart} ${numDashMatch[1]}`.trim();
+      statusPart = numDashMatch[2].trim();
+    }
+
+    return {
+      id: `subtask-${index}`,
+      topic: topicPart,
+      status: statusPart,
+    };
+  }
+
+  // 3. Space / Dash / Status keyword at end of string without colon:
+  // e.g. "Java 13--completed", "SpringBoot 4--completed", "Interview pending", "System-design in-progress"
+  const endStatusMatch = trimmed.match(/^(.*?)(?:--|\s+)(completed|pending|in-progress|done|todo|progress|doing|finished)$/i);
+  if (endStatusMatch) {
+    let topicPart = endStatusMatch[1].trim();
+    const statusPart = endStatusMatch[2].trim();
+    if (trimmed.toLowerCase().includes(`${topicPart.toLowerCase()}--${statusPart.toLowerCase()}`)) {
+      topicPart = `${topicPart}--`;
+    }
+    return {
+      id: `subtask-${index}`,
+      topic: topicPart,
+      status: statusPart,
+    };
+  }
+
+  return {
+    id: `subtask-${index}`,
+    topic: trimmed,
+    status: 'pending',
+  };
+};
+
 export const analyzeContent = (title, desc) => {
   const safeTitle = typeof title === 'string' ? title : '';
   const safeDesc = typeof desc === 'string' ? desc : '';
@@ -102,29 +162,11 @@ export const analyzeContent = (title, desc) => {
 
   for (let i = 0; i < linesOrParts.length; i++) {
     const part = linesOrParts[i];
-    const mdMatch = part.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
-    if (mdMatch) {
-      genuineSubtasks.push({
-        id: `subtask-${i}`,
-        topic: mdMatch[2].trim(),
-        status: mdMatch[1].toLowerCase() === 'x' ? 'completed' : 'pending',
-      });
-      continue;
-    }
-
-    const colonIdx = part.indexOf(':');
-    if (colonIdx > 0 && colonIdx < part.length - 1) {
-      const topic = part.slice(0, colonIdx).trim();
-      const statusRaw = part.slice(colonIdx + 1).trim();
-      const sLow = statusRaw.toLowerCase();
-      const isLikelyStatus = statusKeywords.some((k) => sLow.includes(k)) || /^\d+--/.test(sLow);
-      if (isLikelyStatus && topic.length < 60) {
-        genuineSubtasks.push({
-          id: `subtask-${i}`,
-          topic,
-          status: statusRaw,
-        });
-      }
+    const parsed = parseSubtaskItem(part, i);
+    const sLow = parsed.status.toLowerCase();
+    const isLikelyStatus = statusKeywords.some((k) => sLow.includes(k));
+    if (isLikelyStatus && parsed.topic && parsed.topic.length < 80) {
+      genuineSubtasks.push(parsed);
     }
   }
 
@@ -287,36 +329,6 @@ export const getSubtaskStatusType = (statusStr) => {
   return 'pending';
 };
 
-export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
-  const analysis = analyzeContent('', currentDesc);
-  if (analysis.type !== 'subtasks' || !analysis.data || !analysis.data.items[targetIndex]) {
-    return currentDesc;
-  }
-
-  const item = analysis.data.items[targetIndex];
-  const currentStatusType = getSubtaskStatusType(item.status);
-
-  let newStatus = '';
-  if (currentStatusType === 'pending') {
-    newStatus = 'in-progress';
-  } else if (currentStatusType === 'in-progress') {
-    if (item.status.includes('--')) {
-      newStatus = item.status.replace(/pending/gi, 'completed');
-    } else {
-      newStatus = 'completed';
-    }
-  } else {
-    if (item.status.includes('--')) {
-      newStatus = item.status.replace(/completed/gi, 'pending');
-    } else {
-      newStatus = 'pending';
-    }
-  }
-
-  analysis.data.items[targetIndex].status = newStatus;
-  return analysis.data.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
-};
-
 export const updateSubtaskItemInDescription = (currentDesc, targetIndex, newTopic, newStatus) => {
   const safeDesc = typeof currentDesc === 'string' ? currentDesc : '';
   const trimmed = safeDesc.trim();
@@ -333,11 +345,36 @@ export const updateSubtaskItemInDescription = (currentDesc, targetIndex, newTopi
   if (mdMatch) {
     const isDone = newStatus.toLowerCase().includes('completed') || newStatus.toLowerCase().includes('done');
     parts[targetIndex] = `${mdMatch[1]}[${isDone ? 'x' : ' '}] ${newTopic}`;
-  } else {
+  } else if (newTopic.endsWith('--')) {
+    parts[targetIndex] = `${newTopic}${newStatus}`;
+  } else if (part.includes(':')) {
     parts[targetIndex] = `${newTopic}: ${newStatus}`;
+  } else {
+    parts[targetIndex] = `${newTopic} ${newStatus}`;
   }
 
   return parts.join(separator);
+};
+
+export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
+  const analysis = analyzeContent('', currentDesc);
+  if (analysis.type !== 'subtasks' || !analysis.data || !analysis.data.items[targetIndex]) {
+    return currentDesc;
+  }
+
+  const item = analysis.data.items[targetIndex];
+  const currentStatusType = getSubtaskStatusType(item.status);
+
+  let newStatus = '';
+  if (currentStatusType === 'pending') {
+    newStatus = 'in-progress';
+  } else if (currentStatusType === 'in-progress') {
+    newStatus = 'completed';
+  } else {
+    newStatus = 'pending';
+  }
+
+  return updateSubtaskItemInDescription(currentDesc, targetIndex, item.topic, newStatus);
 };
 
 export const deleteSubtaskItemFromDescription = (currentDesc, targetIndex) => {
