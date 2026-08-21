@@ -93,17 +93,16 @@ export const parseSubtaskItem = (rawString, index = 0) => {
     };
   }
 
-  // 2. Colon separation: e.g. "Java: 13--completed", "Topic: pending", "Java 13--: completed"
-  const colonIdx = trimmed.indexOf(':');
-  if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
-    let topicPart = trimmed.slice(0, colonIdx).trim();
-    let statusPart = trimmed.slice(colonIdx + 1).trim();
+  // 2. Exact match for status keyword at the end of string
+  // Supports: "Java: 14--pending", "Java: 14--: pending", "Java 13--completed", "Interview: pending", "Interview-prep pending", "System-design in-progress"
+  const endStatusMatch = trimmed.match(/^(.*?)(?:(?<=--)|(?<=:)\s*|\s+)(completed|pending|in-progress|done|todo|progress|doing|finished|complete)$/i);
+  if (endStatusMatch) {
+    let topicPart = endStatusMatch[1].trim();
+    const statusPart = endStatusMatch[2].trim();
 
-    // Check if statusPart has numbers/dashes prefix like "13--completed" or "4--done"
-    const numDashMatch = statusPart.match(/^(\d+--|\d+-|#\d+\s*|-+\s*)(completed|pending|in-progress|done|todo|progress|doing|finished)$/i);
-    if (numDashMatch) {
-      topicPart = `${topicPart} ${numDashMatch[1]}`.trim();
-      statusPart = numDashMatch[2].trim();
+    // Only strip trailing colon if topicPart does NOT end with a dash (e.g. "Interview:" -> "Interview", but "Java: 14--" stays "Java: 14--")
+    if (topicPart.endsWith(':') && !topicPart.endsWith('-:') && !topicPart.endsWith('--:')) {
+      topicPart = topicPart.slice(0, -1).trim();
     }
 
     return {
@@ -113,19 +112,13 @@ export const parseSubtaskItem = (rawString, index = 0) => {
     };
   }
 
-  // 3. Space / Dash / Status keyword at end of string without colon:
-  // e.g. "Java 13--completed", "SpringBoot 4--completed", "Interview pending", "System-design in-progress"
-  const endStatusMatch = trimmed.match(/^(.*?)(?:--|\s+)(completed|pending|in-progress|done|todo|progress|doing|finished)$/i);
-  if (endStatusMatch) {
-    let topicPart = endStatusMatch[1].trim();
-    const statusPart = endStatusMatch[2].trim();
-    if (trimmed.toLowerCase().includes(`${topicPart.toLowerCase()}--${statusPart.toLowerCase()}`)) {
-      topicPart = `${topicPart}--`;
-    }
+  // 3. Colon fallback: e.g. "Topic: customStatus"
+  const colonIdx = trimmed.indexOf(':');
+  if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
     return {
       id: `subtask-${index}`,
-      topic: topicPart,
-      status: statusPart,
+      topic: trimmed.slice(0, colonIdx).trim(),
+      status: trimmed.slice(colonIdx + 1).trim(),
     };
   }
 
@@ -504,6 +497,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
 
   // Single Subtask Quick Editor state
   const [editingSubtask, setEditingSubtask] = useState(null);
+  const [isSubtaskSaving, setIsSubtaskSaving] = useState(false);
+  const [isSubtaskDeleting, setIsSubtaskDeleting] = useState(false);
 
   // Drag & Drop State (Activated exclusively on 3-times click / Triple-Click)
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -841,11 +836,12 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   // Save changes to single subtask
   const handleSaveSubtask = async (e) => {
     if (e) e.preventDefault();
-    if (!editingSubtask) return;
+    if (!editingSubtask || isSubtaskSaving) return;
 
     const { noteItem, index, topic, status } = editingSubtask;
     if (!topic.trim()) return;
 
+    setIsSubtaskSaving(true);
     const updatedDesc = updateSubtaskItemInDescription(
       noteItem.description,
       index,
@@ -859,15 +855,18 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       handleCloseSubtaskEditor();
     } catch (err) {
       console.warn('Failed to save subtask:', err);
+    } finally {
+      setIsSubtaskSaving(false);
     }
   };
 
   // Delete single subtask
   const handleDeleteSubtask = async (e) => {
     if (e) e.preventDefault();
-    if (!editingSubtask) return;
+    if (!editingSubtask || isSubtaskDeleting) return;
 
     const { noteItem, index } = editingSubtask;
+    setIsSubtaskDeleting(true);
     const updatedDesc = deleteSubtaskItemFromDescription(noteItem.description, index);
 
     try {
@@ -876,6 +875,8 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
       handleCloseSubtaskEditor();
     } catch (err) {
       console.warn('Failed to delete subtask:', err);
+    } finally {
+      setIsSubtaskDeleting(false);
     }
   };
 
@@ -1454,10 +1455,17 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   type="button"
                   className="subtask-btn-delete"
                   onClick={handleDeleteSubtask}
+                  disabled={isSubtaskSaving || isSubtaskDeleting}
                   title="Delete this subtask from task"
                 >
-                  <ion-icon name="trash-outline"></ion-icon>
-                  <span>Delete</span>
+                  {isSubtaskDeleting ? (
+                    <DotPulse size={14} color="#ef4444" />
+                  ) : (
+                    <>
+                      <ion-icon name="trash-outline"></ion-icon>
+                      <span>Delete</span>
+                    </>
+                  )}
                 </button>
 
                 <div className="subtask-footer-right">
@@ -1465,15 +1473,20 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     type="button"
                     className="sleek-btn-cancel"
                     onClick={handleCloseSubtaskEditor}
+                    disabled={isSubtaskSaving || isSubtaskDeleting}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     className="sleek-btn-submit"
-                    disabled={!editingSubtask.topic.trim()}
+                    disabled={!editingSubtask.topic.trim() || isSubtaskSaving || isSubtaskDeleting}
                   >
-                    <span>Save Changes</span>
+                    {isSubtaskSaving ? (
+                      <DotPulse size={16} color="#ffffff" />
+                    ) : (
+                      <span>Save Changes</span>
+                    )}
                   </button>
                 </div>
               </div>
