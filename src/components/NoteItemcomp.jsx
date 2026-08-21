@@ -55,6 +55,17 @@ renderer.code = function ({ text, lang }) {
   `;
 };
 
+renderer.link = function (arg) {
+  const href = (typeof arg === 'string' ? arg : arg?.href) || '';
+  const title = (typeof arg === 'object' ? arg?.title : arguments[1]) || '';
+  const text = (typeof arg === 'object' ? arg?.text : arguments[2]) || href;
+
+  const safeHref = href.replace(/"/g, '&quot;');
+  const safeTitle = title ? ` title="${title.replace(/"/g, '&quot;')}"` : ` title="${safeHref}"`;
+
+  return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="sleek-md-link"${safeTitle} draggable="false"><span class="md-link-icon"><ion-icon name="link-outline"></ion-icon></span><span class="md-link-text">${text}</span><span class="md-link-arrow">↗</span></a>`;
+};
+
 marked.use({ renderer });
 marked.setOptions({
   gfm: true,
@@ -352,6 +363,14 @@ const PureMarkdownRenderer = ({ content }) => {
       img.onclick = (e) => {
         e.stopPropagation();
         window.open(img.src, '_blank', 'noopener,noreferrer');
+      };
+    });
+
+    // Make all links isolate propagation so card click is not triggered
+    const linkElements = containerRef.current.querySelectorAll('a');
+    linkElements.forEach((link) => {
+      link.onclick = (e) => {
+        e.stopPropagation();
       };
     });
   }, [rawHtml]);
