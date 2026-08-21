@@ -341,16 +341,19 @@ export const updateSubtaskItemInDescription = (currentDesc, targetIndex, newTopi
   if (targetIndex < 0 || targetIndex >= parts.length) return currentDesc;
 
   const part = parts[targetIndex];
+  const cleanTopic = newTopic.trim();
+  const cleanStatus = newStatus.trim();
+
   const mdMatch = part.match(/^([-*]\s*)\[([ xX])\]\s*(.*)$/);
   if (mdMatch) {
-    const isDone = newStatus.toLowerCase().includes('completed') || newStatus.toLowerCase().includes('done');
-    parts[targetIndex] = `${mdMatch[1]}[${isDone ? 'x' : ' '}] ${newTopic}`;
-  } else if (newTopic.endsWith('--')) {
-    parts[targetIndex] = `${newTopic}${newStatus}`;
+    const isDone = cleanStatus.toLowerCase().includes('completed') || cleanStatus.toLowerCase().includes('done');
+    parts[targetIndex] = `${mdMatch[1]}[${isDone ? 'x' : ' '}] ${cleanTopic}`;
+  } else if (cleanTopic.endsWith('-') || cleanTopic.endsWith('--')) {
+    parts[targetIndex] = `${cleanTopic}${cleanStatus}`;
   } else if (part.includes(':')) {
-    parts[targetIndex] = `${newTopic}: ${newStatus}`;
+    parts[targetIndex] = `${cleanTopic}: ${cleanStatus}`;
   } else {
-    parts[targetIndex] = `${newTopic} ${newStatus}`;
+    parts[targetIndex] = `${cleanTopic} ${cleanStatus}`;
   }
 
   return parts.join(separator);
@@ -1121,11 +1124,12 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                         <div className="sleek-chips-wrap">
                           {analysis.data.items.map((subItem, sIdx) => {
                             const statusType = getSubtaskStatusType(subItem.status);
+                            const isDashSuffix = Boolean(subItem.topic && subItem.topic.trim().endsWith('-'));
                             return (
                               <button
                                 key={subItem.id || sIdx}
                                 type="button"
-                                className={`sleek-subtask-pill status-${statusType}`}
+                                className={`sleek-subtask-pill status-${statusType} ${isDashSuffix ? 'has-dash-suffix' : ''}`}
                                 onClick={(e) => handleOpenSubtaskEditor(e, noteItem, sIdx, subItem)}
                                 onMouseDown={(e) => e.stopPropagation()}
                                 onTouchStart={(e) => e.stopPropagation()}

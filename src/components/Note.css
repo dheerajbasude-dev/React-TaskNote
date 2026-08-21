@@ -814,6 +814,14 @@ mark.search-highlight-badge {
   transform: translateY(-1px);
 }
 
+.sleek-subtask-pill.has-dash-suffix {
+  gap: 0px !important;
+}
+
+.sleek-subtask-pill.has-dash-suffix .pill-status {
+  margin-left: 0 !important;
+}
+
 .sleek-subtask-pill.status-completed {
   background: #ecfdf5;
   color: #047857;
