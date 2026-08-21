@@ -78,10 +78,11 @@ marked.setOptions({
 
 export const parseSubtaskItem = (rawString, index = 0) => {
   if (!rawString || typeof rawString !== 'string') {
-    return { id: `subtask-${index}`, topic: '', status: 'pending' };
+    return null;
   }
 
   const trimmed = rawString.trim();
+  if (!trimmed) return null;
 
   // 1. Markdown checklist: - [x] Topic or * [ ] Topic
   const mdMatch = trimmed.match(/^[-*]\s*\[([ xX])\]\s*(.*)$/);
@@ -90,43 +91,49 @@ export const parseSubtaskItem = (rawString, index = 0) => {
       id: `subtask-${index}`,
       topic: mdMatch[2].trim(),
       status: mdMatch[1].toLowerCase() === 'x' ? 'completed' : 'pending',
+      isExplicitDash: true,
     };
   }
 
-  // 2. Exact match for status keyword at the end of string
-  // Supports: "Java: 14--pending", "Java: 14--: pending", "Java 13--completed", "Interview: pending", "Interview-prep pending", "System-design in-progress"
-  const endStatusMatch = trimmed.match(/^(.*?)(?:(?<=--)|(?<=:)\s*|\s+)(completed|pending|in-progress|done|todo|progress|doing|finished|complete)$/i);
-  if (endStatusMatch) {
-    let topicPart = endStatusMatch[1].trim();
-    const statusPart = endStatusMatch[2].trim();
-
-    // Only strip trailing colon if topicPart does NOT end with a dash (e.g. "Interview:" -> "Interview", but "Java: 14--" stays "Java: 14--")
-    if (topicPart.endsWith(':') && !topicPart.endsWith('-:') && !topicPart.endsWith('--:')) {
-      topicPart = topicPart.slice(0, -1).trim();
-    }
-
+  // 2. Explicit dash format: e.g. "java: 22--completed", "Java: 14--pending", "Java 13--completed", "SpringBoot 4--in-progress"
+  const dashStatusMatch = trimmed.match(/^(.*?)(?:--|-{2,})(completed|pending|in-progress|done|todo|progress|doing|finished|complete)$/i);
+  if (dashStatusMatch) {
+    let topicPart = dashStatusMatch[1].trim();
+    const statusPart = dashStatusMatch[2].trim();
+    topicPart = `${topicPart}--`;
     return {
       id: `subtask-${index}`,
       topic: topicPart,
       status: statusPart,
+      isExplicitDash: true,
     };
   }
 
-  // 3. Colon fallback: e.g. "Topic: customStatus"
-  const colonIdx = trimmed.indexOf(':');
-  if (colonIdx > 0 && colonIdx < trimmed.length - 1) {
+  // 3. Colon + status format: e.g. "Java 13: completed", "Topic: pending"
+  const colonStatusMatch = trimmed.match(/^(.*?):\s*(completed|pending|in-progress|done|todo|progress|doing|finished|complete)$/i);
+  if (colonStatusMatch) {
+    const topicPart = colonStatusMatch[1].trim();
+    const statusPart = colonStatusMatch[2].trim();
     return {
       id: `subtask-${index}`,
-      topic: trimmed.slice(0, colonIdx).trim(),
-      status: trimmed.slice(colonIdx + 1).trim(),
+      topic: topicPart,
+      status: statusPart,
+      isExplicitDash: false,
     };
   }
 
-  return {
-    id: `subtask-${index}`,
-    topic: trimmed,
-    status: 'pending',
-  };
+  // 4. Space-separated status keyword (only valid in multi-item lists): e.g. "Interview pending", "DSA completed"
+  const spaceStatusMatch = trimmed.match(/^(.*?)\s+(completed|pending|in-progress|done|todo|progress|doing|finished|complete)$/i);
+  if (spaceStatusMatch) {
+    return {
+      id: `subtask-${index}`,
+      topic: spaceStatusMatch[1].trim(),
+      status: spaceStatusMatch[2].trim(),
+      isExplicitDash: false,
+    };
+  }
+
+  return null;
 };
 
 export const analyzeContent = (title, desc) => {
@@ -151,23 +158,27 @@ export const analyzeContent = (title, desc) => {
     : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
 
   const genuineSubtasks = [];
-  const statusKeywords = ['pending', 'completed', 'in-progress', 'done', 'todo', 'progress', 'doing', 'finished', '--'];
 
   for (let i = 0; i < linesOrParts.length; i++) {
     const part = linesOrParts[i];
     const parsed = parseSubtaskItem(part, i);
-    const sLow = parsed.status.toLowerCase();
-    const isLikelyStatus = statusKeywords.some((k) => sLow.includes(k));
-    if (isLikelyStatus && parsed.topic && parsed.topic.length < 80) {
+    if (parsed && parsed.topic && parsed.topic.length < 120) {
       genuineSubtasks.push(parsed);
     }
   }
 
-  if (genuineSubtasks.length >= 2 || (genuineSubtasks.length === 1 && linesOrParts.length === 1 && (genuineSubtasks[0].status.includes('pending') || genuineSubtasks[0].status.includes('completed')))) {
+  // Strictly classify as Subtasks:
+  // - For multiple items (>= 2): when valid subtasks are present
+  // - For a single item (1): ONLY when it explicitly has the dash format (e.g. java: 22--completed) or Markdown checklist (- [ ])
+  const isGenuineSubtaskCollection =
+    (genuineSubtasks.length >= 2 && genuineSubtasks.length >= Math.floor(linesOrParts.length * 0.6)) ||
+    (genuineSubtasks.length === 1 && linesOrParts.length === 1 && genuineSubtasks[0].isExplicitDash);
+
+  if (isGenuineSubtaskCollection) {
     const totalCount = genuineSubtasks.length;
     const completedCount = genuineSubtasks.filter((item) => {
       const s = item.status.toLowerCase();
-      return s.includes('completed') || s.includes('done') || s === 'finished';
+      return s.includes('completed') || s.includes('done') || s === 'finished' || s === 'complete';
     }).length;
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
