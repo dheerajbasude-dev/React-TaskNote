@@ -2016,7 +2016,8 @@ mark.search-highlight-badge {
 
 .sleek-subtask-status-selector {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  width: 100%;
 }
 
 .subtask-status-opt {
@@ -2024,21 +2025,28 @@ mark.search-highlight-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 5px;
+  padding: 8px 6px;
   border-radius: 8px;
   border: 1.5px solid var(--border-subtle);
   background: #f8fafc;
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap !important;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   color: var(--text-secondary);
+  min-width: 0;
+}
+
+.subtask-status-opt span {
+  white-space: nowrap !important;
 }
 
 .subtask-status-opt ion-icon {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
 .subtask-status-opt.pending.selected {
@@ -2134,5 +2142,20 @@ mark.search-highlight-badge {
   }
   .sleek-row-body {
     margin-left: 0;
+  }
+  .sleek-subtask-modal-box {
+    width: 92%;
+    margin: 0 auto;
+  }
+  .sleek-subtask-status-selector {
+    gap: 4px;
+  }
+  .subtask-status-opt {
+    padding: 7px 4px;
+    font-size: 0.7rem;
+    gap: 3px;
+  }
+  .subtask-status-opt ion-icon {
+    font-size: 0.82rem;
   }
 }
