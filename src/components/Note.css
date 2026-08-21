@@ -630,11 +630,53 @@ mark.search-highlight-badge {
   border-color: #10b981;
 }
 
+.sleek-task-title-group {
+  display: inline;
+  vertical-align: middle;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.sleek-task-index {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 6px;
+  margin-bottom: 2px;
+  user-select: none;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.sleek-task-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text;
+  vertical-align: middle;
+}
+
 .sleek-priority-tag {
   font-size: 0.64rem;
   font-weight: 800;
   padding: 1px 5px;
   border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 6px;
+  margin-bottom: 2px;
   flex-shrink: 0;
 }
 
@@ -651,30 +693,6 @@ mark.search-highlight-badge {
 
 .sleek-cat-tag ion-icon {
   font-size: 0.72rem;
-}
-
-.sleek-task-index {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.08);
-  border: 1px solid rgba(99, 102, 241, 0.18);
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-family: inherit;
-  flex-shrink: 0;
-  user-select: none;
-  letter-spacing: 0.02em;
-}
-
-.sleek-task-title {
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  word-break: break-word;
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  cursor: text;
 }
 
 .sleek-task-title.strike {

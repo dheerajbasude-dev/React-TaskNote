@@ -1014,30 +1014,32 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                   {/* Top Header Line: Index -> Title -> Priority -> Date & Actions */}
                   <div className="sleek-row-header">
                     <div className="sleek-row-header-left">
-                      {/* 1. Index Number */}
-                      <span className="sleek-task-index">
-                        #{index + 1}
-                      </span>
+                      <div className="sleek-task-title-group">
+                        {/* 1. Index Number */}
+                        <span className="sleek-task-index">
+                          #{index + 1}
+                        </span>
 
-                      {/* 2. Title */}
-                      <span
-                        className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
-                        draggable={false}
-                        onDragStart={(e) => e.stopPropagation()}
-                      >
-                        {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
-                      </span>
+                        {/* 2. Title */}
+                        <span
+                          className={`sleek-task-title ${noteItem.completed ? 'strike' : ''}`}
+                          draggable={false}
+                          onDragStart={(e) => e.stopPropagation()}
+                        >
+                          {searchQuery ? highlightMatches(noteItem.title, searchQuery) : noteItem.title}
+                        </span>
 
-                      {/* 3. Priority Tag */}
-                      <span
-                        className="sleek-priority-tag"
-                        style={{
-                          color: getPriorityColor(noteItem.tag),
-                          backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
-                        }}
-                      >
-                        {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
-                      </span>
+                        {/* 3. Priority Tag */}
+                        <span
+                          className="sleek-priority-tag"
+                          style={{
+                            color: getPriorityColor(noteItem.tag),
+                            backgroundColor: `${getPriorityColor(noteItem.tag)}12`,
+                          }}
+                        >
+                          {(noteItem.tag || 'medium').slice(0, 3).toUpperCase()}
+                        </span>
+                      </div>
 
                       {/* 4. Drag Ready Glow Badge */}
                       {activeDragId === noteItem._id && (
