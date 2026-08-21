@@ -317,6 +317,44 @@ export const toggleSubtaskItemStatus = (currentDesc, targetIndex) => {
   return analysis.data.items.map((it) => `${it.topic}: ${it.status}`).join(' , ');
 };
 
+export const updateSubtaskItemInDescription = (currentDesc, targetIndex, newTopic, newStatus) => {
+  const safeDesc = typeof currentDesc === 'string' ? currentDesc : '';
+  const trimmed = safeDesc.trim();
+  const isNewline = trimmed.includes('\n');
+  const separator = isNewline ? '\n' : ' , ';
+  const parts = isNewline
+    ? trimmed.split('\n').map((s) => s.trim()).filter(Boolean)
+    : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+
+  if (targetIndex < 0 || targetIndex >= parts.length) return currentDesc;
+
+  const part = parts[targetIndex];
+  const mdMatch = part.match(/^([-*]\s*)\[([ xX])\]\s*(.*)$/);
+  if (mdMatch) {
+    const isDone = newStatus.toLowerCase().includes('completed') || newStatus.toLowerCase().includes('done');
+    parts[targetIndex] = `${mdMatch[1]}[${isDone ? 'x' : ' '}] ${newTopic}`;
+  } else {
+    parts[targetIndex] = `${newTopic}: ${newStatus}`;
+  }
+
+  return parts.join(separator);
+};
+
+export const deleteSubtaskItemFromDescription = (currentDesc, targetIndex) => {
+  const safeDesc = typeof currentDesc === 'string' ? currentDesc : '';
+  const trimmed = safeDesc.trim();
+  const isNewline = trimmed.includes('\n');
+  const separator = isNewline ? '\n' : ' , ';
+  const parts = isNewline
+    ? trimmed.split('\n').map((s) => s.trim()).filter(Boolean)
+    : trimmed.split(',').map((s) => s.trim()).filter(Boolean);
+
+  if (targetIndex < 0 || targetIndex >= parts.length) return currentDesc;
+
+  parts.splice(targetIndex, 1);
+  return parts.join(separator);
+};
+
 // ============================================================================
 // PURE GFM MARKDOWN RENDERER (100% SPEC COMPLIANT WITH SYNTAX CODE BOXES)
 // ============================================================================
@@ -423,6 +461,9 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Single Subtask Quick Editor state
+  const [editingSubtask, setEditingSubtask] = useState(null);
 
   // Drag & Drop State (Activated exclusively on 3-times click / Triple-Click)
   const [draggingIndex, setDraggingIndex] = useState(null);
@@ -737,10 +778,71 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
     }
   };
 
+  // Open Single Subtask Quick Editor
+  const handleOpenSubtaskEditor = (e, noteItem, subtaskIdx, subItem) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setEditingSubtask({
+      noteId: noteItem._id,
+      noteItem: noteItem,
+      index: subtaskIdx,
+      topic: subItem.topic,
+      status: subItem.status || 'pending',
+    });
+  };
+
+  // Close Subtask Editor
+  const handleCloseSubtaskEditor = () => {
+    setEditingSubtask(null);
+  };
+
+  // Save changes to single subtask
+  const handleSaveSubtask = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingSubtask) return;
+
+    const { noteItem, index, topic, status } = editingSubtask;
+    if (!topic.trim()) return;
+
+    const updatedDesc = updateSubtaskItemInDescription(
+      noteItem.description,
+      index,
+      topic.trim(),
+      status
+    );
+
+    try {
+      await editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
+      playSound(EditTaskSound);
+      handleCloseSubtaskEditor();
+    } catch (err) {
+      console.warn('Failed to save subtask:', err);
+    }
+  };
+
+  // Delete single subtask
+  const handleDeleteSubtask = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingSubtask) return;
+
+    const { noteItem, index } = editingSubtask;
+    const updatedDesc = deleteSubtaskItemFromDescription(noteItem.description, index);
+
+    try {
+      await editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
+      playRandomDeleteSound();
+      handleCloseSubtaskEditor();
+    } catch (err) {
+      console.warn('Failed to delete subtask:', err);
+    }
+  };
+
   // Subtask click within a card
   const handleCardSubtaskClick = (e, noteItem, subtaskIdx) => {
     e.stopPropagation();
-    const updatedDesc = toggleSubtaskStatusInText(noteItem.description, subtaskIdx);
+    const updatedDesc = toggleSubtaskItemStatus(noteItem.description, subtaskIdx);
     editNote(noteItem._id, noteItem.title, updatedDesc, noteItem.tag);
   };
 
@@ -1008,14 +1110,19 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                                 key={subItem.id || sIdx}
                                 type="button"
                                 className={`sleek-subtask-pill status-${statusType}`}
-                                onClick={(e) => handleCardSubtaskClick(e, noteItem, sIdx)}
-                                title={`Click to cycle status (${subItem.status})`}
+                                onClick={(e) => handleOpenSubtaskEditor(e, noteItem, sIdx, subItem)}
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onTouchStart={(e) => e.stopPropagation()}
+                                title={`Click to edit "${subItem.topic}"`}
                               >
                                 <span className="pill-topic">
                                   {searchQuery ? highlightMatches(subItem.topic, searchQuery) : subItem.topic}
                                 </span>
                                 <span className="pill-status">
                                   {searchQuery ? highlightMatches(subItem.status, searchQuery) : subItem.status}
+                                </span>
+                                <span className="pill-edit-hint">
+                                  <ion-icon name="create-outline"></ion-icon>
                                 </span>
                               </button>
                             );
@@ -1226,6 +1333,129 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     </>
                   )}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Sleek Dedicated Edit Subtask Modal */}
+      {editingSubtask && (
+        <div className="sleek-modal-overlay" onClick={handleCloseSubtaskEditor}>
+          <div className="sleek-subtask-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="sleek-subtask-modal-header">
+              <div className="subtask-header-title-wrap">
+                <div className="subtask-modal-icon">
+                  <ion-icon name="create-outline"></ion-icon>
+                </div>
+                <div>
+                  <h3>Edit Subtask</h3>
+                  <p className="subtask-modal-parent-name">
+                    Task: <strong>{editingSubtask.noteItem?.title}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="sleek-modal-close-btn"
+                onClick={handleCloseSubtaskEditor}
+                aria-label="Close"
+              >
+                <ion-icon name="close"></ion-icon>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSubtask} className="sleek-subtask-modal-body">
+              {/* Subtask Topic Input */}
+              <div className="subtask-form-group">
+                <label htmlFor="subtask-topic-input">Subtask Topic / Name</label>
+                <input
+                  id="subtask-topic-input"
+                  type="text"
+                  className="sleek-input-title"
+                  value={editingSubtask.topic}
+                  onChange={(e) =>
+                    setEditingSubtask({ ...editingSubtask, topic: e.target.value })
+                  }
+                  placeholder="e.g. Java 13, SpringBoot 4, Interview prep..."
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {/* Status Selector Pills */}
+              <div className="subtask-form-group">
+                <label>Status</label>
+                <div className="sleek-subtask-status-selector">
+                  <button
+                    type="button"
+                    className={`subtask-status-opt pending ${
+                      getSubtaskStatusType(editingSubtask.status) === 'pending' ? 'selected' : ''
+                    }`}
+                    onClick={() =>
+                      setEditingSubtask({ ...editingSubtask, status: 'pending' })
+                    }
+                  >
+                    <ion-icon name="hourglass-outline"></ion-icon>
+                    <span>Pending</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`subtask-status-opt in-progress ${
+                      getSubtaskStatusType(editingSubtask.status) === 'in-progress' ? 'selected' : ''
+                    }`}
+                    onClick={() =>
+                      setEditingSubtask({ ...editingSubtask, status: 'in-progress' })
+                    }
+                  >
+                    <ion-icon name="flash-outline"></ion-icon>
+                    <span>In Progress</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`subtask-status-opt completed ${
+                      getSubtaskStatusType(editingSubtask.status) === 'completed' ? 'selected' : ''
+                    }`}
+                    onClick={() =>
+                      setEditingSubtask({ ...editingSubtask, status: 'completed' })
+                    }
+                  >
+                    <ion-icon name="checkmark-circle"></ion-icon>
+                    <span>Completed</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="sleek-subtask-modal-footer">
+                <button
+                  type="button"
+                  className="subtask-btn-delete"
+                  onClick={handleDeleteSubtask}
+                  title="Delete this subtask from task"
+                >
+                  <ion-icon name="trash-outline"></ion-icon>
+                  <span>Delete</span>
+                </button>
+
+                <div className="subtask-footer-right">
+                  <button
+                    type="button"
+                    className="sleek-btn-cancel"
+                    onClick={handleCloseSubtaskEditor}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="sleek-btn-submit"
+                    disabled={!editingSubtask.topic.trim()}
+                  >
+                    <span>Save Changes</span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -1895,6 +1895,201 @@ mark.search-highlight-badge {
 }
 
 /* --------------------------------------------------------------------------
+   SINGLE SUBTASK QUICK EDIT MODAL & PILL ENHANCEMENTS
+   -------------------------------------------------------------------------- */
+
+.sleek-subtask-pill {
+  position: relative;
+}
+
+.sleek-subtask-pill .pill-edit-hint {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  opacity: 0.6;
+  margin-left: 3px;
+  transition: all 0.15s ease;
+}
+
+.sleek-subtask-pill:hover .pill-edit-hint {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.sleek-subtask-modal-box {
+  width: 100%;
+  max-width: 460px;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 48px -8px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.12);
+  overflow: hidden;
+  animation: modalPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.sleek-subtask-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, #ffffff 100%);
+}
+
+.subtask-header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subtask-modal-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.subtask-header-title-wrap h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.subtask-modal-parent-name {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: 2px 0 0 0;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtask-modal-parent-name strong {
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.sleek-subtask-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subtask-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.subtask-form-group label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.sleek-subtask-status-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.subtask-status-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border-subtle);
+  background: #f8fafc;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--text-secondary);
+}
+
+.subtask-status-opt ion-icon {
+  font-size: 0.95rem;
+}
+
+.subtask-status-opt.pending.selected {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.22);
+}
+
+.subtask-status-opt.in-progress.selected {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.22);
+}
+
+.subtask-status-opt.completed.selected {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #10b981;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.22);
+}
+
+.subtask-status-opt:hover:not(.selected) {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.sleek-subtask-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 4px;
+}
+
+.subtask-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subtask-btn-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subtask-btn-delete:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
    5. RESPONSIVE BREAKPOINTS
    -------------------------------------------------------------------------- */
 @media screen and (max-width: 768px) {
