@@ -1212,57 +1212,90 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
             </div>
 
             <form className="sleek-modal-form" onSubmit={handleAddTask}>
-              {/* Title & Priority Row */}
-              <div className="modal-row-title">
-                <input
+              {/* Task Title Field with Auto-Expansion */}
+              <div className="sleek-form-field">
+                <label htmlFor="task-title" className="sleek-field-label">
+                  <span>Task Title</span>
+                  <span className="field-required">*</span>
+                </label>
+                <textarea
                   id="task-title"
                   name="title"
-                  type="text"
-                  className="sleek-input-title"
+                  className="sleek-input-title-auto"
                   value={note.title}
-                  onChange={onChange}
+                  onChange={(e) => {
+                    onChange(e);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.max(42, e.target.scrollHeight)}px`;
+                  }}
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.max(42, e.target.scrollHeight)}px`;
+                  }}
+                  rows={1}
                   minLength={3}
-                  placeholder="Task title (e.g. WEBSITE: English practice, Sprint Beta)..."
+                  placeholder="e.g. WEBSITE: English practice, Sprint Beta..."
                   required
                   autoFocus
                 />
+              </div>
 
-                <div className="sleek-modal-priority">
+              {/* Priority Selector Row */}
+              <div className="sleek-form-field">
+                <label className="sleek-field-label">Priority</label>
+                <div className="sleek-modal-priority-bar">
                   <button
                     type="button"
                     className={`priority-pill high ${note.tag === 'high' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'high' })}
                   >
-                    High
+                    <span className="priority-dot"></span>
+                    <span>High Priority</span>
                   </button>
                   <button
                     type="button"
                     className={`priority-pill med ${note.tag === 'medium' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'medium' })}
                   >
-                    Med
+                    <span className="priority-dot"></span>
+                    <span>Medium</span>
                   </button>
                   <button
                     type="button"
                     className={`priority-pill low ${note.tag === 'low' ? 'active' : ''}`}
                     onClick={() => setNote({ ...note, tag: 'low' })}
                   >
-                    Low
+                    <span className="priority-dot"></span>
+                    <span>Low Priority</span>
                   </button>
                 </div>
               </div>
 
-              {/* Description (Pure Markdown .md) */}
-              <div className="modal-tab-body">
+              {/* Description Field (Pure Markdown .md) with Auto-Expansion */}
+              <div className="sleek-form-field">
+                <div className="sleek-field-label-row">
+                  <label htmlFor="task-desc" className="sleek-field-label">
+                    <span>Description & Notes</span>
+                    <span className="field-hint">Markdown (.md)</span>
+                  </label>
+                </div>
                 <textarea
                   id="task-desc"
                   name="description"
-                  className="sleek-textarea"
+                  className="sleek-textarea-auto"
                   value={note.description}
                   rows={6}
-                  onChange={onChange}
+                  onChange={(e) => {
+                    onChange(e);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.max(130, e.target.scrollHeight)}px`;
+                  }}
+                  onInput={(e) => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = `${Math.max(130, e.target.scrollHeight)}px`;
+                  }}
                   minLength={3}
-                  placeholder="Write description in Markdown (.md)... Supports - bullets, 1. numbered lists, [links](url), ## headings, code blocks, and images."
+                  placeholder="Write description in Markdown (.md)...&#10;Supports - bullets, 1. numbered lists, [links](url), ## headings, code blocks, and subtasks (e.g. Java: 14--pending)."
                   required
                 ></textarea>
               </div>
