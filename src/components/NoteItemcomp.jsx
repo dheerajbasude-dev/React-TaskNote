@@ -63,7 +63,7 @@ renderer.link = function (arg) {
   const safeHref = href.replace(/"/g, '&quot;');
   const safeTitle = title ? ` title="${title.replace(/"/g, '&quot;')}"` : ` title="${safeHref}"`;
 
-  return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="sleek-md-link"${safeTitle} draggable="false"><span class="md-link-icon"><ion-icon name="link-outline"></ion-icon></span><span class="md-link-text">${text}</span><span class="md-link-arrow">↗</span></a>`;
+  return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="sleek-md-link"${safeTitle} draggable="false"><span class="md-link-icon"><ion-icon name="link-outline"></ion-icon></span><span class="md-link-text">${text}</span></a>`;
 };
 
 marked.use({ renderer });

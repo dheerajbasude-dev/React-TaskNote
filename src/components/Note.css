@@ -1046,14 +1046,6 @@ mark.search-highlight-badge {
   white-space: nowrap;
 }
 
-.sleek-pure-markdown a .md-link-arrow,
-.sleek-md-link .md-link-arrow {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #94a3b8;
-  transition: all 0.15s ease;
-}
-
 /* Standard clean hover effect */
 .sleek-pure-markdown a:hover,
 .sleek-md-link:hover {
@@ -1070,12 +1062,6 @@ mark.search-highlight-badge {
 .sleek-pure-markdown a:hover .md-link-icon,
 .sleek-md-link:hover .md-link-icon {
   color: #4f46e5;
-}
-
-.sleek-pure-markdown a:hover .md-link-arrow,
-.sleek-md-link:hover .md-link-arrow {
-  color: #4f46e5;
-  transform: translate(1px, -1px);
 }
 
 .sleek-pure-markdown a:active,
