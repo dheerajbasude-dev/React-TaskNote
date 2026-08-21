@@ -1271,14 +1271,11 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                 </div>
               </div>
 
-              {/* Description Field (Pure Markdown .md) with Auto-Expansion */}
+              {/* Description Field with Auto-Expansion */}
               <div className="sleek-form-field">
-                <div className="sleek-field-label-row">
-                  <label htmlFor="task-desc" className="sleek-field-label">
-                    <span>Description & Notes</span>
-                    <span className="field-hint">Markdown (.md)</span>
-                  </label>
-                </div>
+                <label htmlFor="task-desc" className="sleek-field-label">
+                  <span>Description & Notes</span>
+                </label>
                 <textarea
                   id="task-desc"
                   name="description"
@@ -1295,7 +1292,7 @@ const Notescomp = ({ searchQuery, setSearchQuery, selectedPriority }) => {
                     e.target.style.height = `${Math.max(130, e.target.scrollHeight)}px`;
                   }}
                   minLength={3}
-                  placeholder="Write description in Markdown (.md)...&#10;Supports - bullets, 1. numbered lists, [links](url), ## headings, code blocks, and subtasks (e.g. Java: 14--pending)."
+                  placeholder="Write your task details, checklist, or notes here..."
                   required
                 ></textarea>
               </div>
